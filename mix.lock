@@ -1,2 +1,5 @@
 [ "amrita": {:git, "git://github.com/josephwilk/amrita.git", "7570eb766fa0506e4c08d241f5359dff9135f961", []},
-  "meck": {:git, "git://github.com/eproxus/meck.git", "62265e4a89297b3415502351a35082933225d1af", [{:branch, "develop"}]} ]
+  "ecto": {:git, "git://github.com/elixir-lang/ecto.git", "564b7899c6f564a4127a1adbbb443d3d75da4c6c", []},
+  "meck": {:git, "git://github.com/eproxus/meck.git", "62265e4a89297b3415502351a35082933225d1af", [{:branch, "develop"}]},
+  "poolboy": {:git, "git://github.com/devinus/poolboy.git", "c2c939b51aba06790ca51fa78b14c254a6ea977d", []},
+  "postgrex": {:git, "git://github.com/ericmj/postgrex.git", "3424ee5334af9f52cde3a2f90a452e73fd20be0f", []} ]

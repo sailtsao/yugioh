@@ -17,7 +17,9 @@ defmodule Yugioh.Mixfile do
   # { :foobar, "~> 0.1", git: "https://github.com/elixir-lang/foobar.git" }
   defp deps do
     [
-      {:amrita, "~>0.2", github: "josephwilk/amrita"}
+      {:amrita, "~>0.2", github: "josephwilk/amrita"},
+      { :postgrex, github: "ericmj/postgrex" },
+      { :ecto, github: "elixir-lang/ecto" }
     ]
   end
 end

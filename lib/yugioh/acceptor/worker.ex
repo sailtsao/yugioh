@@ -71,8 +71,8 @@ defmodule Yugioh.Acceptor.Worker do
                     _=rClient(c,accid: accid)
                     _=rClient(c,login: true)
                     parse_packet(socket,c)
-                  other->
-                    check_error(socket,other,c)
+                  {:fail,reason}->
+                    check_error(socket,reason,c)
                 end
               {:ok,:create_role,_data} ->
                 parse_packet(socket,c)
