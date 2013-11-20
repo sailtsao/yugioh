@@ -51,7 +51,7 @@ defmodule Yugioh.Acceptor.Worker do
   
   def check_error(socket,reason,c) do
     case reason do
-      :timeout ->
+      {:error,:timeout} ->
         parse_packet(socket,c)
       other ->
         :gen_tcp.close(socket)
@@ -62,7 +62,6 @@ defmodule Yugioh.Acceptor.Worker do
   def parse_packet(socket,c) do    
     case :gen_tcp.recv(socket,4,2000) do
       {:ok,<<msgLength::size(16),msgID::size(16)>>} ->
-        IO.puts msgID
         case :gen_tcp.recv(socket,msgLength-4,2000) do
           {:ok,binaryData} ->
             case decode_message(msgID,binaryData) do
