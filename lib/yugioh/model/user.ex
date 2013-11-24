@@ -4,5 +4,6 @@ defmodule Model.User do
   queryable "users" do
     field :name, :string
     field :password, :string
+    has_many :roles,Model.Role
   end
 end
