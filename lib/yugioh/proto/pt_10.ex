@@ -41,12 +41,12 @@ defmodule Yugioh.Proto.PT10 do
   end
 
   def write(10002,code) do
-    data = <<code::size(8)>>
+    data = <<code::size(16)>>
     Yugioh.Proto.pack(10002,data)
   end
 
   def write(10003,code) do
-    data = <<code::size(8)>>
+    data = <<code::size(16)>>
     Yugioh.Proto.pack(10003,data)
   end
 
