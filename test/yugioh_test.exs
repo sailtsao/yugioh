@@ -75,16 +75,16 @@ defmodule YugiohFacts do
     # create role
     :gen_tcp.send(socket,<<12::size(16),10002::size(16),5::size(16),"abcde",1::size(8)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
-    IO.inspect data
-    # data |> equals <<5::size(16),10002::size(16),1::size(16)>>
+    # IO.inspect data
+    data |> equals <<6::size(16),10002::size(16),1::size(16)>>
     # delete role
     :gen_tcp.send(socket,<<11::size(16),10003::size(16),5::size(16),"abcde">>)
     {:ok,data} = :gen_tcp.recv(socket,0)
-    data |> equals <<5::size(16),10003::size(16),1::size(16)>>
+    data |> equals <<6::size(16),10003::size(16),1::size(16)>>
     # get roles
     :gen_tcp.send(socket,<<4::size(16),10004::size(16)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
-    IO.inspect data
+    # IO.inspect data
     # data |> equals <<32::size(16),10004::size(16),2::size(16),6::size(32),4::size(16),"sail",1::size(8),9::size(32),8::size(16),"sailtsao",2::size(8)>>
   end
 
