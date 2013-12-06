@@ -62,6 +62,11 @@ defmodule Yugioh.Module.Account do
     :ok    
   end
 
+  def enter_game(role_id,socket) do
+    :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,1))
+    {:ok,[]}
+  end
+  
 # help function
   defp role_exist?(name) do
     query = from(r in Model.Role,where: r.name == ^name,select: count(r.id))
