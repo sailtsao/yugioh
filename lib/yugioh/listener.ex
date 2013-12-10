@@ -36,7 +36,8 @@ defmodule Yugioh.Listener do
   end
 
   def handle_cast(:init, state) do
-    Yugioh.Module.Room.start
+    # boot sharedmodule
+    Yugioh.SharedModule.Room.start
     {:noreply, state}
   end
 

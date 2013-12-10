@@ -23,14 +23,24 @@ defmodule Yugioh.Module.Account do
     :ok
   end
 
-  def create_role([userID,name,gender],socket) do 
+  def create_role([user_id,name,avatar,card_type],socket) do 
     case role_exist?(name) do
       true->
         :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10002,0))
         {:fail,:role_name_exist}
       false->
-        user = Yugioh.Repo.get(Model.User,userID)
-        r = user.roles.new(name: name,gender: gender)
+        user = Yugioh.Repo.get(Model.User,user_id)
+        # if avatar_id is even then the gender is female(which is 1 in integer),else is male(whihc is 0 in integer)
+        gender = case Integer.even? avatar do
+          true->
+            1
+          false->
+            0
+        end
+
+        # TODO: replace this 1,2,3,4 with real cards
+
+        r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: term_to_binary([1,2,3,4])],hp: 3000,win: 0,lose: 0)
         Yugioh.Repo.create(r)
         :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10002,1))
         :ok
@@ -50,21 +60,16 @@ defmodule Yugioh.Module.Account do
   end
 
   def get_roles(userID,socket) do
-    [user] = Yugioh.Repo.all(from(u in Model.User,where: u.id == ^userID,preload: :roles))
-    rl = user.roles.to_list
-    n = length(rl)
-    l = lc r inlist rl do
-      nl = byte_size(r.name)
-      <<r.id::size(32), nl::size(16), r.name::bitstring ,r.gender::size(8)>>
+    roles = Yugioh.Repo.all(from(r in Model.Role,where: r.user_id == ^userID,select: {r.id,r.name,r.avatar}))
+    n = length(roles)
+    l = lc r inlist roles do
+      {id,name,avatar} = r
+      nl = byte_size(name)
+      <<id::size(32), nl::size(16), name::bitstring ,avatar::size(8)>>
     end
     bData =<<n::size(16),iolist_to_binary(l)::binary>>
     :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10004,bData))
     :ok    
-  end
-
-  def enter_game(role_id,socket) do
-    :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,1))
-    {:ok,[]}
   end
   
 # help function

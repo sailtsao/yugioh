@@ -12,8 +12,8 @@ defmodule Yugioh.Proto.PT10 do
 
   def read(10002,bin) do
     {name,rest} = Yugioh.Proto.read_string(bin)
-    <<gender::size(8)>> = rest
-    {:ok,:create_role,[name,gender]}
+    <<avatar::size(8),card_type::size(8)>> = rest
+    {:ok,:create_role,[name,avatar,card_type]}
   end
 
   def read(10003,bin) do
@@ -77,14 +77,13 @@ defmodule Yugioh.Proto.PT10 do
     Yugioh.Proto.pack(10004,data)
   end
 
+  def write(10005,data)do
+    Yugioh.Proto.pack(10005,data)
+  end
+
   def write(10006,[code,room_id])do
     data = <<code::size(16),room_id::size(32)>>
     Yugioh.Proto.pack(10006,data)
-  end
-
-  def write(10005,code)do
-    data = <<code::size(16)>>
-    Yugioh.Proto.pack(10005,data)
   end
 
   def write(10007,data)do

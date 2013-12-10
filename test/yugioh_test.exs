@@ -15,8 +15,8 @@ defmodule YugiohFacts do
     {:ok,data} = :gen_tcp.recv(socket,0)
     data |> equals <<5::size(16),10001::size(16),1::size(8)>>
 
-    ## create role
-    :gen_tcp.send(socket,<<12::size(16),10002::size(16),5::size(16),"abcde",1::size(8)>>)
+    ## create roles                                                         avatar_id   card_type  
+    :gen_tcp.send(socket,<<13::size(16),10002::size(16),5::size(16),"abcde",1::size(8),1::size(8)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
     # IO.inspect data
     data |> equals <<6::size(16),10002::size(16),1::size(16)>>
@@ -31,14 +31,14 @@ defmodule YugiohFacts do
     ####should get all role's information belonged to this account
     :gen_tcp.send(socket,<<4::size(16),10004::size(16)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
-    # IO.inspect data  
+    IO.inspect data  
     # data |> equals <<32::size(16),10004::size(16),2::size(16),6::size(32),4::size(16),"sail",1::size(8),9::size(32),8::size(16),"sailtsao",2::size(8)>>
 
     ## enter game
     :gen_tcp.send(socket,<<8::size(16),10005::size(16),6::size(32)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
     # IO.inspect data  
-    data |> equals <<6::size(16),10005::size(16),1::size(16)>>
+    # data |> equals <<6::size(16),10005::size(16),1::size(16)>>
 
     ## create room
     :gen_tcp.send(socket,<<12::size(16),10006::size(16),6::size(16),"123456">>)

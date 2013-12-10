@@ -1,6 +1,6 @@
 defrecord RoomInfo,id: 0,name: "",type: 0
 
-defmodule Yugioh.Module.Room do
+defmodule Yugioh.SharedModule.Room do
   
   defrecord State,auto_id: 0
 
@@ -55,6 +55,8 @@ defmodule Yugioh.Module.Room do
   def code_change(_oldVsn, state, _extra) do
     {:ok, state}
   end
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
   def create_room(name,socket) do
     {:ok,room_id}=:gen_server.call(__MODULE__,{:create_room,name})

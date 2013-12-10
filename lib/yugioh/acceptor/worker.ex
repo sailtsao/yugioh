@@ -2,12 +2,12 @@
 defmodule Yugioh.Acceptor.Worker do
   use GenServer.Behaviour
   
-  defrecordp :record_client,[account_id: 0,login: false,role_data: nil]
+  defrecordp :record_player,[account_id: 0,login: false,role_data: nil]
 
   def start_link(socket) do
     :gen_server.start_link(__MODULE__,[socket],[])
     # start loop to receive message
-    # spawn_link(fn->parse_packet(socket,record_client())end)    
+    # spawn_link(fn->parse_packet(socket,record_player())end)    
   end
 
   def init(socket) do
@@ -21,7 +21,7 @@ defmodule Yugioh.Acceptor.Worker do
   end
 
   def handle_cast(:accept,[socket]) do
-    parse_packet(socket,record_client())
+    parse_packet(socket,record_player())
     # IO.puts "stop"
     {:stop,:normal,socket}
   end 
@@ -59,68 +59,70 @@ defmodule Yugioh.Acceptor.Worker do
   end
   
   # first 
-  def parse_packet(socket,client) do    
+  def parse_packet(socket,player) do    
     case :gen_tcp.recv(socket,4,2000) do
       {:ok,<<msgLength::size(16),msgID::size(16)>>} ->
         case msgLength > 4 do
           true->
             case :gen_tcp.recv(socket,msgLength-4,2000) do
               {:ok,binaryData} ->                
-                route_message(msgID,binaryData,socket,client)
+                route_message(msgID,binaryData,socket,player)
               other ->
-                check_error(socket,other,client)
+                check_error(socket,other,player)
             end        
           false->
-            route_message(msgID,<<>>,socket,client)
+            route_message(msgID,<<>>,socket,player)
         end
       other ->
-        check_error(socket,other,client)
+        check_error(socket,other,player)
     end
   end
   
-  defp route_message(msgID,binaryData,socket,client) do
+  defp route_message(msgID,binaryData,socket,player) do
     case decode_message(msgID,binaryData) do
       {:ok,:login,loginData} ->
         case Yugioh.Module.Account.login(loginData,socket) do
           {:ok,account_id}->
-            client=record_client(client,account_id: account_id)
-            client=record_client(client,login: true)
-            parse_packet(socket,client)
+            player=record_player(player,account_id: account_id)
+            player=record_player(player,login: true)
+            parse_packet(socket,player)
           {:fail,reason}->
-            check_error(socket,reason,client)
+            check_error(socket,reason,player)
         end
       {:ok,:check_role_name,name} ->
         Yugioh.Module.Account.check_role_exist(name,socket)
-        parse_packet(socket,client)
-      {:ok,:create_role,[name,gender]} ->
-        Yugioh.Module.Account.create_role([record_client(client,:account_id),name,gender],socket)
-        parse_packet(socket,client)
+        parse_packet(socket,player)
+      {:ok,:create_role,[name,avatar,card_type]} ->
+        Yugioh.Module.Account.create_role([record_player(player,:account_id),name,avatar,card_type],socket)
+        parse_packet(socket,player)
       {:ok,:delete_role,name} ->
         Yugioh.Module.Account.delete_role(name,socket)
-        parse_packet(socket,client)
+        parse_packet(socket,player)
       {:ok,:get_roles} ->
-        Yugioh.Module.Account.get_roles(record_client(client,:account_id),socket)
-        parse_packet(socket,client)
+        Yugioh.Module.Account.get_roles(record_player(player,:account_id),socket)
+        parse_packet(socket,player)
       {:ok,:enter_game,role_id} ->
-        case Yugioh.Module.Account.enter_game(role_id,socket) do
+        case Yugioh.Module.Player.enter_game(role_id,socket) do
           {:ok,role_data}->
-            parse_packet(socket,client)
+            IO.inspect role_data
+            player=record_player(player,role_data: role_data)
+            parse_packet(socket,player)
           {:fail,reason}->
-            check_error(socket,reason,client)
+            check_error(socket,reason,player)
         end
       {:ok,:create_room,name} ->
-        Yugioh.Module.Room.create_room(name,socket)
-        parse_packet(socket,client)
+        Yugioh.SharedModule.Room.create_room(name,socket)
+        parse_packet(socket,player)
       {:ok,:get_rooms} ->
-        Yugioh.Module.Room.get_rooms(socket)
-        parse_packet(socket,client)
+        Yugioh.SharedModule.Room.get_rooms(socket)
+        parse_packet(socket,player)
       {:ok,:enter_room,room_id} ->
-        Yugioh.Module.Room.enter_room(room_id,socket)
-        parse_packet(socket,client)
+        Yugioh.SharedModule.Room.enter_room(room_id,socket)
+        parse_packet(socket,player)
       {:ok,:battle_ready} ->
-        parse_packet(socket,client)
+        parse_packet(socket,player)
       other-> # out of pre-enter-game area message
-        check_error(socket,other,client)
+        check_error(socket,other,player)
     end
   end
 end
