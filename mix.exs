@@ -26,7 +26,7 @@ defmodule Yugioh.Mixfile do
   defp deps do
     [
       # { :amrita, github: "josephwilk/amrita" },
-      # { :postgrex, github: "ericmj/postgrex" },
+      { :postgrex, github: "ericmj/postgrex" },
       { :ecto, github: "elixir-lang/ecto" },
       { :exlager,github: "khia/exlager" }
     ]
