@@ -1,9 +1,5 @@
-[ "amrita": {:git, "git://github.com/josephwilk/amrita.git", "7570eb766fa0506e4c08d241f5359dff9135f961", []},
-  "ecto": {:git, "git://github.com/elixir-lang/ecto.git", "d8999d42038b22fdcba5923f7fafd538f4540ec8", []},
+[ "ecto": {:git, "git://github.com/elixir-lang/ecto.git", "d8999d42038b22fdcba5923f7fafd538f4540ec8", []},
   "exlager": {:git, "git://github.com/khia/exlager.git", "0b840aae773e6eb6de7cdbb703b47031b6608bfb", []},
   "goldrush": {:git, "git://github.com/DeadZen/goldrush.git", "1d883423ac360b3536ca52dc733a0164bacf3109", [{:tag, "0.1.5"}]},
   "lager": {:git, "https://github.com/basho/lager.git", "7763143a293edebb2885d8a7cf8124778edb8bba", []},
-  "meck": {:git, "git://github.com/eproxus/meck.git", "62265e4a89297b3415502351a35082933225d1af", [{:branch, "develop"}]},
-  "parallel": {:git, "git://github.com/eproxus/parallel.git", "3b628c5425e0f9ff6c786e726bda9cc3d69da326", []},
-  "poolboy": {:git, "git://github.com/devinus/poolboy.git", "c2c939b51aba06790ca51fa78b14c254a6ea977d", []},
-  "postgrex": {:git, "git://github.com/ericmj/postgrex.git", "218db4af386045984c20eabe5771447abd5bd096", []} ]
+  "poolboy": {:git, "git://github.com/devinus/poolboy.git", "c2c939b51aba06790ca51fa78b14c254a6ea977d", []} ]

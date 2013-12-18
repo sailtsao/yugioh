@@ -84,7 +84,7 @@ defmodule Yugioh.System.Login do
     nl = byte_size(role.name)
 
     # make cards binary
-    cards_list=binary_to_term(role.cards.value)
+    cards_list=binary_to_term(role.cards)
     cards_binary = iolist_to_binary(Enum.map(cards_list,fn(x)-> <<x::size(32)>> end))
     # send player data to client
     :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,<<role.id::size(32), role.avatar::size(8), nl::size(16), role.name::bitstring,

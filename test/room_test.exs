@@ -1,4 +1,4 @@
-defmodule YugiohTest do
+defmodule RoomTest do
   use ExUnit.Case
 
   test "room test" do
