@@ -1,0 +1,932 @@
+2013-12-13 14:40:33 =CRASH REPORT====
+  crasher:
+    initial call: poolboy:init/1
+    pid: <0.221.0>
+    registered_name: []
+    exception exit: {{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.217.0>,<0.216.0>]
+    messages: []
+    links: [<0.217.0>,<0.222.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 610
+    stack_size: 27
+    reductions: 182
+  neighbours:
+2013-12-13 14:40:33 =SUPERVISOR REPORT====
+     Supervisor: {<0.217.0>,'Elixir.Yugioh.Supervisor'}
+     Context:    start_error
+     Reason:     {{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,undefined},{name,'Elixir.Yugioh.Repo'},{mfargs,{'Elixir.Yugioh.Repo',start_link,[]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 14:40:33 =ERROR REPORT====
+** Generic server <0.222.0> terminating 
+** Last message in was {'EXIT',<0.221.0>,{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}}
+** When Server state == {state,{<0.222.0>,poolboy_sup},simple_one_for_one,[{child,undefined,'Elixir.Postgrex.Connection',{'Elixir.Postgrex.Connection',start_link,[[{port,5432},{decoder,#Fun<Elixir.Ecto.Adapters.Postgres.12.45244978>},{password,<<"sailtsao">>},{username,<<"postgres">>},{hostname,<<"localhost">>},{database,<<"yugioh">>}]]},temporary,5000,worker,['Elixir.Postgrex.Connection']}],{set,0,16,16,8,80,48,{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]}}},0,1,[],poolboy_sup,{'Elixir.Postgrex.Connection',[{port,5432},{decoder,#Fun<Elixir.Ecto.Adapters.Postgres.12.45244978>},{password,<<"sailtsao">>},{username,<<"postgres">>},{hostname,<<"localhost">>},{database,<<"yugioh">>}]}}
+** Reason for termination == 
+** {{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 14:40:33 =CRASH REPORT====
+  crasher:
+    initial call: supervisor:poolboy_sup/1
+    pid: <0.222.0>
+    registered_name: []
+    exception exit: {{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: ['Elixir.Yugioh.Repo.Pool',<0.217.0>,<0.216.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 610
+    stack_size: 27
+    reductions: 391
+  neighbours:
+2013-12-13 14:40:33 =CRASH REPORT====
+  crasher:
+    initial call: application_master:init/4
+    pid: <0.215.0>
+    registered_name: []
+    exception exit: {{{shutdown,{failed_to_start_child,'Elixir.Yugioh.Repo',{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}}},{'Elixir.Yugioh',start,[normal,[]]}},[{application_master,init,4,[{file,"application_master.erl"},{line,133}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.214.0>]
+    messages: [{'EXIT',<0.216.0>,normal}]
+    links: [<0.214.0>,<0.7.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 172
+  neighbours:
+2013-12-13 14:41:24 =ERROR REPORT====
+** Generic server <0.158.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"123456">>}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],<0.159.0>}
+** Reason for termination == 
+** {'module could not be loaded',[{'Elixir.PT11',write,[11000,[1,1]],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 14:41:24 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.158.0>
+    registered_name: []
+    exception exit: {{undef,[{'Elixir.PT11',write,[11000,[1,1]],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.157.0>]
+    messages: []
+    links: [<0.157.0>,<0.159.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 291
+  neighbours:
+    neighbour: [{pid,<0.159.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.158.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,3}]
+    neighbour: [{pid,<0.157.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.137.0>,<0.158.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,2586},{stack_size,28},{reductions,5352}]
+2013-12-13 14:41:24 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{'Elixir.PT11',write,[11000,[1,1]],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.157.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 15:22:51 =ERROR REPORT====
+** Generic server <0.252.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"123456">>}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],<0.253.0>}
+** Reason for termination == 
+** {{badmatch,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 15:22:51 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.252.0>
+    registered_name: []
+    exception exit: {{{badmatch,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.251.0>]
+    messages: []
+    links: [<0.251.0>,<0.253.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1783
+  neighbours:
+    neighbour: [{pid,<0.253.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.252.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,3}]
+    neighbour: [{pid,<0.251.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.231.0>,<0.252.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,1598},{stack_size,28},{reductions,10039}]
+2013-12-13 15:22:51 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{badmatch,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.251.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 15:25:39 =ERROR REPORT====
+** Generic server <0.223.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"123456">>}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],<0.224.0>}
+** Reason for termination == 
+** {{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 15:25:39 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.223.0>
+    registered_name: []
+    exception exit: {{{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.222.0>]
+    messages: []
+    links: [<0.222.0>,<0.224.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1791
+  neighbours:
+    neighbour: [{pid,<0.224.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.223.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,3}]
+    neighbour: [{pid,<0.222.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.202.0>,<0.223.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,1598},{stack_size,28},{reductions,10039}]
+2013-12-13 15:25:39 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.222.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 15:29:42 =ERROR REPORT====
+** Generic server <0.230.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"123456">>}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],<0.231.0>}
+** Reason for termination == 
+** {{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 15:29:42 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.230.0>
+    registered_name: []
+    exception exit: {{{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.229.0>]
+    messages: []
+    links: [<0.229.0>,<0.231.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1783
+  neighbours:
+    neighbour: [{pid,<0.231.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.230.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,3}]
+    neighbour: [{pid,<0.229.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.209.0>,<0.230.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,1598},{stack_size,28},{reductions,10039}]
+2013-12-13 15:29:42 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{case_clause,ok},[{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,8}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.229.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 15:34:22 =ERROR REPORT====
+Error in process <0.236.0> with exit value: {{badmatch,<<0 bytes>>},[{'Elixir.Yugioh.Proto.PT11',read,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,5}]},{'Elixir.Yugioh.Acceptor.Acceptor',parse_game_packet_loop,2,[{file,"/Users/sail/elixir/yugio... 
+
+2013-12-13 15:34:22 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{badmatch,<<>>},[{'Elixir.Yugioh.Proto.PT11',read,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,5}]},{'Elixir.Yugioh.Acceptor.Acceptor',parse_game_packet_loop,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,96}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,79}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,58}]}]}
+     Offender:   [{pid,<0.236.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 15:58:02 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"123456">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],<0.160.0>,false}
+** Reason for termination == 
+** {badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,13}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 15:58:02 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,13}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.158.0>]
+    messages: []
+    links: [<0.158.0>,<0.160.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1861
+  neighbours:
+    neighbour: [{pid,<0.160.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,3}]
+    neighbour: [{pid,<0.158.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.138.0>,<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,1598},{stack_size,28},{reductions,10128}]
+2013-12-13 15:58:02 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,13}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,28}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.158.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 16:02:53 =ERROR REPORT====
+** Generic server <0.152.0> terminating 
+** Last message in was {suite_finished,83479,176875}
+** When Server state == {'Elixir.Amrita.Formatter.Progress.Config',2,0,0,[{'Elixir.ExUnit.Test','test integration test','Elixir.YugiohFacts',{error,{'Elixir.Amrita.FactError','__exception__',<<0,10,42,248,0,1,0,0,0,0>>,<<0,10,42,248,0,0,0,0,0,0>>,{equals,2},false,<<"Expected">>},[{'Elixir.Amrita.Message',fail,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/message.ex"},{line,10}]},{'Elixir.YugiohFacts','test integration test',1,[{file,"/Users/sail/elixir/yugioh/test/yugioh_test.exs"},{line,53}]}]},48132}],[],[],false}
+** Reason for termination == 
+** {badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,10,42,248,0,0,0,0,0,0,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,44,32,48,44,32,48,44,32,48,44,32,48,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,53,51,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 16:02:53 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Amrita.Formatter.Progress:init/1
+    pid: <0.152.0>
+    registered_name: []
+    exception exit: {{badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,10,42,248,0,0,0,0,0,0,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,44,32,48,44,32,48,44,32,48,44,32,48,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,53,51,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.2.0>]
+    messages: []
+    links: [<0.2.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 27
+    reductions: 1735
+  neighbours:
+2013-12-13 16:03:35 =ERROR REPORT====
+** Generic server <0.152.0> terminating 
+** Last message in was {suite_finished,184341,185393}
+** When Server state == {'Elixir.Amrita.Formatter.Progress.Config',2,0,0,[{'Elixir.ExUnit.Test','test integration test','Elixir.YugiohFacts',{error,{'Elixir.Amrita.FactError','__exception__',<<0,10,42,248,0,1,0,0,0,0>>,<<0,10,42,248,0,0,0,0,0,0>>,{equals,2},false,<<"Expected">>},[{'Elixir.Amrita.Message',fail,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/message.ex"},{line,10}]},{'Elixir.YugiohFacts','test integration test',1,[{file,"/Users/sail/elixir/yugioh/test/yugioh_test.exs"},{line,53}]}]},147660}],[],[],false}
+** Reason for termination == 
+** {badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,10,42,248,0,0,0,0,0,0,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,44,32,48,44,32,48,44,32,48,44,32,48,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,53,51,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 16:03:35 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Amrita.Formatter.Progress:init/1
+    pid: <0.152.0>
+    registered_name: []
+    exception exit: {{badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,10,42,248,0,0,0,0,0,0,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,44,32,48,44,32,48,44,32,48,44,32,48,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,53,51,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.2.0>]
+    messages: []
+    links: [<0.2.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 27
+    reductions: 1743
+  neighbours:
+2013-12-13 16:03:52 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11002,{enter_room,0}}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 16:03:52 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{undef,[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.158.0>]
+    messages: []
+    links: [<0.158.0>,<0.160.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 3243
+  neighbours:
+    neighbour: [{pid,<0.160.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,87}]
+    neighbour: [{pid,<0.158.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.138.0>,<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,2586},{stack_size,28},{reductions,12398}]
+2013-12-13 16:03:52 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.158.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 16:04:01 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11002,{enter_room,0}}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 16:04:01 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{undef,[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.158.0>]
+    messages: []
+    links: [<0.158.0>,<0.160.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 3238
+  neighbours:
+    neighbour: [{pid,<0.160.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,87}]
+    neighbour: [{pid,<0.158.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.138.0>,<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,2586},{stack_size,28},{reductions,12387}]
+2013-12-13 16:04:01 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{send,send_pid,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,34}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.158.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-13 16:04:58 =ERROR REPORT====
+** Generic server <0.223.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:33:06 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:33:06 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{undef,[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.158.0>]
+    messages: []
+    links: [<0.160.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 2832
+  neighbours:
+    neighbour: [{pid,<0.160.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,87}]
+2013-12-13 18:41:05 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:43:56 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:44:24 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:44:53 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:44:56 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:44:58 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == {send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}
+** Reason for termination == 
+** {'module could not be loaded',[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 18:44:58 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{undef,[{send,id,[{send,<<0,20,42,249,0,1,0,0,0,1,0,6,49,50,51,52,53,54,0,1>>}],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.158.0>]
+    messages: []
+    links: [<0.160.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 2823
+  neighbours:
+    neighbour: [{pid,<0.160.0>},{registered_name,[]},{initial_call,{erlang,apply,2}},{current_function,{'Elixir.Yugioh.Player',send_msg,1}},{ancestors,[]},{messages,[]},{links,[<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,2},{reductions,87}]
+2013-12-13 19:01:50 =ERROR REPORT====
+** Generic server <0.259.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:01:53 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:05:00 =ERROR REPORT====
+** Generic server <0.147.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:05:00 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.147.0>
+    registered_name: []
+    exception exit: {{undef,[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.146.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 2897
+  neighbours:
+2013-12-13 19:08:09 =ERROR REPORT====
+** Generic server <0.149.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:08:09 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.149.0>
+    registered_name: []
+    exception exit: {{undef,[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.148.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 2879
+  neighbours:
+2013-12-13 19:09:39 =ERROR REPORT====
+** Generic server <0.204.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',terminate,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,terminate,6,[{file,"gen_server.erl"},{line,719}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:09:39 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.204.0>
+    registered_name: []
+    exception exit: {{undef,[{ok,id,[],[]},{'Elixir.Yugioh.Player',terminate,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,62}]},{gen_server,terminate,6,[{file,"gen_server.erl"},{line,719}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,722}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.203.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 2594
+  neighbours:
+2013-12-13 19:12:02 =ERROR REPORT====
+** Generic server <0.204.0> terminating 
+** Last message in was {'$gen_cast',stop}
+** When Server state == ok
+** Reason for termination == 
+** {'module could not be loaded',[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-13 19:12:02 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.204.0>
+    registered_name: []
+    exception exit: {{undef,[{ok,id,[],[]},{'Elixir.Yugioh.Player',handle_cast,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,50}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,604}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.203.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 2874
+  neighbours:
+2013-12-14 16:10:34 =ERROR REPORT====
+** Generic server <0.152.0> terminating 
+** Last message in was {suite_finished,85201,173683}
+** When Server state == {'Elixir.Amrita.Formatter.Progress.Config',2,0,0,[{'Elixir.ExUnit.Test','test integration test','Elixir.YugiohFacts',{error,{'Elixir.Amrita.FactError','__exception__',<<0,10,42,248,0,1>>,<<0,6,42,248,0,1>>,{equals,2},false,<<"Expected">>},[{'Elixir.Amrita.Message',fail,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/message.ex"},{line,10}]},{'Elixir.YugiohFacts','test integration test',1,[{file,"/Users/sail/elixir/yugioh/test/yugioh_test.exs"},{line,47}]}]},50353}],[],[],false}
+** Reason for termination == 
+** {badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,6,42,248,0,1,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,52,55,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-14 16:10:34 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Amrita.Formatter.Progress:init/1
+    pid: <0.152.0>
+    registered_name: []
+    exception exit: {{badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,6,42,248,0,1,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,52,55,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.2.0>]
+    messages: []
+    links: [<0.2.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1579
+  neighbours:
+2013-12-14 16:11:22 =ERROR REPORT====
+** Generic server <0.152.0> terminating 
+** Last message in was {suite_finished,181795,164071}
+** When Server state == {'Elixir.Amrita.Formatter.Progress.Config',2,0,0,[{'Elixir.ExUnit.Test','test integration test','Elixir.YugiohFacts',{error,{'Elixir.Amrita.FactError','__exception__',<<0,10,42,248,0,1>>,<<0,6,42,248,0,1>>,{equals,2},false,<<"Expected">>},[{'Elixir.Amrita.Message',fail,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/message.ex"},{line,10}]},{'Elixir.YugiohFacts','test integration test',1,[{file,"/Users/sail/elixir/yugioh/test/yugioh_test.exs"},{line,47}]}]},146102}],[],[],false}
+** Reason for termination == 
+** {badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,6,42,248,0,1,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,52,55,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-14 16:11:22 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Amrita.Formatter.Progress:init/1
+    pid: <0.152.0>
+    registered_name: []
+    exception exit: {{badarg,[{io,put_chars,[<0.23.0>,unicode,[<<32,32,49,41,32,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,32,40,89,117,103,105,111,104,70,97,99,116,115,41,10,32,32,32,32,32,27,91,51,49,109,42,42,32,40,65,109,114,105,116,97,46,70,97,99,116,69,114,114,111,114,41,32,69,120,112,101,99,116,101,100,58,10,32,32,32,32,32,0,6,42,248,0,1,32,124,62,32,101,113,117,97,108,115,40,60,60,48,44,32,49,48,44,32,52,50,44,32,50,52,56,44,32,48,44,32,49,62,62,41,27,91,48,109,10,32,32,32,32,32,27,91,51,54,109,115,116,97,99,107,116,114,97,99,101,58,27,91,48,109,10,32,32,32,32,32,32,32,100,101,112,115,47,97,109,114,105,116,97,47,108,105,98,47,97,109,114,105,116,97,47,109,101,115,115,97,103,101,46,101,120,58,49,48,58,32,65,109,114,105,116,97,46,77,101,115,115,97,103,101,46,102,97,105,108,47,51,10,32,32,32,32,32,32,32,116,101,115,116,47,121,117,103,105,111,104,95,116,101,115,116,46,101,120,115,58,52,55,58,32,89,117,103,105,111,104,70,97,99,116,115,46,34,116,101,115,116,32,105,110,116,101,103,114,97,116,105,111,110,32,116,101,115,116,34,47,49,10>>,10]],[]},{'Elixir.Amrita.Formatter.Progress',print_test_failure,2,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,179}]},{'Elixir.Enumerable.List',reduce,3,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,1839}]},{'Elixir.Amrita.Formatter.Progress',print_suite,8,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,156}]},{'Elixir.Amrita.Formatter.Progress',handle_call,3,[{file,"/Users/sail/elixir/yugioh/deps/amrita/lib/amrita/formatter/progress.ex"},{line,54}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.2.0>]
+    messages: []
+    links: [<0.2.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1579
+  neighbours:
+2013-12-15 23:14:54 =ERROR REPORT====
+Error in process <0.207.0> with exit value: {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,86}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elix... 
+
+2013-12-15 23:14:54 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,86}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,75}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,58}]}]}
+     Offender:   [{pid,<0.207.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:16:14 =ERROR REPORT====
+Error in process <0.207.0> with exit value: {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,85}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elix... 
+
+2013-12-15 23:16:14 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,85}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,75}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,58}]}]}
+     Offender:   [{pid,<0.207.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:17:26 =ERROR REPORT====
+Error in process <0.207.0> with exit value: {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,85}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elix... 
+
+2013-12-15 23:17:26 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{nil,value,[],[]},{'Elixir.Yugioh.System.Login',enter_game,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/login.ex"},{line,85}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,75}]},{'Elixir.Yugioh.Acceptor.Acceptor',route_message,4,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/acceptor/acceptor.ex"},{line,58}]}]}
+     Offender:   [{pid,<0.207.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:30:04 =ERROR REPORT====
+** Generic server <0.159.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.5150>,false}
+** Reason for termination == 
+** {'module could not be loaded',[{'Elixir.PT',pack_string,[<<"room">>],[]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-15 23:30:04 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.159.0>
+    registered_name: []
+    exception exit: {{undef,[{'Elixir.PT',pack_string,[<<"room">>],[]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.156.0>]
+    messages: []
+    links: [<0.156.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1909
+  neighbours:
+    neighbour: [{pid,<0.156.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.138.0>,<0.159.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,987},{stack_size,28},{reductions,5946}]
+2013-12-15 23:30:04 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{'Elixir.PT',pack_string,[<<"room">>],[]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.156.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:31:38 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.7905>,false}
+** Reason for termination == 
+** {badarg,[{'Elixir.Yugioh.Proto',pack_string,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt.ex"},{line,19}]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,22}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-15 23:31:38 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{badarg,[{'Elixir.Yugioh.Proto',pack_string,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt.ex"},{line,19}]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,22}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: []
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1876
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5824}]
+2013-12-15 23:31:38 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {badarg,[{'Elixir.Yugioh.Proto',pack_string,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt.ex"},{line,19}]},{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,22}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:33:35 =ERROR REPORT====
+** Generic server <0.276.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8301>,false}
+** Reason for termination == 
+** {badarg,[{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-15 23:33:35 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.276.0>
+    registered_name: []
+    exception exit: {{badarg,[{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.274.0>]
+    messages: []
+    links: [<0.274.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1870
+  neighbours:
+    neighbour: [{pid,<0.274.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.256.0>,<0.276.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5826}]
+2013-12-15 23:33:35 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {badarg,[{'Elixir.RecordHelper',decode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,21}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.274.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:34:42 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.7905>,false}
+** Reason for termination == 
+** {badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-15 23:34:42 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: []
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1855
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5824}]
+2013-12-15 23:34:42 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {badarg,[{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-15 23:48:34 =ERROR REPORT====
+** Generic server <0.277.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11002,{enter_room,1}}
+** When Server state == {'Elixir.PlayerState',8,<<"xqy">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8299>,false}
+** Reason for termination == 
+** {function_clause,[{'Elixir.Yugioh.Proto.PT11',write,[11002,1],[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,18}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,37}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-15 23:48:34 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.277.0>
+    registered_name: []
+    exception exit: {{function_clause,[{'Elixir.Yugioh.Proto.PT11',write,[11002,1],[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,18}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,37}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.275.0>]
+    messages: []
+    links: [<0.275.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1797
+  neighbours:
+    neighbour: [{pid,<0.275.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.256.0>,<0.277.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,987},{stack_size,28},{reductions,5701}]
+2013-12-15 23:48:34 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {function_clause,[{'Elixir.Yugioh.Proto.PT11',write,[11002,1],[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,18}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,37}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.275.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 21:29:28 =CRASH REPORT====
+  crasher:
+    initial call: poolboy:init/1
+    pid: <0.233.0>
+    registered_name: []
+    exception exit: {{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.228.0>,<0.227.0>]
+    messages: []
+    links: [<0.228.0>,<0.234.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 610
+    stack_size: 27
+    reductions: 182
+  neighbours:
+2013-12-16 21:29:28 =SUPERVISOR REPORT====
+     Supervisor: {<0.228.0>,'Elixir.Yugioh.Supervisor'}
+     Context:    start_error
+     Reason:     {{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,undefined},{name,'Elixir.Yugioh.Repo'},{mfargs,{'Elixir.Yugioh.Repo',start_link,[]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 21:29:28 =ERROR REPORT====
+** Generic server <0.234.0> terminating 
+** Last message in was {'EXIT',<0.233.0>,{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}}
+** When Server state == {state,{<0.234.0>,poolboy_sup},simple_one_for_one,[{child,undefined,'Elixir.Postgrex.Connection',{'Elixir.Postgrex.Connection',start_link,[[{port,5432},{decoder,#Fun<Elixir.Ecto.Adapters.Postgres.12.45244978>},{password,<<"sailtsao">>},{username,<<"postgres">>},{hostname,<<"localhost">>},{database,<<"yugioh">>}]]},temporary,5000,worker,['Elixir.Postgrex.Connection']}],{set,0,16,16,8,80,48,{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]}}},0,1,[],poolboy_sup,{'Elixir.Postgrex.Connection',[{port,5432},{decoder,#Fun<Elixir.Ecto.Adapters.Postgres.12.45244978>},{password,<<"sailtsao">>},{username,<<"postgres">>},{hostname,<<"localhost">>},{database,<<"yugioh">>}]}}
+** Reason for termination == 
+** {{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-16 21:29:28 =CRASH REPORT====
+  crasher:
+    initial call: supervisor:poolboy_sup/1
+    pid: <0.234.0>
+    registered_name: []
+    exception exit: {{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: ['Elixir.Yugioh.Repo.Pool',<0.228.0>,<0.227.0>]
+    messages: []
+    links: []
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 610
+    stack_size: 27
+    reductions: 395
+  neighbours:
+2013-12-16 21:29:28 =CRASH REPORT====
+  crasher:
+    initial call: application_master:init/4
+    pid: <0.226.0>
+    registered_name: []
+    exception exit: {{{shutdown,{failed_to_start_child,'Elixir.Yugioh.Repo',{{badmatch,{error,{'Elixir.Postgrex.Error','__exception__',nil,<<"tcp connect: econnrefused">>}}},[{poolboy,new_worker,1,[{file,"src/poolboy.erl"},{line,236}]},{poolboy,prepopulate,3,[{file,"src/poolboy.erl"},{line,257}]},{poolboy,init,3,[{file,"src/poolboy.erl"},{line,120}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}}},{'Elixir.Yugioh',start,[normal,[]]}},[{application_master,init,4,[{file,"application_master.erl"},{line,133}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.225.0>]
+    messages: [{'EXIT',<0.227.0>,normal}]
+    links: [<0.225.0>,<0.7.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 172
+  neighbours:
+2013-12-16 21:30:47 =ERROR REPORT====
+** Generic server <0.158.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.5150>,false}
+** Reason for termination == 
+** {{badarity,{#Fun<Elixir.RecordHelper.0.98111349>,[{1,{<0.158.0>,#Ref<0.0.0.1421>}}]}},[{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,33}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+2013-12-16 21:30:47 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.158.0>
+    registered_name: []
+    exception exit: {{{badarity,{#Fun<Elixir.RecordHelper.0.98111349>,[{1,{<0.158.0>,#Ref<0.0.0.1421>}}]}},[{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,33}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.156.0>]
+    messages: []
+    links: [<0.156.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1598
+    stack_size: 27
+    reductions: 1916
+  neighbours:
+    neighbour: [{pid,<0.156.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.138.0>,<0.158.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,987},{stack_size,28},{reductions,5951}]
+2013-12-16 21:30:47 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{badarity,{#Fun<Elixir.RecordHelper.0.98111349>,[{1,{<0.158.0>,#Ref<0.0.0.1421>}}]}},[{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,33}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+     Offender:   [{pid,<0.156.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 21:38:41 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8139>,false}
+** Reason for termination == 
+** {'function not exported',[{'Elixir.Yugioh.Player',player_state,[],[]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]}]}
+2013-12-16 21:38:41 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{undef,[{'Elixir.Yugioh.Player',player_state,[],[]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: []
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 27
+    reductions: 2006
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5824}]
+2013-12-16 21:38:41 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {undef,[{'Elixir.Yugioh.Player',player_state,[],[]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,585}]}]}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 21:40:56 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8139>,false}
+** Reason for termination == 
+** {{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2835>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2835>},player_state]}}
+2013-12-16 21:40:56 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2835>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2835>},player_state]}},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: []
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 27
+    reductions: 2001
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5824}]
+2013-12-16 21:40:56 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2835>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]},{'Elixir.Yugioh.Player',handle_call,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,30}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2835>},player_state]}}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 22:19:50 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8139>,false}
+** Reason for termination == 
+** {{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2834>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.Yugioh.Player',player_state,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,73}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2834>},player_state]}}
+2013-12-16 22:19:50 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2834>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.Yugioh.Player',player_state,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,73}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2834>},player_state]}},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: []
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 27
+    reductions: 2005
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,376},{stack_size,28},{reductions,5829}]
+2013-12-16 22:19:50 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {{function_clause,[{gen,call,[{<0.262.0>,#Ref<0.0.0.2834>},'$gen_call',player_state,5000],[{file,"gen.erl"},{line,147}]},{gen_server,call,2,[{file,"gen_server.erl"},{line,176}]},{'Elixir.Yugioh.Player',player_state,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/player.ex"},{line,73}]},{'Elixir.RecordHelper','-encode_room_info/1-fun-0-',2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,42}]},{'Elixir.Enum','-map/2-lc$^0/1-0-',2,[{file,"/private/tmp/elixir-pl3M/elixir-0.11.2/lib/elixir/lib/enum.ex"},{line,680}]},{'Elixir.RecordHelper',encode_room_info,1,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/records.ex"},{line,34}]},{'Elixir.Yugioh.Proto.PT11',write,2,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/proto/pt_11.ex"},{line,19}]},{'Elixir.Yugioh.System.Room',handle,3,[{file,"/Users/sail/elixir/yugioh/lib/yugioh/system/room.ex"},{line,11}]}]},{gen_server,call,[{<0.262.0>,#Ref<0.0.0.2834>},player_state]}}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 22:27:59 =ERROR REPORT====
+** Generic server <0.262.0> terminating 
+** Last message in was {<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}
+** When Server state == {'Elixir.PlayerState',6,<<"sail">>,1,1,3000,0,0,[1,2,3,4],#Port<0.8139>,false}
+** Reason for termination == 
+** {timeout,{gen_server,call,[<0.262.0>,player_state]}}
+2013-12-16 22:27:59 =CRASH REPORT====
+  crasher:
+    initial call: Elixir.Yugioh.Player:init/1
+    pid: <0.262.0>
+    registered_name: []
+    exception exit: {{timeout,{gen_server,call,[<0.262.0>,player_state]}},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]}
+    ancestors: [<0.260.0>]
+    messages: [{'$gen_call',{<0.262.0>,#Ref<0.0.0.2836>},player_state}]
+    links: [<0.260.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 27
+    reductions: 1835
+  neighbours:
+    neighbour: [{pid,<0.260.0>},{registered_name,[]},{initial_call,{'Elixir.Yugioh.Acceptor.Acceptor',parse_packet_loop,2}},{current_function,{gen,do_call,4}},{ancestors,[]},{messages,[]},{links,[<0.242.0>,<0.262.0>]},{dictionary,[]},{trap_exit,false},{status,runnable},{heap_size,376},{stack_size,28},{reductions,5824}]
+2013-12-16 22:27:59 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {timeout,{gen_server,call,[<0.262.0>,player_state]}}
+     Offender:   [{pid,<0.260.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+2013-12-16 22:43:19 =SUPERVISOR REPORT====
+     Supervisor: {local,'Elixir.Yugioh.Acceptor.Supervisor'}
+     Context:    child_terminated
+     Reason:     {timeout,{gen_server,call,[<0.159.0>,{<<"SOCKET_EVENT">>,11000,{create_room,<<"room">>,1}}]}}
+     Offender:   [{pid,<0.156.0>},{name,'Elixir.Yugioh.Acceptor.Acceptor'},{mfargs,{'Elixir.Yugioh.Acceptor.Acceptor',start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
