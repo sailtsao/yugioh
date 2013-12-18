@@ -88,7 +88,7 @@ defmodule Yugioh.System.Login do
     cards_binary = iolist_to_binary(Enum.map(cards_list,fn(x)-> <<x::size(32)>> end))
     # send player data to client
     :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,<<role.id::size(32), role.avatar::size(8), nl::size(16), role.name::bitstring,
-                        role.hp::size(32),role.win::size(32),role.lose::size(32),length(cards_list)::size(8),cards_binary::binary>>))
+                        role.hp::size(32),role.win::size(32),role.lose::size(32),length(cards_list)::size(16),cards_binary::binary>>))
 
     # create player status record to initialize player process
     player_state=PlayerState.new(id: role.id,name: role.name,gender: role.gender,avatar: role.avatar,

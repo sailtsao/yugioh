@@ -32,10 +32,10 @@ defmodule RoomTest do
     # create room
     :gen_tcp.send(socket1,<<12::size(16),11000::size(16),4::size(16),"room",1::size(16)>>)
     {:ok,data} = :gen_tcp.recv(socket1,0)    
-    assert <<
+    <<
     35::size(16),11000::size(16),1::size(16),room_id::size(32),status::size(16),4::size(16),"room",1::size(16),
     1::size(16),
-    1::size(8),6::size(32),4::size(16),"sail",1::size(8),1::size(8)
+    1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8)
     >> = data
 
     # enter room
@@ -43,9 +43,9 @@ defmodule RoomTest do
     {:ok,data} = :gen_tcp.recv(socket2,0)    
     assert data ===
     <<
-    47::size(16),11002::size(16),1::size(16),1::size(32),status::size(16),4::size(16),"room",1::size(16),
+    47::size(16),11002::size(16),1::size(16),room_id::size(32),status::size(16),4::size(16),"room",1::size(16),
     2::size(16),
-    1::size(8),6::size(32),4::size(16),"sail",1::size(8),1::size(8),
+    1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),
     2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8)
     >>
 
@@ -59,7 +59,7 @@ defmodule RoomTest do
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data ===
     <<
-    32::size(16),11005::size(16),1::size(32),1::size(16),4::size(16),"room",1::size(16),
+    32::size(16),11005::size(16),room_id::size(32),1::size(16),4::size(16),"room",1::size(16),
     1::size(16),
     2::size(8),8::size(32),3::size(16),"xqy",1::size(8),1::size(8)
     >>
