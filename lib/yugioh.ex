@@ -6,8 +6,5 @@ defmodule Yugioh do
   def start(_type, _args) do
     :supervisor.start_link(Yugioh.Supervisor,[])
   end
-  def stop(_state) do
-    IO.puts "stop"
-  end
-  
+    
 end

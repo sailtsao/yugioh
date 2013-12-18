@@ -21,31 +21,17 @@ defmodule Yugioh.Proto.PT10 do
     {:ok,:delete_role,name}
   end
 
-  def read(10004,bin) do
+  def read(10004,_bin) do
     {:ok,:get_roles}
   end
 
   def read(10005,bin) do
     <<role_id::size(32)>> = bin
     {:ok,:enter_game,role_id}
-  end
+  end  
 
-  def read(10006,bin) do
-    {name,_} = Yugioh.Proto.read_string(bin)
-    {:ok,:create_room,name}
-  end
-
-  def read(10007,bin) do
-    {:ok,:get_rooms}
-  end
-
-  def read(10008,bin) do
-    <<room_id::size(32)>> = bin
-    {:ok,:enter_room,room_id}
-  end
-
-  def read(10009,bin) do
-    {:ok,:battle_ready}
+  def read(10009,_bin) do
+    {:ok,{:battle_ready}}
   end
 
   def write(10001,true) do
@@ -79,20 +65,6 @@ defmodule Yugioh.Proto.PT10 do
 
   def write(10005,data)do
     Yugioh.Proto.pack(10005,data)
-  end
-
-  def write(10006,[code,room_id])do
-    data = <<code::size(16),room_id::size(32)>>
-    Yugioh.Proto.pack(10006,data)
-  end
-
-  def write(10007,data)do
-    Yugioh.Proto.pack(10007,data)
-  end
-
-  def write(10008,code)do
-    data = <<code::size(16)>>
-    Yugioh.Proto.pack(10008,data)
   end
 
   def write(10009,code)do

@@ -13,7 +13,13 @@ defmodule Yugioh.Proto do
       _r->
         {[],<<>>}
     end
-  end  
+  end
+  
+  def pack_string(str) do
+    nl = byte_size(str)
+    <<nl::size(16),str::bitstring>>
+  end
+  
   def pack(cmd,data) do
     l = byte_size(data)+4
     <<l::size(16),cmd::size(16),data::binary>>

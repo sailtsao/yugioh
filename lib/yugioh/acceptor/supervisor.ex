@@ -7,12 +7,9 @@ defmodule Yugioh.Acceptor.Supervisor do
 
   def init([]) do
    children = [
-     # Define workers and child supervisors to be supervised
-     worker(Yugioh.Acceptor.Worker, [], restart: :temporary)
+     worker(Yugioh.Acceptor.Acceptor, [], restart: :temporary)
    ]
 
-   # See http://elixir-lang.org/docs/stable/Supervisor.Behaviour.html
-   # for other strategies and supported options
    supervise(children, strategy: :simple_one_for_one)
   end
 end
