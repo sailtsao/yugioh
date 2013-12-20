@@ -26,6 +26,11 @@ data === <<6::size(16),10000::size(16),1::size(16)>>
 :gen_tcp.send(socket2,<<8::size(16),10005::size(16),11::size(32)>>)
 {:ok,_data} = :gen_tcp.recv(socket2,0)
 
+
+:gen_tcp.send socket1,<<4::size(16),11001::size(16)>>
+{:ok,data} = :gen_tcp.recv(socket1,0)
+IO.inspect data
+
 # create room
 :gen_tcp.send(socket1,<<12::size(16),11000::size(16),4::size(16),"room",1::size(16)>>)
 {:ok,data} = :gen_tcp.recv(socket1,0)    

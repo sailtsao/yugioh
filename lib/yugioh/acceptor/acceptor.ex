@@ -29,6 +29,19 @@ defmodule Yugioh.Acceptor.Acceptor do
     end
   end
   
+  def do_game_error(socket,reason,client) do
+    case reason do
+      {:error,:timeout} ->
+        #if it's just a timeout,not an error,then continue fetch message from socket
+        parse_game_packet_loop(socket,client)
+      other ->
+        # it's an error, close the socket and die
+        Lager.debug "client [~p] died by reason [~p]",[client,other]
+        if is_pid(client.player_pid),do: Yugioh.Player.stop(client.player_pid)
+        :gen_tcp.close(socket)
+    end
+  end
+
   def parse_packet_loop(socket,client) do
     case :gen_tcp.recv(socket,4,2000) do
       {:ok,<<msgLength::size(16),msgID::size(16)>>} ->
@@ -98,13 +111,13 @@ defmodule Yugioh.Acceptor.Acceptor do
                       :ok->
                         parse_game_packet_loop(socket,client)
                       {:error,reason}->
-                        do_error(socket,reason,client)
+                        do_game_error(socket,reason,client)
                     end
                   other->
-                    do_error(socket,other,client)
+                    do_game_error(socket,other,client)
                 end
               other ->
-                do_error(socket,other,client)
+                do_game_error(socket,other,client)
             end        
           false->
             case decode_message(msgID,<<>>) do
@@ -113,14 +126,14 @@ defmodule Yugioh.Acceptor.Acceptor do
                   :ok->
                     parse_game_packet_loop(socket,client)
                   {:error,reason}->
-                    do_error(socket,reason,client)
+                    do_game_error(socket,reason,client)
                 end
               other->
-                do_error(socket,other,client)
+                do_game_error(socket,other,client)
             end
         end
       other ->
-        do_error(socket,other,client)
+        do_game_error(socket,other,client)
     end
   end
   
