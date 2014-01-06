@@ -45,10 +45,16 @@ defmodule Yugioh.Core do
     end
     
     :ets.new(:online,[{:keypos,PlayerOnline.__record__(:index,:id)+1},:named_table,:set,:public])
-
+    
+    :random.seed(:erlang.now)
+    
     Yugioh.Singleton.Room.start
 
     {:noreply, state}
+  end
+
+  def handle_cast(:stop,state) do
+    {:stop, :normal, state}
   end
 
   def handle_cast(_msg, state) do

@@ -17,8 +17,7 @@ defmodule CreateRoleTest do
     :gen_tcp.send(socket,<<12::size(16),10002::size(16),4::size(16),"abcd",2::size(8),1::size(8)>>)
     {:ok,data} = :gen_tcp.recv(socket,0)
     # IO.inspect data
-    assert data === <<6::size(16),10002::size(16),1::size(16)>>
-    
+    assert data === <<6::size(16),10002::size(16),1::size(16)>>    
   end  
 
 end

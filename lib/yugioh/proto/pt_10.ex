@@ -28,10 +28,6 @@ defmodule Yugioh.Proto.PT10 do
   def read(10005,bin) do
     <<role_id::size(32)>> = bin
     {:ok,:enter_game,role_id}
-  end  
-
-  def read(10009,_bin) do
-    {:ok,{:battle_ready}}
   end
 
   def write(10001,true) do
@@ -66,10 +62,4 @@ defmodule Yugioh.Proto.PT10 do
   def write(10005,data)do
     Yugioh.Proto.pack(10005,data)
   end
-
-  def write(10009,code)do
-    data = <<code::size(16)>>
-    Yugioh.Proto.pack(10009,data)
-  end
-
 end

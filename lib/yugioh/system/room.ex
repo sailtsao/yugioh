@@ -8,15 +8,17 @@ defmodule Yugioh.System.Room do
     case player_state.in_room_id do
       0 ->
         {:ok,room_info} = Room.create_room(name,type)
-        spawn(fn-> :gen_tcp.send(player_state.socket,PT11.write(11000,[1,room_info])) end )
-        player_state.update(in_room_id: room_info.id)
+        spawn(fn-> 
+          :gen_tcp.send(player_state.socket,PT11.write(11000,[1,room_info])) 
+        end )
+        {:ok,player_state.update(in_room_id: room_info.id)}
       other ->
-        spawn(fn-> :gen_tcp.send(player_state.socket,PT11.write(11000,[0,RoomInfo.new])) end)
-        player_state
+        # spawn(fn-> :gen_tcp.send(player_state.socket,PT11.write(11000,[0,RoomInfo.new])) end)
+        {:error,:invalid_room_id}
     end
   end
   
-  def handle(11001,{:get_rooms},player_state) do
+  def handle(11001,:get_rooms,player_state) do
     {:ok,rooms} = Room.get_rooms
     rooms_data = Enum.map(rooms,fn(room_info)-> 
       <<
@@ -27,7 +29,7 @@ defmodule Yugioh.System.Room do
     end)
     data = <<length(rooms)::size(16),iolist_to_binary(rooms_data)::binary>>
     :gen_tcp.send(player_state.socket,PT11.write(11001,data))
-    player_state
+    {:ok,player_state}
   end
 
   def handle(11002,{:enter_room,room_id},player_state) do
@@ -35,22 +37,54 @@ defmodule Yugioh.System.Room do
       0 ->
         {:ok,room_info} = Room.enter_room(room_id)
         spawn(fn -> :gen_tcp.send(player_state.socket,PT11.write(11002,[1,room_info])) end)
-        player_state.update(in_room_id: room_id)
+        {:ok,player_state.update(in_room_id: room_id)}
       other ->
-        spawn(fn -> :gen_tcp.send(player_state.socket,PT11.write(11002,[0,RoomInfo.new])) end)
-        player_state
+        # spawn(fn -> :gen_tcp.send(player_state.socket,PT11.write(11002,[0,RoomInfo.new])) end)
+        {:error,:invalid_room_id}
     end
   end
 
-  def handle(11004,{:leave_room},player_state) do
+  def handle(11004,:leave_room,player_state) do
     case player_state.in_room_id do
       0 ->
-        :gen_tcp.send(player_state.socket,PT11.write(11004,0))
-        player_state
+        {:error,:invalid_room_id}
       other ->        
-        :ok = Room.leave_room(player_state.in_room_id)
-        :gen_tcp.send(player_state.socket,PT11.write(11004,1))
-        player_state.update(in_room_id: 0)
+        case Room.leave_room(player_state.in_room_id) do
+          :ok->
+            :gen_tcp.send(player_state.socket,PT11.write(11004,1))
+            {:ok,player_state.update(in_room_id: 0)}
+          reason->
+            {:error,reason}
+        end
     end
   end
+
+  def handle(11006,:battle_ready,player_state) do
+    case player_state.in_room_id do
+      0 ->
+        {:error,:invalid_room_id}
+      other ->        
+        case Room.battle_ready(player_state.in_room_id) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+    end
+  end
+
+  def handle(11007,:battle_start,player_state) do
+    case player_state.in_room_id do
+      0 ->
+        {:error,:invalid_room_id}
+      other ->
+        case Room.battle_start(player_state.in_room_id) do
+          :ok -> 
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+    end
+  end
+
 end

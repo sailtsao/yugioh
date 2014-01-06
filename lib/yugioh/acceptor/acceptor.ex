@@ -16,31 +16,12 @@ defmodule Yugioh.Acceptor.Acceptor do
     module.read(cmd,bin)
   end
   
-  def do_error(socket,reason,client) do
-    case reason do
-      {:error,:timeout} ->
-        #if it's just a timeout,not an error,then continue fetch message from socket
-        parse_packet_loop(socket,client)
-      other ->
-        # it's an error, close the socket and die
-        Lager.debug "client [~p] died by reason [~p]",[client,other]
-        if is_pid(client.player_pid),do: Yugioh.Player.stop(client.player_pid)
-        :gen_tcp.close(socket)
-    end
-  end
-  
-  def do_game_error(socket,reason,client) do
-    case reason do
-      {:error,:timeout} ->
-        #if it's just a timeout,not an error,then continue fetch message from socket
-        parse_game_packet_loop(socket,client)
-      other ->
-        # it's an error, close the socket and die
-        Lager.debug "client [~p] died by reason [~p]",[client,other]
-        if is_pid(client.player_pid),do: Yugioh.Player.stop(client.player_pid)
-        :gen_tcp.close(socket)
-    end
-  end
+  def do_error(socket,reason,client) do        
+    Lager.debug "client [~p] died by reason [~p]",[client,reason]
+    # stop player
+    if is_pid(client.player_pid),do: Yugioh.Player.stop(client.player_pid)
+    :gen_tcp.close(socket)
+  end  
 
   def parse_packet_loop(socket,client) do
     case :gen_tcp.recv(socket,4,2000) do
@@ -57,6 +38,8 @@ defmodule Yugioh.Acceptor.Acceptor do
           false->
             route_message(msgID,<<>>,socket,client)
         end
+      {:error,:timeout} ->
+        parse_packet_loop(socket,client)
       other ->
         do_error(socket,other,client)
     end
@@ -64,8 +47,8 @@ defmodule Yugioh.Acceptor.Acceptor do
   
   defp route_message(msgID,binaryData,socket,client) do
     case decode_message(msgID,binaryData) do
-      {:ok,:login,loginData} ->
-        case Login.login(loginData,socket) do
+      {:ok,:login,[account,password]} ->
+        case Login.login([account,password],socket) do
           {:ok,account_id}->
             client = client.update(account_id: account_id,logined: true)
             parse_packet_loop(socket,client)
@@ -111,13 +94,13 @@ defmodule Yugioh.Acceptor.Acceptor do
                       :ok->
                         parse_game_packet_loop(socket,client)
                       {:error,reason}->
-                        do_game_error(socket,reason,client)
+                        do_error(socket,reason,client)
                     end
                   other->
-                    do_game_error(socket,other,client)
+                    do_error(socket,other,client)
                 end
               other ->
-                do_game_error(socket,other,client)
+                do_error(socket,other,client)
             end        
           false->
             case decode_message(msgID,<<>>) do
@@ -126,14 +109,16 @@ defmodule Yugioh.Acceptor.Acceptor do
                   :ok->
                     parse_game_packet_loop(socket,client)
                   {:error,reason}->
-                    do_game_error(socket,reason,client)
+                    do_error(socket,reason,client)
                 end
               other->
-                do_game_error(socket,other,client)
+                do_error(socket,other,client)
             end
         end
+      {:error,:timeout} ->
+        parse_game_packet_loop(socket,client)  
       other ->
-        do_game_error(socket,other,client)
+        do_error(socket,other,client)
     end
   end
   

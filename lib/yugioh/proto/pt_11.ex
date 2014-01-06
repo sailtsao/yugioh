@@ -7,7 +7,7 @@ defmodule Yugioh.Proto.PT11 do
   end
 
   def read(11001,_bin) do
-    {:ok,{:get_rooms}}
+    {:ok,:get_rooms}
   end
 
   def read(11002,bin) do
@@ -16,7 +16,15 @@ defmodule Yugioh.Proto.PT11 do
   end
 
   def read(11004,bin) do
-    {:ok,{:leave_room}}
+    {:ok,:leave_room}
+  end
+
+  def read(11006,bin) do
+    {:ok,:battle_ready}
+  end
+
+  def read(11007,bin) do
+    {:ok,:battle_start}
   end
 
   def write(11000,[code,room_info])do
@@ -46,5 +54,19 @@ defmodule Yugioh.Proto.PT11 do
   def write(11005,room_info)do
     data = <<RecordHelper.encode_room_info(room_info)::binary>>
     Yugioh.Proto.pack(11005,data)
+  end
+
+  def write(11006,[seat,ready_state]) do
+    data = <<seat::size(8),ready_state::size(8)>>
+    Yugioh.Proto.pack(11006,data)
+  end
+  
+  def write(11007,[code,cur_player_id,player_state1,battle_info1,player_state2,battle_info2]) do
+    data = <<code::size(16),cur_player_id::size(32),
+    RecordHelper.encode_player_brief_info(player_state1)::binary,
+    RecordHelper.encode_battle_info(battle_info1)::binary,
+    RecordHelper.encode_player_brief_info(player_state2)::binary,
+    RecordHelper.encode_battle_info(battle_info2)::binary>>
+    Yugioh.Proto.pack(11007,data)
   end
 end

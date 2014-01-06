@@ -95,7 +95,7 @@ defmodule Yugioh.System.Login do
                           hp: role.hp,win: role.win,lose: role.lose,cards: cards_list)
 
     # create player process
-    Yugioh.Player.start_link(player_state,socket)
+    Yugioh.Player.start(player_state,socket)
   end
 
 # help function

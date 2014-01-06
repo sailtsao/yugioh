@@ -1,1 +1,1 @@
-iex -S mix
+MIX_ENV=dev iex -S mix
