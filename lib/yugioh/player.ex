@@ -25,7 +25,6 @@ defmodule Yugioh.Player do
       {:ok,new_player_state}->
         {:reply,:ok,new_player_state}
       {:error,reason}->
-        Lager.debug "error [~p]",[reason]
         {:stop,reason,{:error,reason},player_state}
     end
   end

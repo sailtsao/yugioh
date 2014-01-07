@@ -1,0 +1,1 @@
+MIX_ENV=dev mix test test/room_test.exs

@@ -53,28 +53,42 @@ defmodule RoomTest do
     # new member notify
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert data == <<15::size(16),11003::size(16),2::size(8),8::size(32),3::size(16),"xqy",1::size(8)>>
-    
+
+    # battle ready    
     :gen_tcp.send socket2,<<4::size(16),11006::size(16)>>
 
-    # battle ready
+    # battle ready notify
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<6::size(16),11006::size(16),2::size(8),1::size(8)>>
 
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert data == <<6::size(16),11006::size(16),2::size(8),1::size(8)>>
 
+    # # battle ready    
+    # :gen_tcp.send socket2,<<4::size(16),11006::size(16)>>
+
+    # # battle ready notify
+    # {:ok,data}=:gen_tcp.recv(socket2,0)
+    # assert data == <<6::size(16),11006::size(16),2::size(8),0::size(8)>>
+
+    # {:ok,data}=:gen_tcp.recv(socket1,0)
+    # assert data == <<6::size(16),11006::size(16),2::size(8),0::size(8)>>
+
     # battle start
     :gen_tcp.send socket1,<<4::size(16),11007::size(16)>>
 
+    # battle start notify
     {:ok,data}=:gen_tcp.recv(socket2,0)
     # IO.inspect data,limit: 1000
     assert <<63::size(16),11007::size(16),1::size(16),6::size(32),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),3::size(16),_::size(96),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),2::size(16),_::size(64)>> = data
     
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert <<63::size(16),11007::size(16),1::size(16),6::size(32),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),3::size(16),_::size(96),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),2::size(16),_::size(64)>> = data
-
-    # room owner leave room
-    :gen_tcp.close(socket1)
+    
+    #leave room
+    :gen_tcp.send socket1,<<4::size(16),11004::size(16)>>
+    {:ok,data} = :gen_tcp.recv(socket1,0)
+    assert data == <<6::size(16),11004::size(16),1::size(16)>>
 
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert <<
@@ -84,13 +98,17 @@ defmodule RoomTest do
     >> = data 
 
     # leave room
-    :gen_tcp.send socket2,<<8::size(16),11004::size(16),room_id::size(32)>>
+    :gen_tcp.send socket2,<<4::size(16),11004::size(16)>>
     {:ok,data} = :gen_tcp.recv(socket2,0)    
     assert data == <<6::size(16),11004::size(16),1::size(16)>>
 
+    :gen_tcp.close(socket1)
     :gen_tcp.close(socket2)
+
     :timer.sleep 1000
+
     ended_process_count = length(Process.list)     
+
     assert ended_process_count == started_process_count
   end
 

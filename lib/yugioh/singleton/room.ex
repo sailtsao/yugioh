@@ -93,6 +93,7 @@ defmodule Yugioh.Singleton.Room do
             members = Dict.put(room_info.members,seat,{player_pid,new_ready_state})
             new_room_info = room_info.update(members: members)
             :ets.insert :room,new_room_info
+            Lager.debug "battle ready new_room_info:~p",[new_room_info]
             Enum.each Dict.to_list(room_info.members),fn({_,{pid,_}}) ->
               pid <- {:refresh_ready_state,seat,new_ready_state}
             end
@@ -108,22 +109,27 @@ defmodule Yugioh.Singleton.Room do
     {pid,_} = from
     case :ets.lookup(:room,room_id) do
       [room_info]->
-        if pid === room_info.owner_pid do
-          unready_list = Enum.filter Dict.to_list(room_info.members),fn({_,{player_pid,ready_state}}) ->
-            ready_state == :unready
-          end
+        cond do
+          Dict.size(room_info.members) != 2 ->
+            {:reply,:not_enough_members,state}
 
-          case Enum.empty?(unready_list) do 
-            true->
-              {player1_pid,_} = Dict.get room_info.members,1
-              {player2_pid,_} = Dict.get room_info.members,2
-              {:ok,battle_pid} = Yugioh.Battle.start({player1_pid,player2_pid})
-              {:reply,:ok,state}
-            false->
-              {:reply,:unready,state}
-          end
-        else
-          {:reply,:not_owner,state}
+          pid == room_info.owner_pid ->
+            unready_list = Enum.filter Dict.to_list(room_info.members),fn({_,{player_pid,ready_state}}) ->
+              ready_state == :unready
+            end
+
+            case Enum.empty?(unready_list) do 
+              true->
+                {player1_pid,_} = Dict.get room_info.members,1
+                {player2_pid,_} = Dict.get room_info.members,2
+                {:ok,battle_pid} = Yugioh.Battle.start({player1_pid,player2_pid})
+                {:reply,:ok,state}
+              false->
+                {:reply,:unready,state}
+            end
+
+          true->
+            {:reply,:not_owner,state}
         end
       []->
         {:reply,:invalid_room_id,state}
@@ -149,7 +155,8 @@ defmodule Yugioh.Singleton.Room do
     {:noreply, state}
   end
   
-  def terminate(_reason,_state) do
+  def terminate(reason,state) do
+    Lager.debug "room process [~p] died with reason [~p] state",[self,reason,state]
     :ok
   end
   
