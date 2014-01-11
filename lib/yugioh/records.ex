@@ -10,7 +10,9 @@ defrecord PlayerOnline,id: 0,player_pid: nil
 
 defrecord RoomInfo,id: 0,status: nil,name: "",type: 0,owner_pid: nil,members: nil
 
-defrecord BattleInfo,player_pid: nil,maxhp: 0,curhp: 0,handcards: [],remaincards: [],socket: nil
+defrecord BattleInfo,player_pid: nil,maxhp: 0,curhp: 0,summon_cards: [],other_cards: [],graveyard_cards: [],handcards: [],remaincards: [],socket: nil
+
+defrecord BattleData,turn_count: 1,map: [],operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,player1_battle_info: nil,player2_battle_info: nil
 
 defmodule RecordHelper do
   require Lager

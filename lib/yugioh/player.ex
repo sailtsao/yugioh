@@ -17,9 +17,9 @@ defmodule Yugioh.Player do
     [h1,h2,_,_,_] = integer_to_list(cmd)
     result = case [h1,h2] do
       '11'->
-        Yugioh.System.Room.handle(cmd,data,player_state)
+        Yugioh.System.Room.handle(data,player_state)
       '12'->
-        Yugioh.System.Battle.handle(cmd,data,player_state)
+        Yugioh.System.Battle.handle(data,player_state)
     end
     case result do
       {:ok,new_player_state}->

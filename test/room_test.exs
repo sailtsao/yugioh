@@ -80,11 +80,101 @@ defmodule RoomTest do
     # battle start notify
     {:ok,data}=:gen_tcp.recv(socket2,0)
     # IO.inspect data,limit: 1000
-    assert <<63::size(16),11007::size(16),1::size(16),6::size(32),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),3::size(16),_::size(96),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),2::size(16),_::size(64)>> = data
+    assert <<_::size(16),11007::size(16),1::size(16),6::size(32),3::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),6::size(16),_::size(192),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_::size(160)>> = data
     
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert <<63::size(16),11007::size(16),1::size(16),6::size(32),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),3::size(16),_::size(96),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),2::size(16),_::size(64)>> = data
+    assert <<_::size(16),11007::size(16),1::size(16),6::size(32),3::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),6::size(16),_::size(192),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_::size(160)>> = data
+
+
+    # default is mp1
+    # summon
+    :gen_tcp.send socket1,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+
+    # change phase to bp
+    :gen_tcp.send socket1,<<5::size(16),12000::size(16),4::size(8)>>
     
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<5::size(16),12000::size(16),4::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<5::size(16),12000::size(16),4::size(8)>>
+
+    # mp2
+    :gen_tcp.send socket1,<<5::size(16),12000::size(16),5::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<5::size(16),12000::size(16),5::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<5::size(16),12000::size(16),5::size(8)>>
+
+    # ep
+    :gen_tcp.send socket1,<<5::size(16),12000::size(16),6::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket1,5)
+    assert data == <<5::size(16),12000::size(16),6::size(8)>>
+
+    {:ok,data}=:gen_tcp.recv(socket2,5)
+    assert data == <<5::size(16),12000::size(16),6::size(8)>>
+
+    # player1 receive new turn draw
+    {:ok,data}=:gen_tcp.recv(socket1,14)    
+    assert <<14::size(16),12002::size(16),2::size(8),1::size(8),8::size(32),draw_card_id::size(32)>> = data
+
+    {:ok,data}=:gen_tcp.recv(socket1,5)
+    assert data == <<5::size(16),12000::size(16),2::size(8)>>
+
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<5::size(16),12000::size(16),3::size(8)>>
+
+
+    # player2 receive new turn draw
+    {:ok,data}=:gen_tcp.recv(socket2,14)
+    assert <<14::size(16),12002::size(16),2::size(8),1::size(8),8::size(32),draw_card_id::size(32)>> = data
+
+    {:ok,data}=:gen_tcp.recv(socket2,5)
+    assert data == <<5::size(16),12000::size(16),2::size(8)>>
+
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<5::size(16),12000::size(16),3::size(8)>>    
+
+
+    # summon test
+    :gen_tcp.send socket2,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+
+    # change phase to bp
+    :gen_tcp.send socket2,<<5::size(16),12000::size(16),4::size(8)>>
+    
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert data == <<5::size(16),12000::size(16),4::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert data == <<5::size(16),12000::size(16),4::size(8)>>
+
+    # attack
+    :gen_tcp.send socket2,<<6::size(16),12003::size(16),0::size(8),0::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket1,12)
+    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),damage_player_id::size(32),hp_damage::size(16)>> = data    
+    IO.puts damage_player_id
+    IO.puts hp_damage
+    if total_size>12 do
+      IO.inspect :gen_tcp.recv(socket1,total_size-12)
+    end
+    
+    {:ok,data}=:gen_tcp.recv(socket2,12)
+    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),damage_player_id::size(32),hp_damage::size(16)>> = data
+    if total_size>12 do
+      IO.inspect :gen_tcp.recv(socket2,total_size-12)
+    end
+
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+      assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+      assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
+
     #leave room
     :gen_tcp.send socket1,<<4::size(16),11004::size(16)>>
     {:ok,data} = :gen_tcp.recv(socket1,0)

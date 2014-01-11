@@ -1,10 +1,9 @@
 defmodule Yugioh.System.Room do
   require Lager
   alias Yugioh.Singleton.Room
-  alias Yugioh.Library.Sender
   alias Yugioh.Proto.PT11
 
-  def handle(11000,{:create_room,name,type},player_state) do
+  def handle({:create_room,name,type},player_state) do
     case player_state.in_room_id do
       0 ->
         {:ok,room_info} = Room.create_room(name,type)
@@ -18,7 +17,7 @@ defmodule Yugioh.System.Room do
     end
   end
   
-  def handle(11001,:get_rooms,player_state) do
+  def handle(:get_rooms,player_state) do
     {:ok,rooms} = Room.get_rooms
     rooms_data = Enum.map(rooms,fn(room_info)-> 
       <<
@@ -32,7 +31,7 @@ defmodule Yugioh.System.Room do
     {:ok,player_state}
   end
 
-  def handle(11002,{:enter_room,room_id},player_state) do
+  def handle({:enter_room,room_id},player_state) do
     case player_state.in_room_id do
       0 ->
         {:ok,room_info} = Room.enter_room(room_id)
@@ -44,7 +43,7 @@ defmodule Yugioh.System.Room do
     end
   end
 
-  def handle(11004,:leave_room,player_state) do
+  def handle(:leave_room,player_state) do
     case player_state.in_room_id do
       0 ->
         {:error,:invalid_room_id}
@@ -59,7 +58,7 @@ defmodule Yugioh.System.Room do
     end
   end
 
-  def handle(11006,:battle_ready,player_state) do
+  def handle(:battle_ready,player_state) do
     case player_state.in_room_id do
       0 ->
         {:error,:invalid_room_id}
@@ -73,7 +72,7 @@ defmodule Yugioh.System.Room do
     end
   end
 
-  def handle(11007,:battle_start,player_state) do
+  def handle(:battle_start,player_state) do
     case player_state.in_room_id do
       0 ->
         {:error,:invalid_room_id}

@@ -61,8 +61,20 @@ defmodule Yugioh.Proto.PT11 do
     Yugioh.Proto.pack(11006,data)
   end
   
-  def write(11007,[code,cur_player_id,player_state1,battle_info1,player_state2,battle_info2]) do
-    data = <<code::size(16),cur_player_id::size(32),
+  def write(:battle_start,[code,cur_player_id,phase,player_state1,battle_info1,player_state2,battle_info2]) do
+    phase_number = case phase do
+      :dp->
+        1
+      :sp->
+        2
+      :mp1->
+        3
+      :bp->
+        4
+      :mp2->
+        5
+    end
+    data = <<code::size(16),cur_player_id::size(32),phase_number::size(8),
     RecordHelper.encode_player_brief_info(player_state1)::binary,
     RecordHelper.encode_battle_info(battle_info1)::binary,
     RecordHelper.encode_player_brief_info(player_state2)::binary,
