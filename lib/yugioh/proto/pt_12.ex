@@ -87,9 +87,9 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12002,data)
   end  
 
-  def write(:summon,[handcards_index,summon_type]) do
+  def write(:summon,[player_id,handcards_index,summon_type]) do
     summon_type = encode_summon_type summon_type
-    Yugioh.Proto.pack(12001,<<handcards_index::size(8),summon_type::size(8)>>)
+    Yugioh.Proto.pack(12001,<<player_id::size(32),handcards_index::size(8),summon_type::size(8)>>)
   end  
   
 
@@ -98,8 +98,8 @@ defmodule Yugioh.Proto.PT12 do
       <<player_id::size(32),destroy_card_index::size(8)>>
     end
 
-    destory_cards_binary = iolist_to_binary(destroy_cards_list)
-    data = <<source_card_index::size(8),target_card_index::size(8),damage_player_id::size(32),hp_damage::size(16),destory_cards_binary::binary>>
+    destroy_cards_binary = iolist_to_binary(destroy_cards_list)    
+    data = <<source_card_index::size(8),target_card_index::size(8),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary>>
     Yugioh.Proto.pack(12003,data)
   end  
 

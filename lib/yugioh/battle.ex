@@ -41,7 +41,7 @@ defmodule Yugioh.Battle do
 
         new_battle_data = battle_data.update([{player_atom,new_player_battle_info}])
         
-        message_data = Yugioh.Proto.PT12.write(:summon,[handcards_index,summon_type])
+        message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_type])
         battle_data.player1_battle_info.player_pid <- {:send,message_data}
         battle_data.player2_battle_info.player_pid <- {:send,message_data}
 

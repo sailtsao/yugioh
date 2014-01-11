@@ -90,9 +90,9 @@ defmodule RoomTest do
     # summon
     :gen_tcp.send socket1,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    assert data == <<10::size(16), 12001::size(16),6::size(32),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    assert data == <<10::size(16), 12001::size(16),6::size(32),0::size(8),1::size(8)>> 
 
     # change phase to bp
     :gen_tcp.send socket1,<<5::size(16),12000::size(16),4::size(8)>>
@@ -142,9 +142,9 @@ defmodule RoomTest do
     # summon test
     :gen_tcp.send socket2,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    assert data == <<10::size(16), 12001::size(16),8::size(32),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert data == <<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
+    assert data == <<10::size(16), 12001::size(16),8::size(32),0::size(8),1::size(8)>> 
 
     # change phase to bp
     :gen_tcp.send socket2,<<5::size(16),12000::size(16),4::size(8)>>
