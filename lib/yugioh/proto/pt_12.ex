@@ -93,13 +93,13 @@ defmodule Yugioh.Proto.PT12 do
   end  
   
 
-  def write(:attack,[source_card_index,target_card_index,damage_player_id,hp_damage,destroy_cards]) do
+  def write(:attack,[source_card_index,target_card_index,target_card_id,damage_player_id,hp_damage,destroy_cards]) do
     destroy_cards_list = Enum.map destroy_cards,fn({player_id,destroy_card_index}) ->          
       <<player_id::size(32),destroy_card_index::size(8)>>
     end
 
     destroy_cards_binary = iolist_to_binary(destroy_cards_list)    
-    data = <<source_card_index::size(8),target_card_index::size(8),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary>>
+    data = <<source_card_index::size(8),target_card_index::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary>>
     Yugioh.Proto.pack(12003,data)
   end  
 

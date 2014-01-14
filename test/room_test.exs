@@ -175,18 +175,18 @@ defmodule RoomTest do
 
     # attack
     :gen_tcp.send socket2,<<6::size(16),12003::size(16),0::size(8),0::size(8)>>
-    {:ok,data}=:gen_tcp.recv(socket1,12)
-    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),damage_player_id::size(32),hp_damage::size(16)>> = data    
+    {:ok,data}=:gen_tcp.recv(socket1,16)
+    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16)>> = data    
     IO.puts damage_player_id
     IO.puts hp_damage
-    if total_size>12 do
-      IO.inspect :gen_tcp.recv(socket1,total_size-12)
+    if total_size>16 do
+      IO.inspect :gen_tcp.recv(socket1,total_size-16)
     end
     
-    {:ok,data}=:gen_tcp.recv(socket2,12)
-    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),damage_player_id::size(32),hp_damage::size(16)>> = data
-    if total_size>12 do
-      IO.inspect :gen_tcp.recv(socket2,total_size-12)
+    {:ok,data}=:gen_tcp.recv(socket2,16)
+    assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16)>> = data
+    if total_size>16 do
+      IO.inspect :gen_tcp.recv(socket2,total_size-16)
     end
 
     {:ok,data}=:gen_tcp.recv(socket1,0)

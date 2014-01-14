@@ -146,7 +146,7 @@ defmodule Yugioh.Battle do
         end
 
         if result==:ok do
-          message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,damage_player_id,hp_damage,destroy_cards])
+          message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,defender_id,damage_player_id,hp_damage,destroy_cards])
           battle_data.player1_battle_info.player_pid <- {:send,message}
           battle_data.player2_battle_info.player_pid <- {:send,message}
         end
