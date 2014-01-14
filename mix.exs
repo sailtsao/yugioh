@@ -33,10 +33,10 @@ defmodule Yugioh.Mixfile do
   end
 
   defp options(env) when env in [:dev, :test] do
-    [exlager_level: :debug, exlager_truncation_size: 8096]
+    [exlager_level: :debug]
   end
 
   defp options(env) when env in [:prod] do
-    []
+    [exlager_level: :warning]
   end
 end

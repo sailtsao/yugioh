@@ -38,8 +38,8 @@ defmodule Yugioh.System.Login do
           false->
             0
         end
-
-        r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: term_to_binary([1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4])],hp: 3000,win: 0,lose: 0)
+        cards = Enum.take Stream.cycle([1,2,3,4,5]),40
+        r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: term_to_binary(cards)],hp: 3000,win: 0,lose: 0)
         Yugioh.Repo.create(r)
         :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10002,1))
         :ok

@@ -8,7 +8,7 @@ defmodule Yugioh.System.Battle do
           :ok->
             {:ok,player_state}
           reason->
-            {:error,reason}  
+            {:error,reason}
         end
       false ->
         {:error,:invalid_battle_pid}
