@@ -35,15 +35,35 @@ defmodule Yugioh.Battle do
 
         new_handcards = List.delete_at(player_battle_info.handcards,handcards_index)
 
-        new_summon_cards = player_battle_info.summon_cards ++ [{summon_card_id,summon_type}]
+        avaible_pos = :lists.subtract([1,2,3,4,5],Dict.keys(player_battle_info.summon_cards))
+        [pos|_] = avaible_pos
+        new_summon_cards = Dict.put(player_battle_info.summon_cards,pos,{summon_card_id,summon_type})
 
         new_player_battle_info = player_battle_info.update(handcards: new_handcards,summon_cards: new_summon_cards)
 
         new_battle_data = battle_data.update([{player_atom,new_player_battle_info}])
+        if summon_type == :defense_down do
+          case player_atom do
+            :player1_battle_info->
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+              battle_data.player1_battle_info.player_pid <- {:send,message_data}
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,summon_type])
+              battle_data.player2_battle_info.player_pid <- {:send,message_data}
+            :player2_battle_info->
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,summon_type])
+              battle_data.player1_battle_info.player_pid <- {:send,message_data}
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+              battle_data.player2_battle_info.player_pid <- {:send,message_data}
+          end
+          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+          battle_data.player1_battle_info.player_pid <- {:send,message_data}
+          battle_data.player2_battle_info.player_pid <- {:send,message_data}
+        else
+          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+          battle_data.player1_battle_info.player_pid <- {:send,message_data}
+          battle_data.player2_battle_info.player_pid <- {:send,message_data}
+        end
         
-        message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
-        battle_data.player1_battle_info.player_pid <- {:send,message_data}
-        battle_data.player2_battle_info.player_pid <- {:send,message_data}
 
         Lager.debug "battle after summon state [~p]",[new_battle_data]
         {:reply, :ok, new_battle_data}
@@ -65,8 +85,8 @@ defmodule Yugioh.Battle do
             {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
         end
         # TODO: pelase consider the situation that there is no defender at all, how to directly attack player.
-        {attacker_id,attacker_summon_type} = Enum.at source_player_battle_info.summon_cards,source_card_index
-        {defender_id,defender_summon_type} = Enum.at target_player_battle_info.summon_cards,target_card_index
+        {attacker_id,attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
+        {defender_id,defender_summon_type} = Dict.get target_player_battle_info.summon_cards,target_card_index
         attacker_data = Cards.get(attacker_id)
         defender_data = Cards.get(defender_id)
         damage_player_id = 0
@@ -80,7 +100,7 @@ defmodule Yugioh.Battle do
                 # defender dead and update the defense player's hp
               attacker_data.attack>defender_data.attack ->
                 destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
-                new_target_summon_cards = List.delete_at target_player_battle_info.summon_cards,target_card_index
+                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
                 damage_player_id = target_player_id
                 hp_damage = attacker_data.attack - defender_data.attack
                 if hp_damage>target_player_battle_info.curhp do
@@ -100,8 +120,8 @@ defmodule Yugioh.Battle do
               # destroy all
               attacker_data.attack == defender_data.attack ->
                 destroy_cards = destroy_cards ++ [{source_player_id,source_card_index},{target_player_id,target_card_index}]
-                new_source_summon_cards = List.delete_at source_player_battle_info.summon_cards,source_card_index
-                new_target_summon_cards = List.delete_at target_player_battle_info.summon_cards,target_card_index
+                new_source_summon_cards = Dict.delete source_player_battle_info.summon_cards,source_card_index
+                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
                 new_source_player_battle_info = source_player_battle_info.update(summon_cards: new_source_summon_cards)
                 new_target_player_battle_info = target_player_battle_info.update(summon_cards: new_target_summon_cards)
                 new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info},{source_player_atom,new_source_player_battle_info}])
@@ -112,7 +132,7 @@ defmodule Yugioh.Battle do
                 # defender get damage
               attacker_data.attack>defender_data.defend ->
                 destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
-                new_target_summon_cards = List.delete_at target_player_battle_info.summon_cards,target_card_index
+                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
                 damage_player_id = target_player_id
                 hp_damage = attacker_data.attack - defender_data.defend
                 if hp_damage>target_player_battle_info.curhp do
