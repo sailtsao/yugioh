@@ -18,18 +18,21 @@ defmodule Yugioh.Battle do
   end
 
   def handle_call({:summon,player_id,handcards_index,summon_type},from,battle_data) do    
+    Lager.debug "battle before summon battle data [~p]",[battle_data]
+    player1_id = battle_data.player1_id
+    player2_id = battle_data.player2_id        
+    {player_atom,player_battle_info} = case player_id do
+      ^player1_id->
+        {:player1_battle_info,battle_data.player1_battle_info}
+      ^player2_id->
+        {:player2_battle_info,battle_data.player2_battle_info}
+    end
     cond do
-      battle_data.phase == :mp1 or battle_data.phase ==:mp2 ->
-        Lager.debug "battle before summon battle data [~p]",[battle_data]
-        player1_id = battle_data.player1_id
-        player2_id = battle_data.player2_id
-
-        {player_atom,player_battle_info} = case player_id do
-          ^player1_id->
-            {:player1_battle_info,battle_data.player1_battle_info}
-          ^player2_id->
-            {:player2_battle_info,battle_data.player2_battle_info}
-        end
+      battle_data.summoned == true ->
+        {:reply, :cant_summon_twice_in_one_turn, battle_data}
+      Dict.size(player_battle_info.summon_cards)==5->
+        {:reply, :cant_summon_more, battle_data}
+      battle_data.phase == :mp1 or battle_data.phase ==:mp2 ->        
 
         summon_card_id = Enum.at(player_battle_info.handcards,handcards_index)
 
@@ -41,7 +44,7 @@ defmodule Yugioh.Battle do
 
         new_player_battle_info = player_battle_info.update(handcards: new_handcards,summon_cards: new_summon_cards)
 
-        new_battle_data = battle_data.update([{player_atom,new_player_battle_info}])
+        new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:summoned,true}])
         if summon_type == :defense_down do
           case player_atom do
             :player1_battle_info->
@@ -274,7 +277,7 @@ defmodule Yugioh.Battle do
     [draw_card_id|new_remaincards] = player_battle_info.remaincards
     new_handcards = player_battle_info.handcards ++ [draw_card_id]
     new_player_battle_info = player_battle_info.update(remaincards: new_remaincards,handcards: new_handcards)
-    new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:turn_count,battle_data.turn_count+1},{:phase,:dp},{:operator_id,new_operator_id}])
+    new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:turn_count,battle_data.turn_count+1},{:phase,:dp},{:summoned,false},{:operator_id,new_operator_id}])
     
     case new_operator_id do
       ^player1_id->
