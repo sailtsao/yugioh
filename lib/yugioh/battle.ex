@@ -35,7 +35,7 @@ defmodule Yugioh.Battle do
 
         new_handcards = List.delete_at(player_battle_info.handcards,handcards_index)
 
-        avaible_pos = :lists.subtract([1,2,3,4,5],Dict.keys(player_battle_info.summon_cards))
+        avaible_pos = :lists.subtract([0,1,2,3,4],Dict.keys(player_battle_info.summon_cards))
         [pos|_] = avaible_pos
         new_summon_cards = Dict.put(player_battle_info.summon_cards,pos,{summon_card_id,summon_type})
 
@@ -45,25 +45,21 @@ defmodule Yugioh.Battle do
         if summon_type == :defense_down do
           case player_atom do
             :player1_battle_info->
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
               battle_data.player1_battle_info.player_pid <- {:send,message_data}
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
               battle_data.player2_battle_info.player_pid <- {:send,message_data}
             :player2_battle_info->
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
               battle_data.player1_battle_info.player_pid <- {:send,message_data}
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
               battle_data.player2_battle_info.player_pid <- {:send,message_data}
           end
-          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
-          battle_data.player1_battle_info.player_pid <- {:send,message_data}
-          battle_data.player2_battle_info.player_pid <- {:send,message_data}
         else
-          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,summon_type])
+          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
           battle_data.player1_battle_info.player_pid <- {:send,message_data}
-          battle_data.player2_battle_info.player_pid <- {:send,message_data}
-        end
-        
+          battle_data.player2_battle_info.player_pid <- {:send,message_data}          
+        end        
 
         Lager.debug "battle after summon state [~p]",[new_battle_data]
         {:reply, :ok, new_battle_data}

@@ -87,9 +87,9 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12002,data)
   end  
 
-  def write(:summon,[player_id,handcards_index,summon_card_id,summon_type]) do
+  def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,summon_type]) do
     summon_type = encode_summon_type summon_type
-    Yugioh.Proto.pack(12001,<<player_id::size(32),handcards_index::size(8),summon_card_id::size(32),summon_type::size(8)>>)
+    Yugioh.Proto.pack(12001,<<player_id::size(32),handcards_index::size(8),summon_card_id::size(32),summon_card_pos::size(8),summon_type::size(8)>>)
   end  
   
 
