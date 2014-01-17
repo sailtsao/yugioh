@@ -53,17 +53,6 @@ defmodule Yugioh.Player do
   end
 
   def handle_cast(:stop, player_state) do
-    # update online system
-    Yugioh.Library.Online.remove_online_player(player_state.id)
-
-    if player_state.in_room_id != 0 do
-      Yugioh.Singleton.Room.leave_room(player_state.in_room_id)
-    end
-
-    if player_state.battle_pid != nil do
-      Yugioh.Battle.stop player_state.battle_pid
-    end
-
     {:stop, :normal, player_state}
   end
 
@@ -102,7 +91,18 @@ defmodule Yugioh.Player do
     {:noreply, state}
   end
   
-  def terminate(reason,_state) do
+  def terminate(reason,player_state) do
+    # update online system
+    Yugioh.Library.Online.remove_online_player(player_state.id)
+
+    if player_state.in_room_id != 0 do
+      Yugioh.Singleton.Room.leave_room(player_state.in_room_id)
+    end
+
+    if player_state.battle_pid != nil do
+      Yugioh.Battle.stop player_state.battle_pid
+    end
+    
     Lager.debug "player process [~p] died reason [~p]",[self,reason]
   end
   

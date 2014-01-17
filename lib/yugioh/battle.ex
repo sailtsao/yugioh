@@ -71,113 +71,151 @@ defmodule Yugioh.Battle do
     end    
   end
 
-  def handle_call({:attack,player_id,source_card_index,target_card_index},from,battle_data) do
-    case battle_data.phase do      
-      :bp ->
-        Lager.debug "before attack battle data [~p]",[battle_data]
-        player1_id = battle_data.player1_id
-        player2_id = battle_data.player2_id
-        {source_player_id,target_player_id,source_player_atom,source_player_battle_info,target_player_atom,target_player_battle_info} = case player_id do
-          ^player1_id->
-            {player1_id,player2_id,:player1_battle_info,battle_data.player1_battle_info,:player2_battle_info,battle_data.player2_battle_info}
-          ^player2_id->
-            {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
-        end
-        # TODO: pelase consider the situation that there is no defender at all, how to directly attack player.
-        {attacker_id,attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
-        {defender_id,defender_summon_type} = Dict.get target_player_battle_info.summon_cards,target_card_index
-        attacker_data = Cards.get(attacker_id)
-        defender_data = Cards.get(defender_id)
-        damage_player_id = 0
-        hp_damage = 0
-        destroy_cards = []
-        result = :ok
-        new_battle_data = battle_data
-        case {attacker_summon_type,defender_summon_type} do
-          {:attack,:attack} ->
-            cond do
-                # defender dead and update the defense player's hp
-              attacker_data.attack>defender_data.attack ->
-                destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
-                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
-                damage_player_id = target_player_id
-                hp_damage = attacker_data.attack - defender_data.attack
-                if hp_damage>target_player_battle_info.curhp do
-                  hp_damage = target_player_battle_info.curhp
-                end
-                new_target_curhp = target_player_battle_info.curhp - hp_damage
-                new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
-                new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
-                if new_target_curhp <= 0 do
-                  self<-:battle_end
-                end
-
-              # insane
-              attacker_data.attack<defender_data.attack ->
-                result = :are_you_insane
-
-              # destroy all
-              attacker_data.attack == defender_data.attack ->
-                destroy_cards = destroy_cards ++ [{source_player_id,source_card_index},{target_player_id,target_card_index}]
-                new_source_summon_cards = Dict.delete source_player_battle_info.summon_cards,source_card_index
-                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
-                new_source_player_battle_info = source_player_battle_info.update(summon_cards: new_source_summon_cards)
-                new_target_player_battle_info = target_player_battle_info.update(summon_cards: new_target_summon_cards)
-                new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info},{source_player_atom,new_source_player_battle_info}])
-            end
-
-          {:attack,defense_state} ->
-            cond do
-                # defender get damage
-              attacker_data.attack>defender_data.defend ->
-                destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
-                new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
-                damage_player_id = target_player_id
-                hp_damage = attacker_data.attack - defender_data.defend
-                if hp_damage>target_player_battle_info.curhp do
-                  hp_damage = target_player_battle_info.curhp
-                end
-                new_target_curhp = target_player_battle_info.curhp - hp_damage                        
-                new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
-                new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
-                if new_target_curhp <= 0 do
-                  self<-:battle_end
-                end
-                
-                # attacker get damage
-              attacker_data.attack<defender_data.defend ->
-                damage_player_id = source_player_id
-                hp_damage = attacker_data.attack - defender_data.defend
-                if hp_damage>source_player_battle_info.curhp do
-                  hp_damage = source_player_battle_info.curhp
-                end
-                new_source_curhp = source_player_battle_info.curhp - hp_damage
-                new_source_player_battle_info = source_player_battle_info.curhp new_source_curhp
-                new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
-                if new_source_curhp <= 0 do
-                  self<-:battle_end
-                end
-                # no one is destroyed
-              # attacker_data.attack == defender_data.defend ->
-            end
-          _->
-            result = :card_is_not_attack_state
-        end
-
-        if result==:ok do
-          message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,defender_id,damage_player_id,hp_damage,destroy_cards])
-          battle_data.player1_battle_info.player_pid <- {:send,message}
-          battle_data.player2_battle_info.player_pid <- {:send,message}
-        end
-
-        {:reply, result, new_battle_data}
-      _->
-        {:reply, :attack_in_invalid_phase, battle_data}
+# attack player directly
+  def handle_call({:attack,player_id,source_card_index,11},from,
+    battle_data = BattleData[phase: phase])
+  when phase==:bp do
+    Lager.debug "before attack battle data [~p]",[battle_data]
+    player1_id = battle_data.player1_id
+    player2_id = battle_data.player2_id
+    {source_player_id,target_player_id,source_player_atom,source_player_battle_info,target_player_atom,target_player_battle_info} = case player_id do
+      ^player1_id->
+        {player1_id,player2_id,:player1_battle_info,battle_data.player1_battle_info,:player2_battle_info,battle_data.player2_battle_info}
+      ^player2_id->
+        {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
     end
+    {attacker_id,attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
+    attacker_data = Cards.get(attacker_id)
+    hp_damage = 0
+    result = :ok
+    new_battle_data = battle_data
+    cond do
+      Dict.size(target_player_battle_info.summon_cards)!=0->
+        result = :attack_directly_invalid
+      true->
+        hp_damage = attacker_data.attack
+        if hp_damage>target_player_battle_info.curhp do
+          hp_damage = target_player_battle_info.curhp
+        end
+        new_target_curhp = target_player_battle_info.curhp - hp_damage
+        new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp)
+        new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
+        if new_target_curhp <= 0 do
+          self<-:battle_end
+        end
+    end
+    if result==:ok do
+      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,11,0,target_player_id,hp_damage,[]])
+      battle_data.player1_battle_info.player_pid <- {:send,message}
+      battle_data.player2_battle_info.player_pid <- {:send,message}
+    end
+    {:reply, result, new_battle_data}
   end
 
+  # attack with cards
+  def handle_call({:attack,player_id,source_card_index,target_card_index},from,battle_data = BattleData[phase: phase]) 
+  when phase==:bp do
+    Lager.debug "before attack battle data [~p]",[battle_data]
+    player1_id = battle_data.player1_id
+    player2_id = battle_data.player2_id
+    {source_player_id,target_player_id,source_player_atom,source_player_battle_info,target_player_atom,target_player_battle_info} = case player_id do
+      ^player1_id->
+        {player1_id,player2_id,:player1_battle_info,battle_data.player1_battle_info,:player2_battle_info,battle_data.player2_battle_info}
+      ^player2_id->
+        {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
+    end
+    # TODO: pelase consider the situation that there is no defender at all, how to directly attack player.
+    {attacker_id,attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
+    {defender_id,defender_summon_type} = Dict.get target_player_battle_info.summon_cards,target_card_index
+    attacker_data = Cards.get(attacker_id)
+    defender_data = Cards.get(defender_id)
+    damage_player_id = 0
+    hp_damage = 0
+    destroy_cards = []
+    result = :ok
+    new_battle_data = battle_data
+    case {attacker_summon_type,defender_summon_type} do
+      {:attack,:attack} ->
+        cond do
+            # defender dead and update the defense player's hp
+          attacker_data.attack>defender_data.attack ->
+            destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
+            new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
+            damage_player_id = target_player_id
+            hp_damage = attacker_data.attack - defender_data.attack
+            if hp_damage>target_player_battle_info.curhp do
+              hp_damage = target_player_battle_info.curhp
+            end
+            new_target_curhp = target_player_battle_info.curhp - hp_damage
+            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
+            new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
+            if new_target_curhp <= 0 do
+              self<-:battle_end
+            end
+
+          # insane
+          attacker_data.attack<defender_data.attack ->
+            result = :are_you_insane
+
+          # destroy all
+          attacker_data.attack == defender_data.attack ->
+            destroy_cards = destroy_cards ++ [{source_player_id,source_card_index},{target_player_id,target_card_index}]
+            new_source_summon_cards = Dict.delete source_player_battle_info.summon_cards,source_card_index
+            new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
+            new_source_player_battle_info = source_player_battle_info.update(summon_cards: new_source_summon_cards)
+            new_target_player_battle_info = target_player_battle_info.update(summon_cards: new_target_summon_cards)
+            new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info},{source_player_atom,new_source_player_battle_info}])
+        end
+
+      {:attack,defense_state} ->
+        cond do
+            # defender get damage
+          attacker_data.attack>defender_data.defend ->
+            destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
+            new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
+            damage_player_id = target_player_id
+            hp_damage = attacker_data.attack - defender_data.defend
+            if hp_damage>target_player_battle_info.curhp do
+              hp_damage = target_player_battle_info.curhp
+            end
+            new_target_curhp = target_player_battle_info.curhp - hp_damage                        
+            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
+            new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
+            if new_target_curhp <= 0 do
+              self<-:battle_end
+            end
+            
+            # attacker get damage
+          attacker_data.attack<defender_data.defend ->
+            damage_player_id = source_player_id
+            hp_damage = attacker_data.attack - defender_data.defend
+            if hp_damage>source_player_battle_info.curhp do
+              hp_damage = source_player_battle_info.curhp
+            end
+            new_source_curhp = source_player_battle_info.curhp - hp_damage
+            new_source_player_battle_info = source_player_battle_info.curhp new_source_curhp
+            new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
+            if new_source_curhp <= 0 do
+              self<-:battle_end
+            end
+            # no one is destroyed
+          # attacker_data.attack == defender_data.defend ->
+        end
+      _->
+        result = :card_is_not_attack_state
+    end
+
+    if result==:ok do
+      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,defender_id,damage_player_id,hp_damage,destroy_cards])
+      battle_data.player1_battle_info.player_pid <- {:send,message}
+      battle_data.player2_battle_info.player_pid <- {:send,message}
+    end
+
+    {:reply, result, new_battle_data}
+  end
+        
   def handle_call({:attack,_,_,_},_from,battle_data) do
-    
+    {:reply, :attack_in_invalid_phase, battle_data}
   end
 
   def handle_call({:change_phase_to,player_id,phase},from,battle_data) do

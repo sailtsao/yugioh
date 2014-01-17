@@ -13,7 +13,7 @@ defmodule Yugioh.System.Room do
         {:ok,player_state.update(in_room_id: room_info.id)}
       other ->
         # spawn(fn-> :gen_tcp.send(player_state.socket,PT11.write(11000,[0,RoomInfo.new])) end)
-        {:error,:invalid_room_id}
+        {:error,:already_in_room}
     end
   end
   
@@ -39,14 +39,14 @@ defmodule Yugioh.System.Room do
         {:ok,player_state.update(in_room_id: room_id)}
       other ->
         # spawn(fn -> :gen_tcp.send(player_state.socket,PT11.write(11002,[0,RoomInfo.new])) end)
-        {:error,:invalid_room_id}
+        {:error,:already_in_room}
     end
   end
 
   def handle(:leave_room,player_state) do
     case player_state.in_room_id do
       0 ->
-        {:error,:invalid_room_id}
+        {:error,:not_in_room}
       other ->        
         case Room.leave_room(player_state.in_room_id) do
           :ok->
@@ -61,7 +61,7 @@ defmodule Yugioh.System.Room do
   def handle(:battle_ready,player_state) do
     case player_state.in_room_id do
       0 ->
-        {:error,:invalid_room_id}
+        {:error,:not_in_room}
       other ->        
         case Room.battle_ready(player_state.in_room_id) do
           :ok->
@@ -75,7 +75,7 @@ defmodule Yugioh.System.Room do
   def handle(:battle_start,player_state) do
     case player_state.in_room_id do
       0 ->
-        {:error,:invalid_room_id}
+        {:error,:not_in_room}
       other ->
         case Room.battle_start(player_state.in_room_id) do
           :ok -> 

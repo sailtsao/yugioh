@@ -12,6 +12,7 @@ defmodule Yugioh.System.Login do
               {:ok,user.id}
             false->
               :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
+              Lager.debug "wrong_password: account~p, password ~p",[acc,pwd]
               {:fail,:wrong_password}
           end
         []->

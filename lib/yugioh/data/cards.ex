@@ -3,8 +3,8 @@ defmodule Yugioh.Data.Cards do
   def get(1) do
     Card.new(
       id: 1,
-      attack: 10000,
-      defend: 10000,
+      attack: 1000,
+      defend: 1000,
       star: 8
       )
   end
