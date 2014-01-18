@@ -164,7 +164,7 @@ defmodule Yugioh.Battle do
             end
             new_source_curhp = source_player_battle_info.curhp - hp_damage
             new_source_player_battle_info = source_player_battle_info.update(curhp: new_source_curhp,summon_cards: new_source_summon_cards)
-            new_battle_data = battle_data.update([{source_player_atom,source_player_battle_info}])
+            new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
             if new_source_curhp <= 0 do
               self<-:battle_end
             end
