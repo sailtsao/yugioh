@@ -84,6 +84,7 @@ defmodule Yugioh.Player do
 
   def handle_info({:send,data},player_state) do
     :gen_tcp.send(player_state.socket,data)
+    Lager.debug "send data [~p] to player",[data]
     {:noreply, player_state}
   end
 
