@@ -226,6 +226,10 @@ defmodule Yugioh.Battle do
     {:reply, result, new_battle_data}
   end
         
+  def handle_call({:attack,_,_,_},_from,battle_data = BattleData[turn_count: turn_count]) when turn_count == 1 do
+    {:reply, :cant_attack_at_first_turn, battle_data}
+  end
+
   def handle_call({:attack,_,_,_},_from,battle_data) do
     {:reply, :attack_in_invalid_phase, battle_data}
   end
