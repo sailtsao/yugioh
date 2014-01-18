@@ -16,7 +16,7 @@ defmodule Yugioh.System.Login do
               {:fail,:wrong_password}
           end
         []->
-          {:fail,:no_user_find}
+          {:error,:no_user_find}
       end
   end
 

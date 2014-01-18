@@ -53,6 +53,8 @@ defmodule Yugioh.Acceptor.Acceptor do
             client = client.update(account_id: account_id,logined: true)
             parse_packet_loop(socket,client)
           {:fail,reason}->
+            parse_packet_loop(socket,client)
+          {:error,reason}->
             do_error(socket,reason,client)
         end
       {:ok,:check_role_name,name} ->
