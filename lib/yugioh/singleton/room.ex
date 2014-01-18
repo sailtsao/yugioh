@@ -78,6 +78,17 @@ defmodule Yugioh.Singleton.Room do
     end
   end
 
+  def handle_call({:refresh_roominfo,room_id},from,state) do
+    {pid,_} = from
+    case :ets.lookup(:room,room_id) do
+      [room_info]->
+        pid <- {:refresh_room_info,room_info}
+        {:reply,:ok,state}
+      []->
+        {:reply,:invalid_room_id,state}
+    end
+  end
+
   def handle_call({:battle_ready,room_id},from,state) do
     {pid,_} = from
     case :ets.lookup(:room,room_id) do
@@ -114,15 +125,26 @@ defmodule Yugioh.Singleton.Room do
             {:reply,:not_enough_members,state}
 
           pid == room_info.owner_pid ->
-            unready_list = Enum.filter Dict.to_list(room_info.members),fn({_,{player_pid,ready_state}}) ->
+            unready_list = Enum.filter Dict.to_list(room_info.members),
+            fn({_,{player_pid,ready_state}}) ->
               ready_state == :unready
             end
 
             case Enum.empty?(unready_list) do 
               true->
-                {player1_pid,_} = Dict.get room_info.members,1
-                {player2_pid,_} = Dict.get room_info.members,2
+                {player1_pid,ready_state1} = Dict.get room_info.members,1
+                {player2_pid,ready_state2} = Dict.get room_info.members,2
                 {:ok,battle_pid} = Yugioh.Battle.start({player1_pid,player2_pid})
+                new_members = nil
+                cond do 
+                  player1_pid != room_info.owner_pid ->
+                    new_members = Dict.put room_info.members,1,{player1_pid,:unready}
+                  player2_pid != room_info.owner_pid ->
+                    new_members = Dict.put room_info.members,2,{player2_pid,:unready}
+                end
+                new_room_info = room_info.update(members: new_members)
+                :ets.insert :room,new_room_info
+                Lager.debug "battle start new_room_info:~p",[new_room_info]
                 {:reply,:ok,state}
               false->
                 {:reply,:unready,state}
@@ -190,4 +212,7 @@ defmodule Yugioh.Singleton.Room do
     :gen_server.call(__MODULE__,{:battle_start,room_id})
   end
 
+  def refresh_roominfo(room_id) do
+    :gen_server.call(__MODULE__,{:refresh_roominfo,room_id})
+  end
 end

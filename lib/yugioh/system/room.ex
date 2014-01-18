@@ -58,6 +58,20 @@ defmodule Yugioh.System.Room do
     end
   end
 
+  def handle(:refresh_roominfo,player_state) do
+    case player_state.in_room_id do
+      0 ->
+        {:error,:not_in_room}
+      other ->        
+        case Room.refresh_roominfo(player_state.in_room_id) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+    end
+  end
+
   def handle(:battle_ready,player_state) do
     case player_state.in_room_id do
       0 ->

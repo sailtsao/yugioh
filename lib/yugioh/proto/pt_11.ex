@@ -19,6 +19,10 @@ defmodule Yugioh.Proto.PT11 do
     {:ok,:leave_room}
   end
 
+  def read(11005,bin) do
+    {:ok,:refresh_roominfo}
+  end
+
   def read(11006,bin) do
     {:ok,:battle_ready}
   end

@@ -106,6 +106,16 @@ defmodule RoomTest do
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<5::size(16),12000::size(16),3::size(8)>>    
 
+#   refresh_roominfo test
+    # :gen_tcp.send socket2,<<4::size(16),11005::size(16)>>
+    # {:ok,data}=:gen_tcp.recv(socket2,0)
+    # assert <<
+    # _::size(16),11005::size(16),room_id::size(32),1::size(16),4::size(16),"room",1::size(16),
+    # 2::size(16),
+    # 1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),1::size(8),
+    # 2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
+    # >> = data 
+
     # summon
     :gen_tcp.send socket1,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
