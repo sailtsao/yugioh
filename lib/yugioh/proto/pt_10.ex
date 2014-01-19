@@ -62,4 +62,8 @@ defmodule Yugioh.Proto.PT10 do
   def write(10005,data)do
     Yugioh.Proto.pack(10005,data)
   end
+
+  def write(:login_again,data//<<>>) do
+    Yugioh.Proto.pack(10007,data)
+  end
 end

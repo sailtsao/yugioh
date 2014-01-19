@@ -70,7 +70,9 @@ defmodule Yugioh.Proto.PT12 do
     <<attacker_pos::size(8),defender_pos::size(8)>> = bin
     {:ok,{:attack,attacker_pos,defender_pos}}
   end
-  
+  def read(12006,bin//<<>>) do
+    {:ok,:battle_load_finish}
+  end
   # def read(12004,bin) do
   #   <<card_pos::size(8)>> = bin
   #   {:ok,{:flip_card,card_pos}}

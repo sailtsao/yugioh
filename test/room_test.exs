@@ -79,10 +79,16 @@ defmodule RoomTest do
 
     # battle start notify
 
-    {:ok,data}=:gen_tcp.recv(socket1,84)
+    {:ok,data}=:gen_tcp.recv(socket1,0)
     # IO.inspect data,limit: 1000    
     assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data
     
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data        
+
+    :gen_tcp.send socket1,<<4::size(16),12006::size(16)>>
+    :gen_tcp.send socket2,<<4::size(16),12006::size(16)>>
+
     # player1 receive new turn draw
     {:ok,data}=:gen_tcp.recv(socket1,14)    
     assert <<14::size(16),12002::size(16),1::size(8),1::size(8),6::size(32),_draw_card_id::size(32)>> = data
@@ -92,9 +98,7 @@ defmodule RoomTest do
 
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert data == <<5::size(16),12000::size(16),3::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket2,84)
-    assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data    
+    
 
     # player2 receive new turn draw
     {:ok,data}=:gen_tcp.recv(socket2,14)

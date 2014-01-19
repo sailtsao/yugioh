@@ -43,4 +43,18 @@ defmodule Yugioh.System.Battle do
     end
   end
 
+  def handle(:battle_load_finish,player_state) do
+    case is_pid(player_state.battle_pid) do
+      true ->
+        case Yugioh.Battle.battle_load_finish(player_state.battle_pid,player_state.id) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+      false ->
+        {:error,:invalid_battle_pid}
+    end
+  end
+  
 end

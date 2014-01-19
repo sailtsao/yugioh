@@ -2,6 +2,8 @@ defmodule Yugioh.System.Login do
   import Ecto.Query
   require Lager
 
+  alias Yugioh.Library.Online
+
   def login([acc,pwd],socket) do
       query = from(u in Model.User,where: u.name == ^acc,select: u)
       case Yugioh.Repo.all(query) do
@@ -74,6 +76,12 @@ defmodule Yugioh.System.Login do
 
   def enter_game(role_id,socket) do    
     # TODO:check the role_id is belonged to the user
+    if(Online.is_player_online(role_id)) do
+      message = Yugioh.Proto.PT10.write(:login_again)
+      player_pid = Online.get_online_player(role_id).player_pid
+      player_pid <- {:send,message}
+      Yugioh.Player.stop player_pid,:login_again
+    end
 
     # fetch role data from database
     role = Yugioh.Repo.get(Model.Role,role_id)

@@ -17,6 +17,21 @@ defmodule Yugioh.Battle do
     {:ok,{}}
   end
 
+
+  def handle_call(:battle_load_finish,from,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
+    case phase do
+      0->
+        {:reply,:ok,battle_data.phase(phase + 1)}
+      1->
+        self <- :new_turn_draw_phase
+        {:reply,:ok,battle_data.phase(:dp)}
+    end
+  end
+
+  def handle_call(_,from,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
+    {:reply,:battle_not_ready_yet,battle_data}
+  end  
+
   def handle_call({:summon,player_id,handcards_index,summon_type},from,battle_data) do    
     Lager.debug "battle before summon battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
@@ -295,9 +310,7 @@ defmodule Yugioh.Battle do
     message_data = [1,player1_state.id,:dp,player1_state,hide_handcards(player1_battle_info),player2_state,player2_battle_info]
     player2_pid <- {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
 
-    self <- :new_turn_draw_phase
-
-    {:noreply, BattleData[turn_count: 0,phase: :dp,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
+    {:noreply, BattleData[turn_count: 0,phase: 0,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
                           player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]}
   end
 
@@ -415,6 +428,11 @@ defmodule Yugioh.Battle do
   def attack(battle_pid,player_id,source_card_index,target_card_index) do
     :gen_server.call(battle_pid,{:attack,player_id,source_card_index,target_card_index})
   end
+
+  def battle_load_finish(battle_pid,player_id) do
+    :gen_server.call(battle_pid,:battle_load_finish)
+  end
+  
 
   defp hide_handcards battle_info do
     cards_size = length battle_info.handcards

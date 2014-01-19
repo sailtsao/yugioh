@@ -52,8 +52,8 @@ defmodule Yugioh.Player do
     {:noreply, player_state}
   end
 
-  def handle_cast(:stop, player_state) do
-    {:stop, :normal, player_state}
+  def handle_cast({:stop,reason}, player_state) do
+    {:stop, reason, player_state}
   end
 
   def handle_cast(_msg, state) do
@@ -84,7 +84,7 @@ defmodule Yugioh.Player do
 
   def handle_info({:send,data},player_state) do
     :gen_tcp.send(player_state.socket,data)
-    Lager.debug "send data [~p] to player",[data]
+    Lager.debug "send data [~p] to player [~p]",[data,self]
     {:noreply, player_state}
   end
 
@@ -103,8 +103,8 @@ defmodule Yugioh.Player do
     if player_state.battle_pid != nil do
       Yugioh.Battle.stop player_state.battle_pid
     end
-    
     Lager.debug "player process [~p] died reason [~p]",[self,reason]
+    :gen_tcp.close player_state.socket
   end
   
   def code_change(_oldVsn, state, _extra) do
@@ -115,8 +115,8 @@ defmodule Yugioh.Player do
     :gen_server.call(pid, :player_state)
   end
 
-  def stop(pid) do
-    if is_pid(pid), do: :gen_server.cast(pid, :stop)
+  def stop(pid,reason//:normal) do
+    if is_pid(pid), do: :gen_server.cast(pid, {:stop,reason})
   end
 
 end
