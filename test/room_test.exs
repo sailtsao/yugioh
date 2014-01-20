@@ -34,17 +34,17 @@ defmodule RoomTest do
     ############
     # login again test
     
-    # {:ok,socket3} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
-    # :gen_tcp.send(socket3,<<18::size(16),10000::size(16),4::size(16),"sail",6::size(16),"123456">>)
-    # {:ok,data}=:gen_tcp.recv(socket3,0)
-    # assert data == <<6::size(16),10000::size(16),1::size(16)>>
+    {:ok,socket3} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
+    :gen_tcp.send(socket3,<<18::size(16),10000::size(16),4::size(16),"sail",6::size(16),"123456">>)
+    {:ok,data}=:gen_tcp.recv(socket3,0)
+    assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
-    # :gen_tcp.send(socket3,<<8::size(16),10005::size(16),8::size(32)>>)
-    # {:ok,_data} = :gen_tcp.recv(socket3,0)
+    :gen_tcp.send(socket3,<<8::size(16),10005::size(16),8::size(32)>>)
+    {:ok,_data} = :gen_tcp.recv(socket3,0)
 
-    # {:ok,data} = :gen_tcp.recv(socket2,0)
-    # <<_::size(16),10006::size(16),_::size(16),str::binary>> = data
-    # IO.puts str
+    {:ok,data} = :gen_tcp.recv(socket2,0)
+    <<_::size(16),10006::size(16),_::size(16),str::binary>> = data
+    IO.puts str
 
     ###################
     # create room
