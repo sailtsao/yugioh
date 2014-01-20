@@ -63,7 +63,8 @@ defmodule Yugioh.Proto.PT10 do
     Yugioh.Proto.pack(10005,data)
   end
 
-  def write(:login_again,data//<<>>) do
-    Yugioh.Proto.pack(10007,data)
+  def write(:tips,message) do
+    message_binary = Yugioh.Proto.pack_string(message)
+    Yugioh.Proto.pack(10006,message_binary)
   end
 end

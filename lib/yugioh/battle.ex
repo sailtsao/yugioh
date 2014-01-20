@@ -86,6 +86,36 @@ defmodule Yugioh.Battle do
     end    
   end
 
+  def handle_call({:flip_card,player_id,card_index},from,
+    battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id])
+  when phase == :mp1 or phase == :mp2 do
+
+    {player_atom,player_battle_info} = case player_id do
+      ^player1_id->
+        {:player1_battle_info,battle_data.player1_battle_info}
+      ^player2_id->
+        {:player2_battle_info,battle_data.player2_battle_info}
+    end
+    case Dict.get(player_battle_info.summon_cards,card_index) do
+      {card_id,:defense_down}->
+        new_summon_cards = Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack})
+        new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
+        new_battle_data = battle_data.update([{player_atom,new_player_battle_info}])
+        message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id])
+        battle_data.player1_battle_info.player_pid <- {:send,message_data}
+        battle_data.player2_battle_info.player_pid <- {:send,message_data}
+        {:reply, :ok, new_battle_data}
+      {card_id,_}->
+        {:reply, :invalid_flip_card_status, battle_data}
+      nil->
+        {:reply, :invalid_flip_card_index, battle_data}
+    end
+  end
+
+  def handle_call({:flip_card,_,_},_,battle_data)do
+    {:reply, :flip_card_in_invalid_phase,battle_data}
+  end
+
 # attack player directly
   def handle_call({:attack,player_id,source_card_index,11},from,
     battle_data = BattleData[phase: phase])
@@ -124,6 +154,7 @@ defmodule Yugioh.Battle do
       battle_data.player1_battle_info.player_pid <- {:send,message}
       battle_data.player2_battle_info.player_pid <- {:send,message}
     end
+    Lager.debug "after attack battle data [~p]",[new_battle_data]
     {:reply, result, new_battle_data}
   end
 
@@ -215,13 +246,20 @@ defmodule Yugioh.Battle do
             # attacker get damage
           attacker_data.attack<defender_data.defend ->
             damage_player_id = source_player_id
-            hp_damage = attacker_data.attack - defender_data.defend
+            hp_damage = defender_data.defend - attacker_data.attack
             if hp_damage>source_player_battle_info.curhp do
               hp_damage = source_player_battle_info.curhp
             end
             new_source_curhp = source_player_battle_info.curhp - hp_damage
             new_source_player_battle_info = source_player_battle_info.curhp new_source_curhp
-            new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
+            if defense_state == :defense_down do
+              new_target_summon_cards = Dict.put target_player_battle_info.summon_cards,target_card_index,{defender_id,:defense_up}
+              new_target_player_battle_info = target_player_battle_info.summon_cards new_target_summon_cards
+              new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info},
+                {target_player_atom,new_target_player_battle_info}])
+            else
+              new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
+            end
             if new_source_curhp <= 0 do
               self<-:battle_end
             end
@@ -237,7 +275,7 @@ defmodule Yugioh.Battle do
       battle_data.player1_battle_info.player_pid <- {:send,message}
       battle_data.player2_battle_info.player_pid <- {:send,message}
     end
-
+    Lager.debug "after attack battle data [~p]",[new_battle_data]
     {:reply, result, new_battle_data}
   end
         
@@ -423,6 +461,10 @@ defmodule Yugioh.Battle do
 
   def summon(battle_pid,player_id,handcards_index,summon_type) do
     :gen_server.call(battle_pid,{:summon,player_id,handcards_index,summon_type})
+  end
+
+  def flip_card(battle_pid,player_id,card_index) do
+    :gen_server.call(battle_pid,{:flip_card,player_id,card_index})
   end
 
   def attack(battle_pid,player_id,source_card_index,target_card_index) do

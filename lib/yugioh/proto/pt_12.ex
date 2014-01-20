@@ -70,13 +70,15 @@ defmodule Yugioh.Proto.PT12 do
     <<attacker_pos::size(8),defender_pos::size(8)>> = bin
     {:ok,{:attack,attacker_pos,defender_pos}}
   end
+
+  def read(12004,bin) do
+    <<card_index::size(8)>> = bin
+    {:ok,{:flip_card,card_index}}
+  end
+
   def read(12006,bin//<<>>) do
     {:ok,:battle_load_finish}
   end
-  # def read(12004,bin) do
-  #   <<card_pos::size(8)>> = bin
-  #   {:ok,{:flip_card,card_pos}}
-  # end
   
   def write(:change_phase_to,phase) do    
     phase_number = phase_to_phase_number phase
@@ -105,9 +107,10 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12003,data)
   end  
 
-  # def write(:flip_card,data) do
-  #   Yugioh.Proto.pack(12004,data)
-  # end
+  def write(:flip_card,[player_id,card_index,card_id]) do
+    data = <<player_id::size(32),card_index::size(8),card_id::size(32)>>
+    Yugioh.Proto.pack(12004,data)
+  end
   
   def write(:battle_end,[result,win_player_id,lose_player_id]) do
     result_number = case result do

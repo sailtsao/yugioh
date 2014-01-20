@@ -43,6 +43,20 @@ defmodule Yugioh.System.Battle do
     end
   end
 
+  def handle({:flip_card,card_index},player_state) do
+    case is_pid(player_state.battle_pid) do
+      true ->
+        case Yugioh.Battle.flip_card(player_state.battle_pid,player_state.id,card_index) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+      false ->
+        {:error,:invalid_battle_pid}
+    end
+  end
+
   def handle(:battle_load_finish,player_state) do
     case is_pid(player_state.battle_pid) do
       true ->

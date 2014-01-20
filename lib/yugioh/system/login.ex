@@ -77,7 +77,7 @@ defmodule Yugioh.System.Login do
   def enter_game(role_id,socket) do    
     # TODO:check the role_id is belonged to the user
     if(Online.is_player_online(role_id)) do
-      message = Yugioh.Proto.PT10.write(:login_again)
+      message = Yugioh.Proto.PT10.write(:tips,Yugioh.Data.Strings.get(:login_again_string))
       player_pid = Online.get_online_player(role_id).player_pid
       player_pid <- {:send,message}
       Yugioh.Player.stop player_pid,:login_again
