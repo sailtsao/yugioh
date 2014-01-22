@@ -80,6 +80,12 @@ defmodule Yugioh.Proto.PT12 do
     {:ok,:battle_load_finish}
   end
   
+  def read(12007,bin) do
+    <<player_id::size(32)>> = bin
+    {:ok,{:get_graveyard,player_id}}
+  end
+  
+
   def write(:change_phase_to,phase) do    
     phase_number = phase_to_phase_number phase
     Yugioh.Proto.pack(12000,<<phase_number::size(8)>>)
@@ -124,4 +130,9 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12005,data)
   end
 
+  def write(:get_graveyard,graveyard_cards) do
+    graveyard_cards_binary = iolist_to_binary(Enum.map(graveyard_cards,fn(x)-> <<x::size(32)>> end))
+    <<length(graveyard_cards)::size(16),graveyard_cards_binary::binary>>
+  end
+  
 end

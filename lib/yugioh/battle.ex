@@ -32,6 +32,19 @@ defmodule Yugioh.Battle do
     {:reply,:battle_not_ready_yet,battle_data}
   end  
 
+  def handle_call({:get_graveyard,player_id},from,battle_data = BattleData[player1_id: player1_id,player2_id: player2_id]) do
+    {pid,_} = from
+    player_battle_info = case player_id do
+      ^player1_id->
+        battle_data.player1_battle_info
+      ^player2_id->
+        battle_data.player2_battle_info
+    end
+    message = Yugioh.Proto.PT12.write(:get_graveyard,player_battle_info.graveyard_cards)    
+    pid<-{:send,message}
+    {:reply, :ok, battle_data}
+  end
+  
   def handle_call({:summon,player_id,handcards_index,summon_type},from,battle_data) do    
     Lager.debug "battle before summon battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
@@ -200,6 +213,7 @@ defmodule Yugioh.Battle do
             # defender dead and update the defense player's hp
           attacker_data.attack>defender_data.attack ->
             destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
+            new_target_graveyard_cards = target_player_battle_info.graveyard_cards++[defender_id]
             new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
             damage_player_id = target_player_id
             hp_damage = attacker_data.attack - defender_data.attack
@@ -207,7 +221,7 @@ defmodule Yugioh.Battle do
               hp_damage = target_player_battle_info.curhp
             end
             new_target_curhp = target_player_battle_info.curhp - hp_damage
-            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
+            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards,graveyard_cards: new_target_graveyard_cards)
             new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
             if new_target_curhp <= 0 do
               self<-:battle_end
@@ -216,6 +230,7 @@ defmodule Yugioh.Battle do
           # attacker dead and update the attack player's hp
           attacker_data.attack<defender_data.attack ->
             destroy_cards = destroy_cards ++ [{source_player_id,source_card_index}]
+            new_source_graveyard_cards = source_player_battle_info.graveyard_cards++[attacker_id]
             new_source_summon_cards = Dict.delete source_player_battle_info.summon_cards,source_card_index
             damage_player_id = source_player_id
             hp_damage = defender_data.attack - attacker_data.attack
@@ -223,7 +238,7 @@ defmodule Yugioh.Battle do
               hp_damage = source_player_battle_info.curhp
             end
             new_source_curhp = source_player_battle_info.curhp - hp_damage
-            new_source_player_battle_info = source_player_battle_info.update(curhp: new_source_curhp,summon_cards: new_source_summon_cards)
+            new_source_player_battle_info = source_player_battle_info.update(curhp: new_source_curhp,summon_cards: new_source_summon_cards,graveyard_cards: new_source_graveyard_cards)
             new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
             if new_source_curhp <= 0 do
               self<-:battle_end
@@ -232,10 +247,12 @@ defmodule Yugioh.Battle do
           # destroy all
           attacker_data.attack == defender_data.attack ->
             destroy_cards = destroy_cards ++ [{source_player_id,source_card_index},{target_player_id,target_card_index}]
+            new_source_graveyard_cards = source_player_battle_info.graveyard_cards++[attacker_id]
+            new_target_graveyard_cards = target_player_battle_info.graveyard_cards++[defender_id]
             new_source_summon_cards = Dict.delete source_player_battle_info.summon_cards,source_card_index
             new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
-            new_source_player_battle_info = source_player_battle_info.update(summon_cards: new_source_summon_cards)
-            new_target_player_battle_info = target_player_battle_info.update(summon_cards: new_target_summon_cards)
+            new_source_player_battle_info = source_player_battle_info.update(summon_cards: new_source_summon_cards,graveyard_cards: new_source_graveyard_cards)
+            new_target_player_battle_info = target_player_battle_info.update(summon_cards: new_target_summon_cards,graveyard_cards: new_target_graveyard_cards)
             new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info},{source_player_atom,new_source_player_battle_info}])
         end
 
@@ -489,7 +506,10 @@ defmodule Yugioh.Battle do
   def battle_load_finish(battle_pid,player_id) do
     :gen_server.call(battle_pid,:battle_load_finish)
   end
-  
+
+  def get_graveyard(battle_pid,player_id) do
+    :gen_server.call(battle_pid,{:get_graveyard,player_id})
+  end
 
   defp hide_handcards battle_info do
     cards_size = length battle_info.handcards

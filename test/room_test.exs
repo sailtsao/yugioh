@@ -229,6 +229,15 @@ defmodule RoomTest do
       IO.inspect :gen_tcp.recv(socket2,total_size-16)
     end
 
+    :gen_tcp.send socket1,<<8::size(16),12007::size(16),6::size(32)>>
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    IO.inspect data
+
+    :gen_tcp.send socket2,<<8::size(16),12007::size(16),8::size(32)>>
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    IO.inspect data
+
+    # battle end receive
     {:ok,data}=:gen_tcp.recv(socket1,0)
       assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
     {:ok,data}=:gen_tcp.recv(socket2,0)
