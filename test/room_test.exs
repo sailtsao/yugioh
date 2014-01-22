@@ -34,17 +34,17 @@ defmodule RoomTest do
     ############
     # login again test
     
-    {:ok,socket3} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
-    :gen_tcp.send(socket3,<<18::size(16),10000::size(16),4::size(16),"sail",6::size(16),"123456">>)
-    {:ok,data}=:gen_tcp.recv(socket3,0)
-    assert data == <<6::size(16),10000::size(16),1::size(16)>>
+    # {:ok,socket3} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
+    # :gen_tcp.send(socket3,<<18::size(16),10000::size(16),4::size(16),"sail",6::size(16),"123456">>)
+    # {:ok,data}=:gen_tcp.recv(socket3,0)
+    # assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
-    :gen_tcp.send(socket3,<<8::size(16),10005::size(16),8::size(32)>>)
-    {:ok,_data} = :gen_tcp.recv(socket3,0)
+    # :gen_tcp.send(socket3,<<8::size(16),10005::size(16),8::size(32)>>)
+    # {:ok,_data} = :gen_tcp.recv(socket3,0)
 
-    {:ok,data} = :gen_tcp.recv(socket2,0)
-    <<_::size(16),10006::size(16),_::size(16),str::binary>> = data
-    IO.puts str
+    # {:ok,data} = :gen_tcp.recv(socket2,0)
+    # <<_::size(16),10006::size(16),_::size(16),str::binary>> = data
+    # IO.puts str
 
     ###################
     # create room
@@ -144,11 +144,14 @@ defmodule RoomTest do
     assert <<15::size(16), 12001::size(16),6::size(32),0::size(8),_summon_card_id::size(32),0::size(8),2::size(8)>> = data
 
     # flip card test
+    :gen_tcp.send socket1,<<5::size(16), 12004::size(16),0::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert <<14::size(16), 12004::size(16),6::size(32),0::size(8),_card_id::size(32),1::size(8)>> = data
+    {:ok,data}=:gen_tcp.recv(socket2,0)
+    assert <<14::size(16), 12004::size(16),6::size(32),0::size(8),_card_id::size(32),1::size(8)>> = data
+
+    # flip many times test
     # :gen_tcp.send socket1,<<5::size(16), 12004::size(16),0::size(8)>>
-    # {:ok,data}=:gen_tcp.recv(socket1,0)
-    # assert <<13::size(16), 12004::size(16),6::size(32),0::size(8),_card_id::size(32)>> = data
-    # {:ok,data}=:gen_tcp.recv(socket2,0)
-    # assert <<13::size(16), 12004::size(16),6::size(32),0::size(8),_card_id::size(32)>> = data
 
     # change phase to bp
     :gen_tcp.send socket1,<<5::size(16),12000::size(16),4::size(8)>>

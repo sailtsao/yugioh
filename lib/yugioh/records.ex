@@ -12,7 +12,7 @@ defrecord RoomInfo,id: 0,status: nil,name: "",type: 0,owner_pid: nil,members: ni
 
 defrecord BattleInfo,player_pid: nil,maxhp: 0,curhp: 0,summon_cards: HashDict.new,other_cards: HashDict.new,graveyard_cards: [],handcards: [],remaincards: [],socket: nil
 
-defrecord BattleData,turn_count: 1,map: [],operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,player1_battle_info: nil,player2_battle_info: nil,summoned: false
+defrecord BattleData,turn_count: 1,map: [],operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,player1_battle_info: nil,player2_battle_info: nil,summoned: false,flipped_cards: []
 
 defmodule RecordHelper do
   require Lager

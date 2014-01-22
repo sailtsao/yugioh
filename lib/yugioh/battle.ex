@@ -1,6 +1,6 @@
 defmodule Yugioh.Battle do
   require Lager
-  use GenServer.Behaviour  
+  use GenServer.Behaviour
   alias Yugioh.Data.Cards
 
   def start({player1_pid,player2_pid}) do
@@ -85,9 +85,9 @@ defmodule Yugioh.Battle do
         {:reply, :summon_in_invalid_phase, battle_data}
     end    
   end
-
+  
   def handle_call({:flip_card,player_id,card_index},from,
-    battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id])
+    battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,flipped_cards: flipped_cards])
   when phase == :mp1 or phase == :mp2 do
 
     {player_atom,player_battle_info} = case player_id do
@@ -96,20 +96,34 @@ defmodule Yugioh.Battle do
       ^player2_id->
         {:player2_battle_info,battle_data.player2_battle_info}
     end
-    case Dict.get(player_battle_info.summon_cards,card_index) do
-      {card_id,:defense_down}->
-        new_summon_cards = Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack})
+
+    {result,new_summon_cards,new_status} = if(card_index in flipped_cards) do      
+      {:flip_many_times,nil,nil}
+    else
+      case Dict.get(player_battle_info.summon_cards,card_index) do
+        {card_id,:defense_down}->
+          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+        {card_id,:defense_up}->
+          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+        {card_id,:attack}->
+          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:defense_up}),:defense_up}
+        nil->
+          {:invalid_flip_card_index, nil,nil}
+      end
+    end
+
+    case result do
+      :ok->
         new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
-        new_battle_data = battle_data.update([{player_atom,new_player_battle_info}])
-        message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id])
+        new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:flipped_cards,flipped_cards++[card_index]}])
+        message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id,new_status])
         battle_data.player1_battle_info.player_pid <- {:send,message_data}
         battle_data.player2_battle_info.player_pid <- {:send,message_data}
         {:reply, :ok, new_battle_data}
-      {card_id,_}->
-        {:reply, :invalid_flip_card_status, battle_data}
-      nil->
-        {:reply, :invalid_flip_card_index, battle_data}
+      reason->
+        {:reply, reason, battle_data}
     end
+
   end
 
   def handle_call({:flip_card,_,_},_,battle_data)do
@@ -382,7 +396,8 @@ defmodule Yugioh.Battle do
     [draw_card_id|new_remaincards] = player_battle_info.remaincards
     new_handcards = player_battle_info.handcards ++ [draw_card_id]
     new_player_battle_info = player_battle_info.update(remaincards: new_remaincards,handcards: new_handcards)
-    new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:turn_count,battle_data.turn_count+1},{:phase,:dp},{:summoned,false},{:operator_id,new_operator_id}])
+    new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:turn_count,battle_data.turn_count+1},
+      {:phase,:dp},{:summoned,false},{:operator_id,new_operator_id},{:flipped_cards,[]}])
     
     case new_operator_id do
       ^player1_id->

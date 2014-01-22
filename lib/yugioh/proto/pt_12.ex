@@ -107,8 +107,9 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12003,data)
   end  
 
-  def write(:flip_card,[player_id,card_index,card_id]) do
-    data = <<player_id::size(32),card_index::size(8),card_id::size(32)>>
+  def write(:flip_card,[player_id,card_index,card_id,new_status]) do
+    new_status = encode_summon_type new_status
+    data = <<player_id::size(32),card_index::size(8),card_id::size(32),new_status::size(8)>>
     Yugioh.Proto.pack(12004,data)
   end
   
