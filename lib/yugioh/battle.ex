@@ -261,6 +261,7 @@ defmodule Yugioh.Battle do
             # defender get damage
           attacker_data.attack>defender_data.defend ->
             destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
+            new_target_graveyard_cards = target_player_battle_info.graveyard_cards++[defender_id]
             new_target_summon_cards = Dict.delete target_player_battle_info.summon_cards,target_card_index
             damage_player_id = target_player_id
             hp_damage = attacker_data.attack - defender_data.defend
@@ -268,7 +269,8 @@ defmodule Yugioh.Battle do
               hp_damage = target_player_battle_info.curhp
             end
             new_target_curhp = target_player_battle_info.curhp - hp_damage                        
-            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards)
+            new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,
+              summon_cards: new_target_summon_cards,graveyard_cards: new_target_graveyard_cards)
             new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
             if new_target_curhp <= 0 do
               self<-:battle_end
