@@ -100,27 +100,24 @@ defmodule Yugioh.Battle do
     if(card_index in flipped_cards) do      
       {:reply, :flip_many_times, battle_data}
     else
-      card_id = 0
-      {result,new_summon_cards,new_status} = case Dict.get(player_battle_info.summon_cards,card_index) do
-        {card_id,:defense_down}->
-          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
-        {card_id,:defense_up}->
-          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
-        {card_id,:attack}->
-          {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:defense_up}),:defense_up}
-        nil->
-          {:invalid_flip_card_index, nil,nil}
-      end
-      case result do
-        :ok->
+      case Dict.get(player_battle_info.summon_cards,card_index) do
+        {card_id,battle_status} ->
+          {result,new_summon_cards,new_status} = case battle_status do
+            :defense_down->
+              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+            :defense_up->
+              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+            :attack->
+              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:defense_up}),:defense_up}
+          end
           new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
           new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:flipped_cards,flipped_cards++[card_index]}])
           message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id,new_status])
           send battle_data.player1_battle_info.player_pid , {:send,message_data}
           send battle_data.player2_battle_info.player_pid , {:send,message_data}
           {:reply, :ok, new_battle_data}
-        reason->
-          {:reply, reason, battle_data}
+        nil->
+          {:reply, :invalid_flip_card_index, battle_data}
       end
     end    
   end
