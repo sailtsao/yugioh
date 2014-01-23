@@ -4,9 +4,16 @@ defmodule RoomTest do
   test "room test" do
     :timer.sleep 1000
     started_process_count = length(Process.list) 
+
     ## login
     {:ok,socket1} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
-    :gen_tcp.send(socket1,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
+
+    # web login test
+    :gen_tcp.send(socket1,<<16::size(16),10006::size(16),1::size(32),6::size(16),"123456">>)
+
+    # normal login test
+    # :gen_tcp.send(socket1,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
+
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
 

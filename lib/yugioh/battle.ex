@@ -40,7 +40,7 @@ defmodule Yugioh.Battle do
       ^player2_id->
         battle_data.player2_battle_info
     end
-    message = Yugioh.Proto.PT12.write(:get_graveyard,player_battle_info.graveyard_cards)    
+    message = Yugioh.Proto.PT12.write(:get_graveyard,player_id,player_battle_info.graveyard_cards)    
     pid<-{:send,message}
     {:reply, :ok, battle_data}
   end
@@ -202,7 +202,7 @@ defmodule Yugioh.Battle do
     {defender_id,defender_summon_type} = Dict.get target_player_battle_info.summon_cards,target_card_index
     attacker_data = Cards.get(attacker_id)
     defender_data = Cards.get(defender_id)
-    damage_player_id = 0
+    damage_player_id = target_player_id
     hp_damage = 0
     destroy_cards = []
     result = :ok
@@ -295,7 +295,12 @@ defmodule Yugioh.Battle do
               self<-:battle_end
             end
             # no one is destroyed
-          # attacker_data.attack == defender_data.defend ->
+          attacker_data.attack == defender_data.defend ->
+            if defense_state == :defense_down do
+              new_target_summon_cards = Dict.put target_player_battle_info.summon_cards,target_card_index,{defender_id,:defense_up}
+              new_target_player_battle_info = target_player_battle_info.summon_cards new_target_summon_cards
+              new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
+            end
         end
       _->
         result = :card_is_not_attack_state

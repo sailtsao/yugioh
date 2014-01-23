@@ -57,6 +57,16 @@ defmodule Yugioh.Acceptor.Acceptor do
           {:error,reason}->
             do_error(socket,reason,client)
         end
+      {:ok,:web_login,[user_id,auth_string]} ->
+          case Login.web_login([user_id,auth_string],socket) do
+          {:ok,account_id}->
+            client = client.update(account_id: account_id,logined: true)
+            parse_packet_loop(socket,client)
+          {:fail,reason}->
+            parse_packet_loop(socket,client)
+          {:error,reason}->
+            do_error(socket,reason,client)
+          end
       {:ok,:check_role_name,name} ->
         Login.check_role_exist(name,socket)
         parse_packet_loop(socket,client)

@@ -30,6 +30,13 @@ defmodule Yugioh.Proto.PT10 do
     {:ok,:enter_game,role_id}
   end
 
+  def read(10006,bin) do
+    <<user_id::size(32),rest::binary>> = bin
+    {auth_string,_} = Yugioh.Proto.read_string(rest)
+    {:ok,:web_login,[user_id,auth_string]}
+  end
+  
+
   def write(10001,true) do
     data = <<1::size(8)>>
     Yugioh.Proto.pack(10001,data)

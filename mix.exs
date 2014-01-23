@@ -28,7 +28,8 @@ defmodule Yugioh.Mixfile do
       # { :amrita, github: "josephwilk/amrita" },
       { :postgrex, github: "ericmj/postgrex" },
       { :ecto, github: "elixir-lang/ecto" },
-      { :exlager,github: "khia/exlager" }
+      { :exlager,github: "khia/exlager" },
+      { :"elixir-datetime",github: "alco/elixir-datetime"}
     ]
   end
 

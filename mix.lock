@@ -1,4 +1,5 @@
 [ "ecto": {:git, "git://github.com/elixir-lang/ecto.git", "d8999d42038b22fdcba5923f7fafd538f4540ec8", []},
+  "elixir-datetime": {:git, "git://github.com/alco/elixir-datetime.git", "c2455433c8822591df5a2900ea65de57f123a1f2", []},
   "exlager": {:git, "git://github.com/khia/exlager.git", "0b840aae773e6eb6de7cdbb703b47031b6608bfb", []},
   "goldrush": {:git, "git://github.com/DeadZen/goldrush.git", "1d883423ac360b3536ca52dc733a0164bacf3109", [{:tag, "0.1.5"}]},
   "lager": {:git, "https://github.com/basho/lager.git", "7763143a293edebb2885d8a7cf8124778edb8bba", []},

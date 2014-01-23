@@ -11,6 +11,7 @@ defmodule Yugioh.System.Login do
           case user.password==pwd do
             true->
               :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,1))
+              Lager.debug "login_at [~p]",[user.login_at]
               {:ok,user.id}
             false->
               :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
@@ -20,6 +21,34 @@ defmodule Yugioh.System.Login do
         []->
           {:error,:no_user_find}
       end
+  end
+
+  def web_login([user_id,auth_string],socket) do
+    query = from(u in Model.User,where: u.id == ^user_id,select: u)
+    case Yugioh.Repo.all(query) do
+      [user]->
+        if user.auth_string==auth_string do
+          login_at = user.login_at
+          Lager.debug "web login time [~p]",[login_at]
+          login_at_dt = { { login_at.year, login_at.month, login_at.day }, { login_at.hour, login_at.min, login_at.sec } }
+          login_at_date = Date.from(login_at_dt,:local)
+          invalid_date = Date.shift(login_at_date, min: 30)
+          Lager.debug "invalid_date [~p],now [~p]",[invalid_date,Date.now]
+          if Date.now<invalid_date do
+            :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,1))
+            {:ok,user.id}
+          else
+            :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
+            {:fail,:session_timeout_need_relogin}
+          end
+        else
+          :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
+          Lager.debug "web login invalid auth_string: [~p]",[auth_string]
+          {:fail,:invalid_auth_string}
+        end
+      []->
+        {:error,:no_user_find}
+    end
   end
 
   def check_role_exist(name,socket) do
