@@ -132,7 +132,8 @@ defmodule Yugioh.Proto.PT12 do
 
   def write(:get_graveyard,player_id,graveyard_cards) do
     graveyard_cards_binary = iolist_to_binary(Enum.map(graveyard_cards,fn(x)-> <<x::size(32)>> end))
-    <<player_id::size(32),length(graveyard_cards)::size(16),graveyard_cards_binary::binary>>
+    data = <<player_id::size(32),length(graveyard_cards)::size(16),graveyard_cards_binary::binary>>
+    Yugioh.Proto.pack(12007,data)
   end
   
 end
