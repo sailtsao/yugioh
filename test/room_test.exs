@@ -9,10 +9,10 @@ defmodule RoomTest do
     {:ok,socket1} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
 
     # web login test
-    :gen_tcp.send(socket1,<<16::size(16),10006::size(16),1::size(32),6::size(16),"123456">>)
+    # :gen_tcp.send(socket1,<<16::size(16),10006::size(16),1::size(32),6::size(16),"123456">>)
 
     # normal login test
-    # :gen_tcp.send(socket1,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
+    :gen_tcp.send(socket1,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
 
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
@@ -234,15 +234,7 @@ defmodule RoomTest do
     assert <<total_size::size(16),12003::size(16),0::size(8),0::size(8),target_card_id::size(32),_damage_player_id::size(32),_hp_damage::size(16)>> = data
     if total_size>16 do
       IO.inspect :gen_tcp.recv(socket2,total_size-16)
-    end
-
-    :gen_tcp.send socket1,<<8::size(16),12007::size(16),6::size(32)>>
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-    IO.inspect data
-
-    :gen_tcp.send socket2,<<8::size(16),12007::size(16),8::size(32)>>
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-    IO.inspect data
+    end    
 
     # battle end receive
     {:ok,data}=:gen_tcp.recv(socket1,0)

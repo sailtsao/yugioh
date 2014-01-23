@@ -33,7 +33,7 @@ defmodule Yugioh.Singleton.Room do
         [seat|_rest] = avaible_seat
         {pid,_} = from
         Enum.each Dict.to_list(room_info.members),fn({_,{other_player_pid,_}}) ->
-          other_player_pid <- {:new_room_member,seat,pid}
+          send other_player_pid , {:new_room_member,seat,pid}
         end
         new_members = Dict.put(room_info.members,seat,{pid,:unready})
         new_room_info = room_info.update(members: new_members)
@@ -66,7 +66,7 @@ defmodule Yugioh.Singleton.Room do
                 end
                 :ets.insert :room,new_room_info
                 Enum.each Dict.to_list(members),fn({_,{other_player_pid,_}}) ->
-                  other_player_pid <- {:refresh_room_info,new_room_info}
+                  send other_player_pid , {:refresh_room_info,new_room_info}
                 end
                 Lager.debug "leave room room_info:~p,room count ~p",[new_room_info,:ets.info(:room,:size)]
             end
@@ -82,7 +82,7 @@ defmodule Yugioh.Singleton.Room do
     {pid,_} = from
     case :ets.lookup(:room,room_id) do
       [room_info]->
-        pid <- {:refresh_room_info,room_info}
+        send pid , {:refresh_room_info,room_info}
         {:reply,:ok,state}
       []->
         {:reply,:invalid_room_id,state}
@@ -106,7 +106,7 @@ defmodule Yugioh.Singleton.Room do
             :ets.insert :room,new_room_info
             Lager.debug "battle ready new_room_info:~p",[new_room_info]
             Enum.each Dict.to_list(room_info.members),fn({_,{pid,_}}) ->
-              pid <- {:refresh_ready_state,seat,new_ready_state}
+              send pid , {:refresh_ready_state,seat,new_ready_state}
             end
           end
         end

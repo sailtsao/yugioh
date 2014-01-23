@@ -78,13 +78,7 @@ defmodule Yugioh.Proto.PT12 do
 
   def read(12006,bin//<<>>) do
     {:ok,:battle_load_finish}
-  end
-  
-  def read(12007,bin) do
-    <<player_id::size(32)>> = bin
-    {:ok,{:get_graveyard,player_id}}
-  end
-  
+  end  
 
   def write(:change_phase_to,phase) do    
     phase_number = phase_to_phase_number phase
@@ -103,13 +97,19 @@ defmodule Yugioh.Proto.PT12 do
   end  
   
 
-  def write(:attack,[source_card_index,target_card_index,target_card_id,damage_player_id,hp_damage,destroy_cards]) do
+  def write(:attack,[source_card_index,target_card_index,target_card_id,damage_player_id,hp_damage,destroy_cards,player1_id,graveyard_cards1,player2_id,graveyard_cards2]) do
     destroy_cards_list = Enum.map destroy_cards,fn({player_id,destroy_card_index}) ->          
       <<player_id::size(32),destroy_card_index::size(8)>>
     end
 
     destroy_cards_binary = iolist_to_binary(destroy_cards_list)    
-    data = <<source_card_index::size(8),target_card_index::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary>>
+
+    graveyard_cards1_binary = iolist_to_binary(Enum.map(graveyard_cards1,fn(x)-> <<x::size(32)>> end))
+    graveyard_cards2_binary = iolist_to_binary(Enum.map(graveyard_cards2,fn(x)-> <<x::size(32)>> end))
+
+    data = <<source_card_index::size(8),target_card_index::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary,
+    player1_id::size(32),length(graveyard_cards1)::size(16),graveyard_cards1_binary::binary,player2_id::size(32),length(graveyard_cards2)::size(16),graveyard_cards2_binary::binary>>
+
     Yugioh.Proto.pack(12003,data)
   end  
 
@@ -128,12 +128,6 @@ defmodule Yugioh.Proto.PT12 do
     end
     data = <<result_number::size(8),win_player_id::size(32),lose_player_id::size(32)>>
     Yugioh.Proto.pack(12005,data)
-  end
-
-  def write(:get_graveyard,player_id,graveyard_cards) do
-    graveyard_cards_binary = iolist_to_binary(Enum.map(graveyard_cards,fn(x)-> <<x::size(32)>> end))
-    data = <<player_id::size(32),length(graveyard_cards)::size(16),graveyard_cards_binary::binary>>
-    Yugioh.Proto.pack(12007,data)
   end
   
 end

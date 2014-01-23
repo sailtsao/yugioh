@@ -23,7 +23,7 @@ defmodule Yugioh.Battle do
       0->
         {:reply,:ok,battle_data.phase(phase + 1)}
       1->
-        self <- :new_turn_draw_phase
+        send self , :new_turn_draw_phase
         {:reply,:ok,battle_data.phase(:dp)}
     end
   end
@@ -31,19 +31,6 @@ defmodule Yugioh.Battle do
   def handle_call(_,from,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
     {:reply,:battle_not_ready_yet,battle_data}
   end  
-
-  def handle_call({:get_graveyard,player_id},from,battle_data = BattleData[player1_id: player1_id,player2_id: player2_id]) do
-    {pid,_} = from
-    player_battle_info = case player_id do
-      ^player1_id->
-        battle_data.player1_battle_info
-      ^player2_id->
-        battle_data.player2_battle_info
-    end
-    message = Yugioh.Proto.PT12.write(:get_graveyard,player_id,player_battle_info.graveyard_cards)    
-    pid<-{:send,message}
-    {:reply, :ok, battle_data}
-  end
   
   def handle_call({:summon,player_id,handcards_index,summon_type},from,battle_data) do    
     Lager.debug "battle before summon battle data [~p]",[battle_data]
@@ -77,19 +64,19 @@ defmodule Yugioh.Battle do
           case player_atom do
             :player1_battle_info->
               message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
-              battle_data.player1_battle_info.player_pid <- {:send,message_data}
+              send battle_data.player1_battle_info.player_pid , {:send,message_data}
               message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
-              battle_data.player2_battle_info.player_pid <- {:send,message_data}
+              send battle_data.player2_battle_info.player_pid , {:send,message_data}
             :player2_battle_info->
               message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
-              battle_data.player1_battle_info.player_pid <- {:send,message_data}
+              send battle_data.player1_battle_info.player_pid , {:send,message_data}
               message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
-              battle_data.player2_battle_info.player_pid <- {:send,message_data}
+              send battle_data.player2_battle_info.player_pid , {:send,message_data}
           end
         else
           message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
-          battle_data.player1_battle_info.player_pid <- {:send,message_data}
-          battle_data.player2_battle_info.player_pid <- {:send,message_data}          
+          send battle_data.player1_battle_info.player_pid , {:send,message_data}
+          send battle_data.player2_battle_info.player_pid , {:send,message_data}          
         end        
 
         Lager.debug "battle after summon state [~p]",[new_battle_data]
@@ -110,10 +97,11 @@ defmodule Yugioh.Battle do
         {:player2_battle_info,battle_data.player2_battle_info}
     end
 
-    {result,new_summon_cards,new_status} = if(card_index in flipped_cards) do      
-      {:flip_many_times,nil,nil}
+    if(card_index in flipped_cards) do      
+      {:reply, :flip_many_times, battle_data}
     else
-      case Dict.get(player_battle_info.summon_cards,card_index) do
+      card_id = 0
+      {result,new_summon_cards,new_status} = case Dict.get(player_battle_info.summon_cards,card_index) do
         {card_id,:defense_down}->
           {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
         {card_id,:defense_up}->
@@ -123,20 +111,18 @@ defmodule Yugioh.Battle do
         nil->
           {:invalid_flip_card_index, nil,nil}
       end
-    end
-
-    case result do
-      :ok->
-        new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
-        new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:flipped_cards,flipped_cards++[card_index]}])
-        message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id,new_status])
-        battle_data.player1_battle_info.player_pid <- {:send,message_data}
-        battle_data.player2_battle_info.player_pid <- {:send,message_data}
-        {:reply, :ok, new_battle_data}
-      reason->
-        {:reply, reason, battle_data}
-    end
-
+      case result do
+        :ok->
+          new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
+          new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:flipped_cards,flipped_cards++[card_index]}])
+          message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id,new_status])
+          send battle_data.player1_battle_info.player_pid , {:send,message_data}
+          send battle_data.player2_battle_info.player_pid , {:send,message_data}
+          {:reply, :ok, new_battle_data}
+        reason->
+          {:reply, reason, battle_data}
+      end
+    end    
   end
 
   def handle_call({:flip_card,_,_},_,battle_data)do
@@ -173,13 +159,14 @@ defmodule Yugioh.Battle do
         new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp)
         new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
         if new_target_curhp <= 0 do
-          self<-:battle_end
+          send self,:battle_end
         end
     end
     if result==:ok do
-      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,11,0,target_player_id,hp_damage,[]])
-      battle_data.player1_battle_info.player_pid <- {:send,message}
-      battle_data.player2_battle_info.player_pid <- {:send,message}
+      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,11,0,target_player_id,hp_damage,[],
+        source_player_id,source_player_battle_info.graveyard_cards,target_player_id,target_player_battle_info.graveyard_cards])
+      send battle_data.player1_battle_info.player_pid , {:send,message}
+      send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     Lager.debug "after attack battle data [~p]",[new_battle_data]
     {:reply, result, new_battle_data}
@@ -224,7 +211,7 @@ defmodule Yugioh.Battle do
             new_target_player_battle_info = target_player_battle_info.update(curhp: new_target_curhp,summon_cards: new_target_summon_cards,graveyard_cards: new_target_graveyard_cards)
             new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
             if new_target_curhp <= 0 do
-              self<-:battle_end
+              send self,:battle_end
             end
 
           # attacker dead and update the attack player's hp
@@ -241,7 +228,7 @@ defmodule Yugioh.Battle do
             new_source_player_battle_info = source_player_battle_info.update(curhp: new_source_curhp,summon_cards: new_source_summon_cards,graveyard_cards: new_source_graveyard_cards)
             new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
             if new_source_curhp <= 0 do
-              self<-:battle_end
+              send self,:battle_end
             end
 
           # destroy all
@@ -273,7 +260,7 @@ defmodule Yugioh.Battle do
               summon_cards: new_target_summon_cards,graveyard_cards: new_target_graveyard_cards)
             new_battle_data = battle_data.update([{target_player_atom,new_target_player_battle_info}])
             if new_target_curhp <= 0 do
-              self<-:battle_end
+              send self,:battle_end
             end
             
             # attacker get damage
@@ -294,7 +281,7 @@ defmodule Yugioh.Battle do
               new_battle_data = battle_data.update([{source_player_atom,new_source_player_battle_info}])
             end
             if new_source_curhp <= 0 do
-              self<-:battle_end
+              send self,:battle_end
             end
             # no one is destroyed
           attacker_data.attack == defender_data.defend ->
@@ -309,9 +296,10 @@ defmodule Yugioh.Battle do
     end
 
     if result==:ok do
-      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,defender_id,damage_player_id,hp_damage,destroy_cards])
-      battle_data.player1_battle_info.player_pid <- {:send,message}
-      battle_data.player2_battle_info.player_pid <- {:send,message}
+      message = Yugioh.Proto.PT12.write(:attack,[source_card_index,target_card_index,defender_id,damage_player_id,hp_damage,destroy_cards,
+        player1_id,new_battle_data.player1_battle_info.graveyard_cards,player2_id,new_battle_data.player2_battle_info.graveyard_cards])
+      send battle_data.player1_battle_info.player_pid , {:send,message}
+      send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     Lager.debug "after attack battle data [~p]",[new_battle_data]
     {:reply, result, new_battle_data}
@@ -331,20 +319,20 @@ defmodule Yugioh.Battle do
       :bp when now_phase in [:mp1]->
         new_battle_data = battle_data.phase(:bp)
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
-        battle_data.player1_battle_info.player_pid <- {:send,message}
-        battle_data.player2_battle_info.player_pid <- {:send,message}
+        send battle_data.player1_battle_info.player_pid , {:send,message}
+        send battle_data.player2_battle_info.player_pid , {:send,message}
         {:reply, :ok, new_battle_data}
       :mp2 when now_phase in [:mp1,:bp]->
         new_battle_data = battle_data.phase(:mp2)
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
-        battle_data.player1_battle_info.player_pid <- {:send,message}
-        battle_data.player2_battle_info.player_pid <- {:send,message}
+        send battle_data.player1_battle_info.player_pid , {:send,message}
+        send battle_data.player2_battle_info.player_pid , {:send,message}
         {:reply, :ok, new_battle_data}
       :ep when now_phase in [:mp1,:bp,:mp2]->
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
-        battle_data.player1_battle_info.player_pid <- {:send,message}
-        battle_data.player2_battle_info.player_pid <- {:send,message}
-        self <- :new_turn_draw_phase
+        send battle_data.player1_battle_info.player_pid , {:send,message}
+        send battle_data.player2_battle_info.player_pid , {:send,message}
+        send self , :new_turn_draw_phase
         {:reply, :ok, battle_data}
       _->
         {:reply, :invalid_phase_change, battle_data}
@@ -382,9 +370,9 @@ defmodule Yugioh.Battle do
     # send battle info
     # random 5 cards 
     message_data = [1,player1_state.id,:dp,player1_state,player1_battle_info,player2_state,hide_handcards(player2_battle_info)]
-    player1_pid <- {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
+    send player1_pid , {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
     message_data = [1,player1_state.id,:dp,player1_state,hide_handcards(player1_battle_info),player2_state,player2_battle_info]
-    player2_pid <- {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
+    send player2_pid , {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
 
     {:noreply, BattleData[turn_count: 0,phase: 0,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
                           player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]}
@@ -426,32 +414,32 @@ defmodule Yugioh.Battle do
     case new_operator_id do
       ^player1_id->
         message = Yugioh.Proto.PT12.write(:new_turn_draw,[new_battle_data.turn_count,new_battle_data.phase,new_battle_data.operator_id,draw_card_id])
-        battle_data.player1_battle_info.player_pid <- {:send,message}
+        send battle_data.player1_battle_info.player_pid , {:send,message}
         message = Yugioh.Proto.PT12.write(:new_turn_draw,[new_battle_data.turn_count,new_battle_data.phase,new_battle_data.operator_id,0])
-        battle_data.player2_battle_info.player_pid <- {:send,message}
+        send battle_data.player2_battle_info.player_pid , {:send,message}
       ^player2_id->
         message = Yugioh.Proto.PT12.write(:new_turn_draw,[new_battle_data.turn_count,new_battle_data.phase,new_battle_data.operator_id,0])
-        battle_data.player1_battle_info.player_pid <- {:send,message}
+        send battle_data.player1_battle_info.player_pid , {:send,message}
         message = Yugioh.Proto.PT12.write(:new_turn_draw,[new_battle_data.turn_count,new_battle_data.phase,new_battle_data.operator_id,draw_card_id])
-        battle_data.player2_battle_info.player_pid <- {:send,message}
+        send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     
-    self <- :standby_phase
+    send self , :standby_phase
     {:noreply,new_battle_data}
   end
 
   def handle_info(:standby_phase,battle_data) do
       new_battle_data = battle_data.phase(:sp)
-      battle_data.player1_battle_info.player_pid <- {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
-      battle_data.player2_battle_info.player_pid <- {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
-      self <- :main_phase_1
+      send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
+      send battle_data.player2_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
+      send self , :main_phase_1
       {:noreply,new_battle_data}
   end
 
   def handle_info(:main_phase_1,battle_data) do
       new_battle_data = battle_data.phase(:mp1)
-      battle_data.player1_battle_info.player_pid <- {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
-      battle_data.player2_battle_info.player_pid <- {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
+      send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
+      send battle_data.player2_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
       {:noreply,new_battle_data}
   end
 
@@ -476,8 +464,8 @@ defmodule Yugioh.Battle do
         {:draw,0,0}
     end
     message = Yugioh.Proto.PT12.write(:battle_end,[result,win_player_id,lose_player_id])
-    battle_data.player1_battle_info.player_pid <- {:send,message}
-    battle_data.player2_battle_info.player_pid <- {:send,message}
+    send battle_data.player1_battle_info.player_pid , {:send,message}
+    send battle_data.player2_battle_info.player_pid , {:send,message}
     stop(self)
     {:noreply,battle_data}
   end
@@ -512,10 +500,6 @@ defmodule Yugioh.Battle do
 
   def battle_load_finish(battle_pid,player_id) do
     :gen_server.call(battle_pid,:battle_load_finish)
-  end
-
-  def get_graveyard(battle_pid,player_id) do
-    :gen_server.call(battle_pid,{:get_graveyard,player_id})
   end
 
   defp hide_handcards battle_info do
