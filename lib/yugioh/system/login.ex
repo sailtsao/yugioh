@@ -34,13 +34,13 @@ defmodule Yugioh.System.Login do
           login_at_date = Date.from(login_at_dt,:local)
           invalid_date = Date.shift(login_at_date, min: 30)
           Lager.debug "invalid_date [~p],now [~p]",[invalid_date,Date.now]
-          if Date.now<invalid_date do
+          # if Date.now<invalid_date do
             :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,1))
             {:ok,user.id}
-          else
-            :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
-            {:fail,:session_timeout_need_relogin}
-          end
+          # else
+          #   :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
+          #   {:fail,:session_timeout_need_relogin}
+          # end
         else
           :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,0))
           Lager.debug "web login invalid auth_string: [~p]",[auth_string]
