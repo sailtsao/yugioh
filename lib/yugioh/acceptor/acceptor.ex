@@ -102,7 +102,7 @@ defmodule Yugioh.Acceptor.Acceptor do
               {:ok,binaryData} ->
                 case decode_message(msgID,binaryData) do
                   {:ok,data}->
-                    case :gen_server.call(client.player_pid,{"SOCKET_EVENT",msgID,data}) do
+                    case Yugioh.Player.socket_event(client.player_pid,msgID,data) do
                       :ok->
                         parse_game_packet_loop(socket,client)
                       {:error,reason}->
@@ -117,7 +117,7 @@ defmodule Yugioh.Acceptor.Acceptor do
           false->
             case decode_message(msgID,<<>>) do
               {:ok,data}->
-                case :gen_server.call(client.player_pid,{"SOCKET_EVENT",msgID,data}) do
+                case Yugioh.Player.socket_event(client.player_pid,msgID,data) do
                   :ok->
                     parse_game_packet_loop(socket,client)
                   {:error,reason}->
