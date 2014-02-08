@@ -1,38 +1,29 @@
 defmodule Yugioh.Battle do
   require Lager
-  use GenServer.Behaviour
+  use ExActor.GenServer
   alias Yugioh.Data.Cards
 
-  def start({player1_pid,player2_pid}) do
-    :gen_server.start(__MODULE__,{player1_pid,player2_pid},[])
-  end
-
-  def stop(pid) do
-    if is_pid(pid), do: :gen_server.cast(pid, :stop)
-  end
-
-  def init({player1_pid,player2_pid}) do
+  definit ({player1_pid,player2_pid}) do
     Lager.debug "battle process [~p] for player [~p] created",[self,{player1_pid,player2_pid}]
-    :gen_server.cast self,{:init,player1_pid,player2_pid}
-    {:ok,{}}
+    init_cast self,player1_pid,player2_pid
+    initial_state({})
   end
 
 
-  def handle_call(:battle_load_finish,_,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
+  defcall battle_load_finish,state: battle_data=BattleData[phase: phase], when: phase ==0 or phase == 1 do
+  # phase is atom,0 and 1 is used to count the ready message
     case phase do
+      # get one ready message
       0->
-        {:reply,:ok,battle_data.phase(phase + 1)}
+        set_and_reply battle_data.phase(1),:ok
+      # get two ready message,start the battle
       1->
-        send self , :new_turn_draw_phase
-        {:reply,:ok,battle_data.phase(:dp)}
+        send self, :new_turn_draw_phase
+        set_and_reply battle_data.phase(:dp),:ok
     end
   end
-
-  def handle_call(_,_,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
-    {:reply,:battle_not_ready_yet,battle_data}
-  end  
   
-  def handle_call({:summon,player_id,handcards_index,summon_type},_,battle_data) do    
+  defcall summon(player_id,handcards_index,summon_type),state: battle_data do    
     Lager.debug "battle before summon battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id        
@@ -44,9 +35,9 @@ defmodule Yugioh.Battle do
     end
     cond do
       battle_data.summoned == true ->
-        {:reply, :cant_summon_twice_in_one_turn, battle_data}
+        reply :cant_summon_twice_in_one_turn
       Dict.size(player_battle_info.summon_cards)==5->
-        {:reply, :cant_summon_more, battle_data}
+        reply :cant_summon_more
       battle_data.phase == :mp1 or battle_data.phase ==:mp2 ->        
 
         summon_card_id = Enum.at(player_battle_info.handcards,handcards_index)
@@ -80,15 +71,15 @@ defmodule Yugioh.Battle do
         end        
 
         Lager.debug "battle after summon state [~p]",[new_battle_data]
-        {:reply, :ok, new_battle_data}
+        set_and_reply new_battle_data,:ok
       true->
-        {:reply, :summon_in_invalid_phase, battle_data}
+        reply :summon_in_invalid_phase
     end    
   end
   
-  def handle_call({:flip_card,player_id,card_index},_,
-    battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,flipped_cards: flipped_cards])
-  when phase == :mp1 or phase == :mp2 do
+  defcall flip_card(player_id,card_index),
+  state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,flipped_cards: flipped_cards],
+  when: phase == :mp1 or phase == :mp2 do
 
     {player_atom,player_battle_info} = case player_id do
       ^player1_id->
@@ -98,7 +89,7 @@ defmodule Yugioh.Battle do
     end
 
     if(card_index in flipped_cards) do      
-      {:reply, :flip_many_times, battle_data}
+      reply :flip_many_times
     else
       case Dict.get(player_battle_info.summon_cards,card_index) do
         {card_id,battle_status} ->
@@ -115,21 +106,21 @@ defmodule Yugioh.Battle do
           message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,card_id,new_status])
           send battle_data.player1_battle_info.player_pid , {:send,message_data}
           send battle_data.player2_battle_info.player_pid , {:send,message_data}
-          {:reply, :ok, new_battle_data}
+          set_and_reply new_battle_data,:ok
         nil->
-          {:reply, :invalid_flip_card_index, battle_data}
+          reply :invalid_flip_card_index
       end
     end    
   end
 
-  def handle_call({:flip_card,_,_},_,battle_data)do
-    {:reply, :flip_card_in_invalid_phase,battle_data}
+  defcall flip_card do
+    reply :flip_card_in_invalid_phase
   end
 
 # attack player directly
-  def handle_call({:attack,player_id,source_card_index,11},_,
-    battle_data = BattleData[phase: phase])
-  when phase==:bp do
+  defcall attack(player_id,source_card_index,11),
+    state: battle_data = BattleData[phase: phase],
+  when: phase==:bp do
     Lager.debug "before attack battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id
@@ -166,12 +157,12 @@ defmodule Yugioh.Battle do
       send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     Lager.debug "after attack battle data [~p]",[new_battle_data]
-    {:reply, result, new_battle_data}
+    set_and_reply new_battle_data,result
   end
 
   # attack with cards
-  def handle_call({:attack,player_id,source_card_index,target_card_index},_from,battle_data = BattleData[phase: phase]) 
-  when phase==:bp do
+  defcall attack(player_id,source_card_index,target_card_index), state: battle_data = BattleData[phase: phase],
+  when: phase==:bp do
     Lager.debug "before attack battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id
@@ -299,18 +290,18 @@ defmodule Yugioh.Battle do
       send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     Lager.debug "after attack battle data [~p]",[new_battle_data]
-    {:reply, result, new_battle_data}
+    set_and_reply new_battle_data,result
   end
         
-  def handle_call({:attack,_,_,_},_from,battle_data = BattleData[turn_count: turn_count]) when turn_count == 1 do
-    {:reply, :cant_attack_at_first_turn, battle_data}
+  defcall attack(_player_id,_source_card_index,_target_card_index),state: BattleData[turn_count: turn_count], when: turn_count == 1 do
+    reply :cant_attack_at_first_turn
   end
 
-  def handle_call({:attack,_,_,_},_from,battle_data) do
-    {:reply, :attack_in_invalid_phase, battle_data}
+  defcall attack(_player_id,_source_card_index,_target_card_index) do
+    reply :attack_in_invalid_phase
   end
 
-  def handle_call({:change_phase_to,_player_id,phase},_from,battle_data) do
+  defcall change_phase_to(_player_id,phase),state: battle_data do
     now_phase = battle_data.phase
     case phase do
       :bp when now_phase in [:mp1]->
@@ -318,30 +309,25 @@ defmodule Yugioh.Battle do
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
         send battle_data.player1_battle_info.player_pid , {:send,message}
         send battle_data.player2_battle_info.player_pid , {:send,message}
-        {:reply, :ok, new_battle_data}
+        set_and_reply new_battle_data,:ok
       :mp2 when now_phase in [:mp1,:bp]->
         new_battle_data = battle_data.phase(:mp2)
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
         send battle_data.player1_battle_info.player_pid , {:send,message}
         send battle_data.player2_battle_info.player_pid , {:send,message}
-        {:reply, :ok, new_battle_data}
+        set_and_reply new_battle_data,:ok
       :ep when now_phase in [:mp1,:bp,:mp2]->
         message = Yugioh.Proto.PT12.write(:change_phase_to,phase)
         send battle_data.player1_battle_info.player_pid , {:send,message}
         send battle_data.player2_battle_info.player_pid , {:send,message}
         send self , :new_turn_draw_phase
-        {:reply, :ok, battle_data}
+        reply :ok
       _->
-        {:reply, :invalid_phase_change, battle_data}
+        reply :invalid_phase_change
     end        
-  end
-
-  def handle_call(_msg, _from, state) do
-    reply = :ok
-    {:reply, reply, state}
-  end
+  end  
   
-  def handle_cast({:init,player1_pid,player2_pid},_state) do
+  defcast init_cast(player1_pid,player2_pid) do
 
     player1_state = :gen_server.call(player1_pid,:player_state)
     player2_state = :gen_server.call(player2_pid,:player_state)
@@ -371,19 +357,15 @@ defmodule Yugioh.Battle do
     message_data = [1,player1_state.id,:dp,player1_state,hide_handcards(player1_battle_info),player2_state,player2_battle_info]
     send player2_pid , {:send,Yugioh.Proto.PT11.write(:battle_start,message_data)}
 
-    {:noreply, BattleData[turn_count: 0,phase: 0,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
-                          player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]}
+    new_state BattleData[turn_count: 0,phase: 0,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
+                          player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
   end
 
-  def handle_cast(:stop, state) do
+  defcast stop_cast,state: state do
     {:stop, :normal, state}
   end
 
-  def handle_cast(_msg, state) do
-    {:noreply, state}
-  end
-
-  def handle_info(:new_turn_draw_phase,battle_data) do
+  definfo :new_turn_draw_phase,state: battle_data do
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id
     {player_atom,new_operator_id,player_battle_info} = 
@@ -421,36 +403,36 @@ defmodule Yugioh.Battle do
         send battle_data.player2_battle_info.player_pid , {:send,message}
     end
     
-    send self , :standby_phase
-    {:noreply,new_battle_data}
+    send self, :standby_phase
+    new_state new_battle_data
   end
 
-  def handle_info(:standby_phase,battle_data) do
+  definfo :standby_phase,state: battle_data do
       new_battle_data = battle_data.phase(:sp)
       send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
       send battle_data.player2_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
       send self , :main_phase_1
-      {:noreply,new_battle_data}
+      new_state new_battle_data
   end
 
-  def handle_info(:main_phase_1,battle_data) do
+  definfo :main_phase_1,state: battle_data do
       new_battle_data = battle_data.phase(:mp1)
       send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
       send battle_data.player2_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
-      {:noreply,new_battle_data}
+      new_state new_battle_data
   end
 
-  def handle_info(:battle_phase,battle_data) do
+  definfo :battle_phase,state: battle_data do
       new_battle_data = battle_data.phase(:bp)
-      {:noreply,new_battle_data}
+      new_state new_battle_data
   end
 
-  def handle_info(:main_phase_2,battle_data) do
+  definfo :main_phase_2,state: battle_data do
       new_battle_data = battle_data.phase(:mp2)
-      {:noreply,new_battle_data}
+      new_state new_battle_data
   end
 
-  def handle_info(:battle_end,battle_data) do
+  definfo :battle_end,state: battle_data do
     {result,lose_player_id,win_player_id} = cond do
       battle_data.player1_battle_info.curhp <= 0 ->
         {:win,battle_data.player1_id,battle_data.player2_id}
@@ -463,40 +445,8 @@ defmodule Yugioh.Battle do
     message = Yugioh.Proto.PT12.write(:battle_end,[result,win_player_id,lose_player_id])
     send battle_data.player1_battle_info.player_pid , {:send,message}
     send battle_data.player2_battle_info.player_pid , {:send,message}
-    stop(self)
-    {:noreply,battle_data}
-  end
-
-  def handle_info(_msg, state) do
-    {:noreply, state}
-  end
-
-  def terminate(reason,state) do
-    Lager.debug "battle process [~p] state [~p] died for reason [~p]",[self,state,reason]
-  end
-
-  def code_change(_oldVsn, state, _extra) do
-    {:ok, state}
-  end
-
-  def change_phase_to(battle_pid,player_id,phase) do
-    :gen_server.call(battle_pid,{:change_phase_to,player_id,phase})
-  end
-
-  def summon(battle_pid,player_id,handcards_index,summon_type) do
-    :gen_server.call(battle_pid,{:summon,player_id,handcards_index,summon_type})
-  end
-
-  def flip_card(battle_pid,player_id,card_index) do
-    :gen_server.call(battle_pid,{:flip_card,player_id,card_index})
-  end
-
-  def attack(battle_pid,player_id,source_card_index,target_card_index) do
-    :gen_server.call(battle_pid,{:attack,player_id,source_card_index,target_card_index})
-  end
-
-  def battle_load_finish(battle_pid,_player_id) do
-    :gen_server.call(battle_pid,:battle_load_finish)
+    stop_cast self
+    noreply
   end
 
   defp hide_handcards battle_info do

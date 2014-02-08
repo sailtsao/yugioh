@@ -101,7 +101,7 @@ defmodule Yugioh.Player do
     end
 
     if player_state.battle_pid != nil do
-      Yugioh.Battle.stop player_state.battle_pid
+      Yugioh.Battle.stop_cast player_state.battle_pid
     end
     Lager.debug "player process [~p] died reason [~p]",[self,reason]
     :gen_tcp.close player_state.socket

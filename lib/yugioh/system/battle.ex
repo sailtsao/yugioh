@@ -59,7 +59,7 @@ defmodule Yugioh.System.Battle do
   def handle(:battle_load_finish,player_state) do
     case is_pid(player_state.battle_pid) do
       true ->
-        case Yugioh.Battle.battle_load_finish(player_state.battle_pid,player_state.id) do
+        case Yugioh.Battle.battle_load_finish(player_state.battle_pid) do
           :ok->
             {:ok,player_state}
           reason->
