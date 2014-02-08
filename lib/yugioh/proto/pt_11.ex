@@ -6,7 +6,7 @@ defmodule Yugioh.Proto.PT11 do
     {:ok,{:create_room,name,type}}
   end
 
-  def read(11001,_bin) do
+  def read(11001,_) do
     {:ok,:get_rooms}
   end
 
@@ -15,19 +15,19 @@ defmodule Yugioh.Proto.PT11 do
     {:ok,{:enter_room,room_id}}
   end
 
-  def read(11004,bin) do
+  def read(11004,_) do
     {:ok,:leave_room}
   end
 
-  def read(11005,bin) do
+  def read(11005,_bin) do
     {:ok,:refresh_roominfo}
   end
 
-  def read(11006,bin) do
+  def read(11006,_bin) do
     {:ok,:battle_ready}
   end
 
-  def read(11007,bin) do
+  def read(11007,_bin) do
     {:ok,:battle_start}
   end
 

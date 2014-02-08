@@ -76,7 +76,7 @@ defmodule Yugioh.Proto.PT12 do
     {:ok,{:flip_card,card_index}}
   end
 
-  def read(12006,bin//<<>>) do
+  def read(12006,_bin) do
     {:ok,:battle_load_finish}
   end  
 

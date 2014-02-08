@@ -18,7 +18,7 @@ defmodule Yugioh.Battle do
   end
 
 
-  def handle_call(:battle_load_finish,from,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
+  def handle_call(:battle_load_finish,_,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
     case phase do
       0->
         {:reply,:ok,battle_data.phase(phase + 1)}
@@ -28,11 +28,11 @@ defmodule Yugioh.Battle do
     end
   end
 
-  def handle_call(_,from,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
+  def handle_call(_,_,battle_data=BattleData[phase: phase]) when phase ==0 or phase == 1 do
     {:reply,:battle_not_ready_yet,battle_data}
   end  
   
-  def handle_call({:summon,player_id,handcards_index,summon_type},from,battle_data) do    
+  def handle_call({:summon,player_id,handcards_index,summon_type},_,battle_data) do    
     Lager.debug "battle before summon battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id        
@@ -86,7 +86,7 @@ defmodule Yugioh.Battle do
     end    
   end
   
-  def handle_call({:flip_card,player_id,card_index},from,
+  def handle_call({:flip_card,player_id,card_index},_,
     battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,flipped_cards: flipped_cards])
   when phase == :mp1 or phase == :mp2 do
 
@@ -102,13 +102,13 @@ defmodule Yugioh.Battle do
     else
       case Dict.get(player_battle_info.summon_cards,card_index) do
         {card_id,battle_status} ->
-          {result,new_summon_cards,new_status} = case battle_status do
+          {new_summon_cards,new_status} = case battle_status do
             :defense_down->
-              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+              {Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
             :defense_up->
-              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
+              {Dict.put(player_battle_info.summon_cards,card_index,{card_id,:attack}),:attack}
             :attack->
-              {:ok,Dict.put(player_battle_info.summon_cards,card_index,{card_id,:defense_up}),:defense_up}
+              {Dict.put(player_battle_info.summon_cards,card_index,{card_id,:defense_up}),:defense_up}
           end
           new_player_battle_info = player_battle_info.update(summon_cards: new_summon_cards)
           new_battle_data = battle_data.update([{player_atom,new_player_battle_info},{:flipped_cards,flipped_cards++[card_index]}])
@@ -127,19 +127,19 @@ defmodule Yugioh.Battle do
   end
 
 # attack player directly
-  def handle_call({:attack,player_id,source_card_index,11},from,
+  def handle_call({:attack,player_id,source_card_index,11},_,
     battle_data = BattleData[phase: phase])
   when phase==:bp do
     Lager.debug "before attack battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id
-    {source_player_id,target_player_id,source_player_atom,source_player_battle_info,target_player_atom,target_player_battle_info} = case player_id do
+    {source_player_id,target_player_id,_source_player_atom,source_player_battle_info,target_player_atom,target_player_battle_info} = case player_id do
       ^player1_id->
         {player1_id,player2_id,:player1_battle_info,battle_data.player1_battle_info,:player2_battle_info,battle_data.player2_battle_info}
       ^player2_id->
         {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
     end
-    {attacker_id,attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
+    {attacker_id,_attacker_summon_type} = Dict.get source_player_battle_info.summon_cards,source_card_index
     attacker_data = Cards.get(attacker_id)
     hp_damage = 0
     result = :ok
@@ -170,7 +170,7 @@ defmodule Yugioh.Battle do
   end
 
   # attack with cards
-  def handle_call({:attack,player_id,source_card_index,target_card_index},from,battle_data = BattleData[phase: phase]) 
+  def handle_call({:attack,player_id,source_card_index,target_card_index},_from,battle_data = BattleData[phase: phase]) 
   when phase==:bp do
     Lager.debug "before attack battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
@@ -310,7 +310,7 @@ defmodule Yugioh.Battle do
     {:reply, :attack_in_invalid_phase, battle_data}
   end
 
-  def handle_call({:change_phase_to,player_id,phase},from,battle_data) do
+  def handle_call({:change_phase_to,_player_id,phase},_from,battle_data) do
     now_phase = battle_data.phase
     case phase do
       :bp when now_phase in [:mp1]->
@@ -341,7 +341,7 @@ defmodule Yugioh.Battle do
     {:reply, reply, state}
   end
   
-  def handle_cast({:init,player1_pid,player2_pid},state) do
+  def handle_cast({:init,player1_pid,player2_pid},_state) do
 
     player1_state = :gen_server.call(player1_pid,:player_state)
     player2_state = :gen_server.call(player2_pid,:player_state)
@@ -495,7 +495,7 @@ defmodule Yugioh.Battle do
     :gen_server.call(battle_pid,{:attack,player_id,source_card_index,target_card_index})
   end
 
-  def battle_load_finish(battle_pid,player_id) do
+  def battle_load_finish(battle_pid,_player_id) do
     :gen_server.call(battle_pid,:battle_load_finish)
   end
 

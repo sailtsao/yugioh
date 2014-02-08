@@ -33,7 +33,7 @@ defmodule Yugioh.Player do
     {:reply, player_state, player_state}
   end
 
-  def handle_call({:update_player_state,new_player_state},_from,player_state) do
+  def handle_call({:update_player_state,new_player_state},_from,_player_state) do
     {:reply, :ok, new_player_state}
   end
 

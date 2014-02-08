@@ -1,6 +1,7 @@
 defmodule Yugioh.System.Login do
   import Ecto.Query
   require Lager
+  require Integer
 
   alias Yugioh.Library.Online
 
@@ -33,7 +34,7 @@ defmodule Yugioh.System.Login do
           login_at_dt = { { login_at.year, login_at.month, login_at.day }, { login_at.hour, login_at.min, login_at.sec } }
           login_at_date = Date.from(login_at_dt,:local)
           invalid_date = Date.shift(login_at_date, min: 30)
-          Lager.debug "invalid_date [~p],now [~p]",[invalid_date,Date.now]
+          Lager.debug "invalid_date [~p],now date [~p]",[invalid_date,Date.now]
           # if Date.now<invalid_date do
             :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10000,1))
             {:ok,user.id}
@@ -108,7 +109,7 @@ defmodule Yugioh.System.Login do
     if(Online.is_player_online(role_id)) do
       message = Yugioh.Proto.PT10.write(:tips,Yugioh.Data.Strings.get(:login_again_string))
       player_pid = Online.get_online_player(role_id).player_pid
-      player_pid <- {:send,message}
+      send(player_pid,{:send,message})
       Yugioh.Player.stop player_pid,:login_again
     end
 
@@ -120,7 +121,7 @@ defmodule Yugioh.System.Login do
     nl = byte_size(role.name)
     
     # make cards binary
-    cards_list=binary_to_term(role.cards)
+    cards_list=:erlang.binary_to_term(role.cards)
     cards_binary = iolist_to_binary(Enum.map(cards_list,fn(x)-> <<x::size(32)>> end))
     # send player data to client
     :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,<<role.id::size(32), role.avatar::size(8), nl::size(16), role.name::bitstring,

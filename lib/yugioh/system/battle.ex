@@ -1,5 +1,4 @@
 defmodule Yugioh.System.Battle do
-  alias Yugioh.Proto.PT12
 
   def handle({:summon,handcards_index,summon_type},player_state) do
     case is_pid(player_state.battle_pid) do

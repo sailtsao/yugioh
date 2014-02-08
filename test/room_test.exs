@@ -18,7 +18,7 @@ defmodule RoomTest do
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
     {:ok,socket2} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
-    :gen_tcp.send(socket2,<<18::size(16),10000::size(16),4::size(16),"sail",6::size(16),"123456">>)
+    :gen_tcp.send(socket2,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
@@ -69,8 +69,8 @@ defmodule RoomTest do
     assert <<
     _::size(16),11002::size(16),1::size(16),room_id::size(32),_status::size(16),4::size(16),"room",1::size(16),
     2::size(16),
-    1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),1::size(8),
-    2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
+    2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8),
+    1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),1::size(8)    
     >> = data
 
     # new member notify

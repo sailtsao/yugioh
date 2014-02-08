@@ -25,11 +25,11 @@ defmodule Yugioh.Mixfile do
   # { :foobar, "~> 0.1", git: "https://github.com/elixir-lang/foobar.git" }
   defp deps do
     [
-      # { :amrita, github: "josephwilk/amrita" },
       { :postgrex, github: "ericmj/postgrex" },
       { :ecto, github: "elixir-lang/ecto" },
       { :exlager,github: "khia/exlager" },
-      { :"elixir-datetime",github: "alco/elixir-datetime"}
+      { :"elixir-datetime",github: "alco/elixir-datetime"},
+      { :exactor,github: "sasa1977/exactor" }
     ]
   end
 

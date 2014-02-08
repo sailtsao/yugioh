@@ -52,7 +52,7 @@ defmodule Yugioh.Acceptor.Acceptor do
           {:ok,account_id}->
             client = client.update(account_id: account_id,logined: true)
             parse_packet_loop(socket,client)
-          {:fail,reason}->
+          {:fail,_reason}->
             parse_packet_loop(socket,client)
           {:error,reason}->
             do_error(socket,reason,client)
@@ -62,7 +62,7 @@ defmodule Yugioh.Acceptor.Acceptor do
           {:ok,account_id}->
             client = client.update(account_id: account_id,logined: true)
             parse_packet_loop(socket,client)
-          {:fail,reason}->
+          {:fail,_reason}->
             parse_packet_loop(socket,client)
           {:error,reason}->
             do_error(socket,reason,client)
