@@ -143,8 +143,11 @@ defmodule RoomTest do
     # 2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
     # >> = data 
 
+    :gen_tcp.send socket1,<<6::size(16),12007::size(16),1::size(8),0::size(8)>>
+    {:ok,data}=:gen_tcp.recv(socket1,0)
+    assert <<8::size(16),12007::size(16),2::size(16),1::size(8),2::size(8)>>
     # summon
-    :gen_tcp.send socket1,<<6::size(16), 12001::size(16),0::size(8),2::size(8)>> 
+    :gen_tcp.send socket1,<<6::size(16),12001::size(16),0::size(8),2::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
     assert <<15::size(16), 12001::size(16),6::size(32),0::size(8),_summon_card_id::size(32),0::size(8),2::size(8)>> = data
     {:ok,data}=:gen_tcp.recv(socket2,0)

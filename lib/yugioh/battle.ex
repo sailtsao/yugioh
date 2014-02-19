@@ -9,8 +9,32 @@ defmodule Yugioh.Battle do
     initial_state({})
   end
 
+  defcall get_card_operations(:handcard_scene,index),from: {pid,_},state: battle_data do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon,:place]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(:graveyard_scene,index),from: {pid,_},state: battle_data do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(:monster_scene,index),from: {pid,_},state: battle_data do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:attack]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(:magic_trap_scene,index),from: {pid,_},state: battle_data do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:fire_effect]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
 
   defcall battle_load_finish,state: battle_data=BattleData[phase: phase], when: phase ==0 or phase == 1 do
+    # 0->1->first dp
   # phase is atom,0 and 1 is used to count the ready message
     case phase do
       # get one ready message
@@ -23,7 +47,7 @@ defmodule Yugioh.Battle do
     end
   end
   
-  defcall summon(player_id,handcards_index,summon_type),state: battle_data do    
+  defcall summon(player_id,handcards_index,summon_type),state: battle_data do
     Lager.debug "battle before summon battle data [~p]",[battle_data]
     player1_id = battle_data.player1_id
     player2_id = battle_data.player2_id        
@@ -449,6 +473,7 @@ defmodule Yugioh.Battle do
     noreply
   end
 
+  # make all cards id to 0
   defp hide_handcards battle_info do
     cards_size = length battle_info.handcards
     battle_info.handcards(Enum.take Stream.cycle([0]),cards_size)

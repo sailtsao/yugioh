@@ -54,6 +54,66 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
+  def decode_scene_type_id scene_type_id do
+    case scene_type_id do
+      1->
+        :handcard_scene
+      2->
+        :graveyard_scene
+      3->
+        :monster_scene
+      4->
+        :magic_trap_scene
+    end
+  end
+
+  def encode_scene_type scene_type do
+    case scene_type do
+      :handcard_scene->
+        1
+      :graveyard_scene->
+        2
+      :monster_scene->
+        3
+      :magic_trap_scene->
+        4
+    end    
+  end
+  
+  def decode_operation_type_id operation_type_id do
+    case operation_type_id do
+      1->
+        :summon
+      2->
+        :place
+      3->
+        :fire_effect
+      4->
+        :attack
+      5->
+        :attack_present
+      6->
+        :defense_present
+    end
+  end
+
+  def encode_operation_type operation_type do
+    case operation_type do
+      :summon->
+        1
+      :place->
+        2
+      :fire_effect->
+        3
+      :attack->
+        4
+      :attack_present->
+        5
+      :defense_present->
+        6
+    end    
+  end
+
   def read(12000,bin) do
     <<phase_number::size(8)>> = bin
     phase = phase_number_to_phase phase_number
@@ -79,6 +139,12 @@ defmodule Yugioh.Proto.PT12 do
   def read(12006,_bin) do
     {:ok,:battle_load_finish}
   end  
+
+  def read(12007,bin) do
+    <<scene_type_id::size(8),index::size(8)>> = bin
+    {:ok,{:get_card_operations,decode_scene_type_id(scene_type_id),index}}
+  end
+  
 
   def write(:change_phase_to,phase) do    
     phase_number = phase_to_phase_number phase
@@ -128,6 +194,16 @@ defmodule Yugioh.Proto.PT12 do
     end
     data = <<result_number::size(8),win_player_id::size(32),lose_player_id::size(32)>>
     Yugioh.Proto.pack(12005,data)
+  end
+  
+  def write(:get_card_operations,[operations]) do
+    operations_list = Enum.map operations,fn(op) ->
+      op_id = encode_operation_type(op)
+      <<op_id::size(8)>>
+    end
+    operations_binary = iolist_to_binary(operations_list)
+    data = <<length(operations_list)::size(16),operations_binary::binary>>
+    Yugioh.Proto.pack(12007,data)
   end
   
 end
