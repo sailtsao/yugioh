@@ -22,15 +22,20 @@ defmodule Yugioh.Singleton.Room do
         reply :invalid_room_id
       [room_info]->
         avaible_seat = :lists.subtract([1,2],Dict.keys(room_info.members))
-        [seat|_rest] = avaible_seat
-        Enum.each Dict.to_list(room_info.members),fn({_,{other_player_pid,_}}) ->
-          send other_player_pid , {:new_room_member,seat,pid}
-        end
-        new_members = Dict.put(room_info.members,seat,{pid,:unready})
-        new_room_info = room_info.update(members: new_members)
-        Lager.debug "new enter room room_info:~p",[new_room_info]
-        :ets.insert :room,new_room_info
-        reply {:ok,new_room_info}
+        case avaible_seat do
+          []->
+            reply :room_already_full
+          _->
+            [seat|_rest] = avaible_seat
+            Enum.each Dict.to_list(room_info.members),fn({_,{other_player_pid,_}}) ->
+              send other_player_pid , {:new_room_member,seat,pid}
+            end
+            new_members = Dict.put(room_info.members,seat,{pid,:unready})
+            new_room_info = room_info.update(members: new_members)
+            Lager.debug "new enter room room_info:~p",[new_room_info]
+            :ets.insert :room,new_room_info
+            reply {:ok,new_room_info}
+        end        
     end
   end
 

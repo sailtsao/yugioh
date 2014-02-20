@@ -9,20 +9,26 @@ defmodule Yugioh.Battle do
     initial_state({})
   end
 
-  defcall get_card_operations(:handcard_scene,index),from: {pid,_},state: battle_data do
+  defcall get_card_operations(:handcard_scene,index),from: {pid,_} do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon,:place]])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(:graveyard_scene,index),from: {pid,_},state: battle_data do
+  defcall get_card_operations(:graveyard_scene,index),from: {pid,_} do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(:monster_scene,index),from: {pid,_},state: battle_data do
+  defcall get_card_operations(:monster_scene,index),from: {pid,_},state: BattleData[phase: phase], when phase == :bp do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:attack]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(:monster_scene,index),from: {pid,_} do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
     send pid,{:send,message_data}
     reply :ok
   end

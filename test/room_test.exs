@@ -80,8 +80,6 @@ defmodule RoomTest do
     # battle ready    
     :gen_tcp.send socket2,<<4::size(16),11006::size(16)>>
 
-    :gen_tcp.close socket1
-
     # battle ready notify
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<6::size(16),11006::size(16),2::size(8),1::size(8)>>
