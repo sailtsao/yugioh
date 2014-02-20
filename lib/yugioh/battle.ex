@@ -21,7 +21,7 @@ defmodule Yugioh.Battle do
     reply :ok
   end
 
-  defcall get_card_operations(:monster_scene,index),from: {pid,_},state: BattleData[phase: phase], when phase == :bp do
+  defcall get_card_operations(:monster_scene,index),from: {pid,_},state: BattleData[phase: phase], when: phase == :bp do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:attack]])
     send pid,{:send,message_data}
     reply :ok
