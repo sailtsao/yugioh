@@ -1,14 +1,36 @@
-defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,cards: [],socket: nil,in_room_id: 0,battle_pid: nil
+defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,socket: nil,in_room_id: 0,battle_pid: nil,
+  deck: [],
+  extra_deck: [],
+  side_deck: []
 
-defrecord Card,id: 0,attack: 0,defend: 0,star: 0
+defrecord Card,id: 0,attack: 0,defense: 0,level: 0
+
+defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,attacked: false do
+  def turn_reset(record) do
+    record.update(effect_monster: false,presentation_changed: false,attacked: false)
+  end
+end
 
 defrecord PlayerOnline,id: 0,player_pid: nil
 
 defrecord RoomInfo,id: 0,status: nil,name: "",type: 0,owner_pid: nil,members: nil
 
-defrecord BattleInfo,player_pid: nil,maxhp: 0,curhp: 0,summon_cards: HashDict.new,extra_cards: HashDict.new,graveyard_cards: [],handcards: [],remaincards: [],socket: nil
+defrecord BattleInfo,
+  player_pid: nil,
+  socket: nil,
+  maxhp: 0,curhp: 0,
+  monster_card_zone: HashDict.new,
+  spell_trap_zone: HashDict.new,
+  extra_deck_zone: [],
+  graveyardcards: [],
+  deckcards: [],
+  banishedcards: [],
+  handcards: [],
+  field_card: nil
 
-defrecord BattleData,turn_count: 1,map: [],operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,player1_battle_info: nil,player2_battle_info: nil,summoned: false,flipped_cards: []
+
+defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,
+  player1_battle_info: nil,player2_battle_info: nil,normal_summoned: false
 
 defmodule RecordHelper do
   require Lager

@@ -129,7 +129,7 @@ defmodule Yugioh.System.Login do
 
     # create player status record to initialize player process
     player_state=PlayerState.new(id: role.id,name: role.name,gender: role.gender,avatar: role.avatar,
-                          hp: role.hp,win: role.win,lose: role.lose,cards: cards_list)
+                          hp: role.hp,win: role.win,lose: role.lose,deck: cards_list)
 
     # create player process
     Yugioh.Player.start({player_state,socket})

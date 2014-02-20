@@ -73,7 +73,7 @@ defmodule Yugioh.System.Battle do
   def handle({:get_card_operations,scene_type,index},player_state) do
     case is_pid(player_state.battle_pid) do
       true ->
-        case Yugioh.Battle.get_card_operations(player_state.battle_pid,scene_type,index) do
+        case Yugioh.Battle.get_card_operations(player_state.battle_pid,player_state.id,scene_type,index) do
           :ok->
             {:ok,player_state}
           reason->

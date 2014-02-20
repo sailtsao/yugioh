@@ -4,8 +4,8 @@ defmodule Yugioh.Data.Cards do
     Card.new(
       id: 1,
       attack: 1000,
-      defend: 1000,
-      star: 8
+      defense: 1000,
+      level: 8
       )
   end
   
@@ -13,8 +13,8 @@ defmodule Yugioh.Data.Cards do
     Card.new(
       id: 2,
       attack: 200,
-      defend: 200,
-      star: 8
+      defense: 200,
+      level: 8
       )
   end
 
@@ -22,8 +22,8 @@ defmodule Yugioh.Data.Cards do
     Card.new(
       id: 3,
       attack: 300,
-      defend: 300,
-      star: 8
+      defense: 300,
+      level: 8
       )
   end
 
@@ -31,8 +31,8 @@ defmodule Yugioh.Data.Cards do
     Card.new(
       id: 4,
       attack: 400,
-      defend: 400,
-      star: 8
+      defense: 400,
+      level: 8
       )
   end
 
@@ -40,8 +40,8 @@ defmodule Yugioh.Data.Cards do
     Card.new(
       id: 5,
       attack: 500,
-      defend: 500,
-      star: 8
+      defense: 500,
+      level: 8
       )
   end
 end
