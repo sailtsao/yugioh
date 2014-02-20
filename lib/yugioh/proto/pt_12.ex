@@ -94,6 +94,8 @@ defmodule Yugioh.Proto.PT12 do
         :attack_present
       6->
         :defense_present
+      7->
+        :reverse
     end
   end
 
@@ -111,6 +113,8 @@ defmodule Yugioh.Proto.PT12 do
         5
       :defense_present->
         6
+      :reverse->
+        7
     end    
   end
 

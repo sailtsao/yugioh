@@ -19,7 +19,7 @@ defmodule Yugioh.Acceptor.Acceptor do
   def do_error(socket,reason,client) do        
     Lager.debug "client [~p] died by reason [~p]",[client,reason]
     # stop player
-    if is_pid(client.player_pid),do: Yugioh.Player.stop(client.player_pid)
+    if is_pid(client.player_pid),do: Yugioh.Player.stop_cast(client.player_pid,reason)
     :gen_tcp.close(socket)
   end  
 
