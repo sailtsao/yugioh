@@ -53,7 +53,7 @@ defmodule Yugioh.Battle do
 
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
-    if monster.attacked == false and turn_count > 1 do
+    if monster.attacked == false and turn_count > 1 and monster.presentation == :attack_present do
       operations = operations ++ [:attack]
     end
 
