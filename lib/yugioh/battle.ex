@@ -22,7 +22,7 @@ defmodule Yugioh.Battle do
   from: {pid,_},
   state: BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon,:place]])
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon_operation,:place_operation]])
     send pid,{:send,message_data}
     reply :ok
   end
@@ -53,8 +53,8 @@ defmodule Yugioh.Battle do
 
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
-    if monster.attacked == false and turn_count > 1 and monster.presentation == :attack_present do
-      operations = operations ++ [:attack]
+    if monster.attacked == false and turn_count > 1 and monster.presentation == :attack do
+      operations = operations ++ [:attack_operation]
     end
 
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
@@ -79,11 +79,11 @@ defmodule Yugioh.Battle do
     if monster.presentation_changed == false do
       operations = case monster.presentation do
         :attack ->
-          operations ++ [:defense_present]
+          operations ++ [:change_to_defense_present_operation]
         :defense_down ->
-          operations ++ [:reverse]
+          operations ++ [:reverse_operation]
         :defense_up ->
-          operations ++ [:attack_present]
+          operations ++ [:change_to_attack_present_operation]
       end
     end
 
@@ -99,7 +99,7 @@ defmodule Yugioh.Battle do
   end
 
   defcall get_card_operations(player_id,:magic_trap_scene,index),from: {pid,_},state: battle_data do
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:fire_effect]])
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:fire_effect_operation]])
     send pid,{:send,message_data}
     reply :ok
   end
@@ -355,12 +355,12 @@ defmodule Yugioh.Battle do
           {:attack,defense_state} ->
             cond do
                 # defender get damage
-              attack_monster.attack>defense_monster.defend ->
+              attack_monster.attack>defense_monster.defense ->
                 destroy_cards = destroy_cards ++ [{target_player_id,target_card_index}]
                 new_target_graveyardcards = target_player_battle_info.graveyardcards++[defense_monster.id]
                 new_target_monster_card_zone = Dict.delete target_player_battle_info.monster_card_zone,target_card_index
                 damage_player_id = target_player_id
-                hp_damage = attack_monster.attack - defense_monster.defend
+                hp_damage = attack_monster.attack - defense_monster.defense
                 if hp_damage>target_player_battle_info.curhp do
                   hp_damage = target_player_battle_info.curhp
                 end
@@ -375,9 +375,9 @@ defmodule Yugioh.Battle do
                 end
                 
                 # attacker get damage
-              attack_monster.attack<defense_monster.defend ->
+              attack_monster.attack<defense_monster.defense ->
                 damage_player_id = source_player_id
-                hp_damage = defense_monster.defend - attack_monster.attack
+                hp_damage = defense_monster.defense - attack_monster.attack
                 if hp_damage>source_player_battle_info.curhp do
                   hp_damage = source_player_battle_info.curhp
                 end
@@ -396,7 +396,7 @@ defmodule Yugioh.Battle do
                   send self,:battle_end
                 end
                 # no one is destroyed
-              attack_monster.attack == defense_monster.defend ->
+              attack_monster.attack == defense_monster.defense ->
                 new_source_monster_card_zone = Dict.put source_player_battle_info.monster_card_zone,source_card_index,attack_monster.attacked(true)
                 new_source_player_battle_info = source_player_battle_info.update(monster_card_zone: new_source_monster_card_zone)
                 if defense_state == :defense_down do

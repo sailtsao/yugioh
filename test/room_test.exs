@@ -154,11 +154,11 @@ defmodule RoomTest do
     assert <<15::size(16), 12001::size(16),6::size(32),0::size(8),_summon_card_id::size(32),2::size(8),2::size(8)>> = data
 
     # flip card test
-    :gen_tcp.send socket1,<<5::size(16), 12004::size(16),2::size(8)>>
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert <<14::size(16), 12004::size(16),6::size(32),2::size(8),_card_id::size(32),1::size(8)>> = data
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert <<14::size(16), 12004::size(16),6::size(32),2::size(8),_card_id::size(32),1::size(8)>> = data
+    # :gen_tcp.send socket1,<<5::size(16), 12004::size(16),2::size(8)>>
+    # {:ok,data}=:gen_tcp.recv(socket1,0)
+    # assert <<14::size(16), 12004::size(16),6::size(32),2::size(8),_card_id::size(32),1::size(8)>> = data
+    # {:ok,data}=:gen_tcp.recv(socket2,0)
+    # assert <<14::size(16), 12004::size(16),6::size(32),2::size(8),_card_id::size(32),1::size(8)>> = data
 
     # flip many times test
     # :gen_tcp.send socket1,<<5::size(16), 12004::size(16),0::size(8)>>

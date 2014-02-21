@@ -83,37 +83,37 @@ defmodule Yugioh.Proto.PT12 do
   def decode_operation_type_id operation_type_id do
     case operation_type_id do
       1->
-        :summon
+        :summon_operation
       2->
-        :place
+        :place_operation
       3->
-        :fire_effect
+        :fire_effect_operation
       4->
-        :attack
+        :attack_operation
       5->
-        :attack_present
+        :change_to_attack_present_operation
       6->
-        :defense_present
+        :change_to_defense_present_operation
       7->
-        :reverse
+        :reverse_operation
     end
   end
 
   def encode_operation_type operation_type do
     case operation_type do
-      :summon->
+      :summon_operation->
         1
-      :place->
+      :place_operation->
         2
-      :fire_effect->
+      :fire_effect_operation->
         3
-      :attack->
+      :attack_operation->
         4
-      :attack_present->
+      :change_to_attack_present->
         5
-      :defense_present->
+      :change_to_defense_present->
         6
-      :reverse->
+      :reverse_operation->
         7
     end    
   end
