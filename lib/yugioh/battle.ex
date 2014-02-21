@@ -11,6 +11,15 @@ defmodule Yugioh.Battle do
 
   defcall get_card_operations(player_id,:handcard_scene,index),
   from: {pid,_},
+  state: BattleData[normal_summoned: normal_summoned],
+  when: normal_summoned==true do
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(player_id,:handcard_scene,index),
+  from: {pid,_},
   state: BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon,:place]])
