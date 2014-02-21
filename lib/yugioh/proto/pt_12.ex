@@ -109,9 +109,9 @@ defmodule Yugioh.Proto.PT12 do
         3
       :attack_operation->
         4
-      :change_to_attack_present->
+      :change_to_attack_present_operation->
         5
-      :change_to_defense_present->
+      :change_to_defense_present_operation->
         6
       :reverse_operation->
         7
