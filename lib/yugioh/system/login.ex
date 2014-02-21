@@ -110,7 +110,7 @@ defmodule Yugioh.System.Login do
       message = Yugioh.Proto.PT10.write(:tips,Yugioh.Data.Strings.get(:login_again_string))
       player_pid = Online.get_online_player(role_id).player_pid
       send(player_pid,{:send,message})
-      Yugioh.Player.stop player_pid,:login_again
+      Yugioh.Player.stop_cast player_pid,:login_again
     end
 
     # fetch role data from database
