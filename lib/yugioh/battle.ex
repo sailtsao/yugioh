@@ -151,7 +151,7 @@ defmodule Yugioh.Battle do
         [pos|_] = avaible_pos
 
         card = Cards.get(summon_card_id)
-        monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type]
+        monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
         new_monster_card_zone = Dict.put(player_battle_info.monster_card_zone,pos,monster)
 
         new_player_battle_info = player_battle_info.update(handcards: new_handcards,monster_card_zone: new_monster_card_zone)
