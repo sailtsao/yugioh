@@ -31,21 +31,54 @@ defmodule Yugioh.Battle do
   end
 
   defcall get_card_operations(player_id,:monster_scene,index),from: {pid,_},
-    state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,
+    state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,turn_count: turn_count,
                       player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info],
   when: phase == :bp do
+
     player_battle_info = case player_id do
       ^player1_id->
         player1_battle_info
       ^player2_id->
         player2_battle_info
     end
+
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
-    if monster.attacked == false do
-      operations = [:attack]
+    if monster.attacked == false and turn_count > 1 do
+      operations = operations ++ [:attack]
     end
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:attack]])
+
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
+    send pid,{:send,message_data}
+    reply :ok
+  end
+
+  defcall get_card_operations(player_id,:monster_scene,index),from: {pid,_},
+    state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,
+                      player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info],
+  when: phase == :mp1 or phase == :mp2 do
+
+    player_battle_info = case player_id do
+      ^player1_id->
+        player1_battle_info
+      ^player2_id->
+        player2_battle_info
+    end
+
+    operations = []
+    monster = Dict.get player_battle_info.monster_card_zone,index    
+    if monster.presentation_changed == false do
+      operations = case monster.presentation do
+        :attack ->
+          operations ++ [:defense_present]
+        :defense_down ->
+          operations ++ [:reverse]
+        :defense_up ->
+          operations ++ [:attack_present]
+      end
+    end
+
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
     send pid,{:send,message_data}
     reply :ok
   end
