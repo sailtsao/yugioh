@@ -3,13 +3,19 @@ defmodule Yugioh.Battle do
   use ExActor.GenServer
   alias Yugioh.Data.Cards
 
+  # init
   definit {player1_pid,player2_pid} do
     Lager.debug "battle process [~p] for player [~p] created",[self,{player1_pid,player2_pid}]
     init_cast self,player1_pid,player2_pid
     initial_state {}
   end
 
-  defcall get_card_operations(player_id,:handcard_scene,index),
+  #############
+  # call
+
+  # get card operations  
+  # already summoned monster in this turn
+  defcall get_card_operations(player_id,:handcard_zone,index),
   from: {pid,_},
   state: BattleData[normal_summoned: normal_summoned],
   when: normal_summoned==true do
@@ -18,28 +24,62 @@ defmodule Yugioh.Battle do
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:handcard_scene,index),
+  # handcard operations in phase mp1 or mp2 without summoned
+  defcall get_card_operations(player_id,:handcard_zone,index),
   from: {pid,_},
-  state: BattleData[phase: phase],
+  state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,turn_count: turn_count,
+                      player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info],
   when: phase == :mp1 or phase == :mp2 do
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:summon_operation,:place_operation]])
+
+    player_battle_info = case player_id do
+      ^player1_id->
+        player1_battle_info
+      ^player2_id->
+        player2_battle_info
+    end
+
+    monster = Dict.get player_battle_info.monster_card_zone,index
+    operations = case monster.level do
+      x when x==5 or x==6 ->
+        monster_size = Dict.size player_battle_info.monster_card_zone
+        if monster_size >=1 do
+          [:summon_operation,:place_operation]
+        else
+          []
+        end
+      x when x==7 or x==8 ->
+        monster_size = Dict.size player_battle_info.monster_card_zone
+        if monster_size >=2 do
+          [:summon_operation,:place_operation]
+        else
+          []
+        end
+      x when x>8 ->
+        [:summon_operation,:place_operation]
+      _ ->
+        [:summon_operation,:place_operation]
+    end
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:handcard_scene,index),from: {pid,_} do
+  # handcard operations except mp1 or mp2 phase
+  defcall get_card_operations(player_id,:handcard_zone,index),from: {pid,_} do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:graveyard_scene,index),from: {pid,_} do
+  # graveyard operations
+  defcall get_card_operations(player_id,:graveyard_zone,index),from: {pid,_} do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:monster_scene,index),from: {pid,_},
+  # monster operations in bp phase
+  defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
     state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,turn_count: turn_count,
                       player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info],
   when: phase == :bp do
@@ -62,7 +102,8 @@ defmodule Yugioh.Battle do
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:monster_scene,index),from: {pid,_},
+  # monster operations in mp1 or mp2
+  defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
     state: BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id,
                       player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info],
   when: phase == :mp1 or phase == :mp2 do
@@ -76,34 +117,42 @@ defmodule Yugioh.Battle do
 
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index    
-    if monster.presentation_changed == false do
-      operations = case monster.presentation do
-        :attack ->
-          operations ++ [:change_to_defense_present_operation]
-        :defense_down ->
-          operations ++ [:reverse_operation]
-        :defense_up ->
-          operations ++ [:change_to_attack_present_operation]
+    result = :ok
+    message_data = nil
+    if monster == nil do
+      result = :get_card_operation_invalid_index
+    else
+      if monster.presentation_changed == false do
+        operations = case monster.presentation do
+          :attack ->
+            operations ++ [:change_to_defense_present_operation]
+          :defense_down ->
+            operations ++ [:reverse_operation]
+          :defense_up ->
+            operations ++ [:change_to_attack_present_operation]
+        end
       end
-    end
-
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
-    send pid,{:send,message_data}
-    reply :ok
+      message_data = Yugioh.Proto.PT12.write(:get_card_operations,[operations])
+      send pid,{:send,message_data}
+    end    
+    reply result
   end
 
-  defcall get_card_operations(player_id,:monster_scene,index),from: {pid,_} do
+  # monster operations in dp sp ep phase
+  defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_} do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
     send pid,{:send,message_data}
     reply :ok
   end
 
-  defcall get_card_operations(player_id,:magic_trap_scene,index),from: {pid,_},state: battle_data do
+  # magic trap operations
+  defcall get_card_operations(player_id,:magic_trap_zone,index),from: {pid,_},state: battle_data do
     message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[:fire_effect_operation]])
     send pid,{:send,message_data}
     reply :ok
   end
 
+# battle_load_finish
   defcall battle_load_finish,state: battle_data=BattleData[phase: phase], when: phase ==:wait_load_finish_1 or phase == :wait_load_finish_2 do
     # 0->1->first dp
   # phase is atom,0 and 1 is used to count the ready message
@@ -117,7 +166,8 @@ defmodule Yugioh.Battle do
         set_and_reply battle_data.phase(:dp),:ok
     end
   end
-  
+
+# normal summon when already summmoned
   defcall summon(_,_,_),
     state: battle_data = BattleData[normal_summoned: normal_summoned],
     when: normal_summoned == true do
@@ -125,6 +175,7 @@ defmodule Yugioh.Battle do
     reply :cant_normal_summon_twice_in_one_turn
   end
 
+# normal summon in mp1 mp2 phase
   defcall summon(player_id,handcards_index,summon_type),
     state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
     when: phase == :mp1 or phase == :mp2 do
@@ -137,54 +188,161 @@ defmodule Yugioh.Battle do
       ^player2_id->
         {:player2_battle_info,battle_data.player2_battle_info}
     end
+    result = :ok
+    if Dict.size(player_battle_info.monster_card_zone)==5 do
+      result = :already_have_5_monsters
+    end
+    
+    summon_card_id = Enum.at(player_battle_info.handcards,handcards_index)
+    card = Cards.get(summon_card_id)
+    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
+    tribute_number = 0
+    case monster.level do
+      x when x==5 or x==6 ->
+        monster_size = Dict.size player_battle_info.monster_card_zone
+        if monster_size >=1 do
+          tribute_number = 1
+        else
+          result = :not_enough_tribute_monster_for_summon
+        end
+      x when x==7 or x==8 ->
+        monster_size = Dict.size player_battle_info.monster_card_zone
+        if monster_size >=2 do
+          tribute_number = 2
+        else
+          result = :not_enough_tribute_monster_for_summon
+        end
+      x when x>8 ->
+        monster_size = Dict.size player_battle_info.monster_card_zone
+        if monster_size >=3 do
+          tribute_number = 3
+        else
+          result = :not_enough_tribute_monster_for_summon
+        end
+      _ ->
+        tribute_number = 0
+    end
 
-    cond do
-      Dict.size(player_battle_info.monster_card_zone)==5 ->
-        reply :cant_summon_more
-      true ->
-        summon_card_id = Enum.at(player_battle_info.handcards,handcards_index)
-
+    if result == :ok do
+      if tribute_number == 0 do
         new_handcards = List.delete_at(player_battle_info.handcards,handcards_index)
 
         avaible_pos = :lists.subtract([2,1,3,0,4],Dict.keys(player_battle_info.monster_card_zone))
 
         [pos|_] = avaible_pos
-
-        card = Cards.get(summon_card_id)
-        monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
+        
         new_monster_card_zone = Dict.put(player_battle_info.monster_card_zone,pos,monster)
 
         new_player_battle_info = player_battle_info.update(handcards: new_handcards,monster_card_zone: new_monster_card_zone)
 
         new_battle_data = battle_data.update [{player_atom,new_player_battle_info},{:normal_summoned,true}]
+
+        summon_type_id = Yugioh.Proto.PT12.encode_summon_type(summon_type)
+        summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
+        summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
+    
         if summon_type == :defense_down do
           case player_atom do
             :player1_battle_info->
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:effects,[[summon_effect]])
               send battle_data.player1_battle_info.player_pid , {:send,message_data}
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:effects,[[summon_effect_masked]])
               send battle_data.player2_battle_info.player_pid , {:send,message_data}
             :player2_battle_info->
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,0,pos,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:effects,[[summon_effect_masked]])
               send battle_data.player1_battle_info.player_pid , {:send,message_data}
-              message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
+              message_data = Yugioh.Proto.PT12.write(:effects,[[summon_effect]])
               send battle_data.player2_battle_info.player_pid , {:send,message_data}
           end
         else
-          message_data = Yugioh.Proto.PT12.write(:summon,[player_id,handcards_index,summon_card_id,pos,summon_type])
+          message_data = Yugioh.Proto.PT12.write(:effects,[[summon_effect]])
           send battle_data.player1_battle_info.player_pid , {:send,message_data}
           send battle_data.player2_battle_info.player_pid , {:send,message_data}          
-        end        
+        end
 
         Lager.debug "battle after summon state [~p]",[new_battle_data]
-        set_and_reply new_battle_data,:ok
-    end    
+        set_and_reply new_battle_data,result
+      else
+        index_list = Dict.keys player_battle_info.monster_card_zone
+        message_data = Yugioh.Proto.PT12.write(:choose_card,[:self,:monster_card_zone,tribute_number,index_list])
+        send player_battle_info.player_pid,message_data
+        new_battle_data = battle_data.update(phase: {:choose_tribute_card_for_summon_phase,phase,tribute_number,handcards_index,summon_type})
+        set_and_reply new_battle_data,result
+      end
+    else
+      reply result
+    end
   end
 
   defcall summon(_,_,_) do    
     reply :summon_in_invalid_phase
   end
-  
+
+  defcall choose_card(player_id,choose_index_list),
+  state: battle_data=BattleData[phase: {:choose_tribute_card_for_summon_phase,old_phase,tribute_number,handcards_index,summon_type},
+  player1_id: player1_id,player2_id: player2_id,player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info] do    
+    {player_atom,player_battle_info} = case player_id do
+      ^player1_id->
+        {:player1_battle_info,battle_data.player1_battle_info}
+      ^player2_id->
+        {:player2_battle_info,battle_data.player2_battle_info}
+    end
+
+    result = :ok
+
+    if length(choose_index_list) != tribute_number do
+      result = :wrong_tribute_choose_number
+    end
+    
+    monster_card_zone = player_battle_info.monster_card_zone
+    graveyardcards = player_battle_info.graveyardcards
+    handcards = player_battle_info.handcards
+
+    targets = List.foldl(choose_index_list,[],fn(index,acc)->
+      monster = Dict.get monster_card_zone,index
+      monster_card_zone = Dict.delete monster_card_zone,index
+      graveyardcards = graveyardcards ++ monster.id
+      acc ++ [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: index)]
+    end)
+    avaible_pos = :lists.subtract([2,1,3,0,4],Dict.keys(monster_card_zone))
+    [pos|_] = avaible_pos
+
+    summon_card_id = Enum.at(handcards,handcards_index)    
+    handcards = List.delete_at(handcards,handcards_index)    
+    card = Cards.get(summon_card_id)
+    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
+    monster_card_zone = Dict.put monster_card_zone,pos,monster
+    player_battle_info = player_battle_info.update(monster_card_zone: monster_card_zone,graveyardcards: graveyardcards)
+
+    tribute_effect = Effect.new(type: :pay_tribute_effect,targets: targets)
+    summon_type_id = Yugioh.Proto.PT12.encode_summon_type summon_type
+    summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
+    summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
+    
+    if summon_type == :defense_down do
+      case player_atom do
+        :player1_battle_info->
+          message_data = Yugioh.Proto.PT12.write(:effects,[[tribute_effect,summon_effect]])
+          send battle_data.player2_battle_info.player_pid , {:send,message_data}
+          message_data = Yugioh.Proto.PT12.write(:effects,[[tribute_effect,summon_effect_masked]])
+          send battle_data.player2_battle_info.player_pid , {:send,message_data}
+        :player2_battle_info->
+          message_data = Yugioh.Proto.PT12.write(:effects,[[tribute_effect,summon_effect_masked]])
+          send battle_data.player1_battle_info.player_pid , {:send,message_data}
+          message_data = Yugioh.Proto.PT12.write(:effects,[[tribute_effect,summon_effect]])
+          send battle_data.player2_battle_info.player_pid , {:send,message_data}
+      end
+    else
+      message_data = Yugioh.Proto.PT12.write(:effects,[[tribute_effect,summon_effect]])
+      send battle_data.player1_battle_info.player_pid , {:send,message_data}
+      send battle_data.player2_battle_info.player_pid , {:send,message_data}          
+    end
+
+    new_battle_data = battle_data.update [{phase: old_phase},{player_atom,player_battle_info}]
+    set_and_reply new_battle_data,result
+  end
+
+# flip card in mp1 mp2 phase
   defcall flip_card(player_id,card_index),
   state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
   when: phase == :mp1 or phase == :mp2 do
@@ -222,10 +380,12 @@ defmodule Yugioh.Battle do
     end    
   end
 
+  # flip card in wrong phase
   defcall flip_card(_,_) do
     reply :flip_card_in_invalid_phase
   end
 
+# attack in bp phase
 # 11 mean attack player directly
   defcall attack(player_id,source_card_index,11),
     state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
@@ -430,6 +590,7 @@ defmodule Yugioh.Battle do
     reply :attack_in_invalid_phase
   end
 
+# change phase
   defcall change_phase_to(_player_id,phase),state: battle_data do
     now_phase = battle_data.phase
     case phase do
@@ -455,7 +616,10 @@ defmodule Yugioh.Battle do
         reply :invalid_phase_change
     end        
   end  
-  
+
+#################
+# cast
+# init cast
   defcast init_cast(player1_pid,player2_pid) do
 
     player1_state = :gen_server.call(player1_pid,:player_state)
@@ -489,11 +653,14 @@ defmodule Yugioh.Battle do
     new_state BattleData[turn_count: 0,phase: :wait_load_finish_1,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
                           player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
   end
-
+# stop cast
   defcast stop_cast,state: state do
     {:stop, :normal, state}
   end
 
+###############
+# info
+# new turn
   definfo :new_turn_draw_phase,state: battle_data = BattleData[player1_id: player1_id,player2_id: player2_id] do
 
     {player_atom,new_operator_id,player_battle_info} = 
@@ -536,6 +703,7 @@ defmodule Yugioh.Battle do
     new_state new_battle_data
   end
 
+# stand by
   definfo :standby_phase,state: battle_data do
       new_battle_data = battle_data.phase(:sp)
       send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:sp)}
@@ -544,6 +712,7 @@ defmodule Yugioh.Battle do
       new_state new_battle_data
   end
 
+# mp1
   definfo :main_phase_1,state: battle_data do
       new_battle_data = battle_data.phase(:mp1)
       send battle_data.player1_battle_info.player_pid , {:send,Yugioh.Proto.PT12.write(:change_phase_to,:mp1)}
@@ -551,16 +720,19 @@ defmodule Yugioh.Battle do
       new_state new_battle_data
   end
 
+# bp
   definfo :battle_phase,state: battle_data do
       new_battle_data = battle_data.phase(:bp)
       new_state new_battle_data
   end
 
+# mp2
   definfo :main_phase_2,state: battle_data do
       new_battle_data = battle_data.phase(:mp2)
       new_state new_battle_data
   end
 
+# battle end
   definfo :battle_end,state: battle_data do
     {result,lose_player_id,win_player_id} = cond do
       battle_data.player1_battle_info.curhp <= 0 ->

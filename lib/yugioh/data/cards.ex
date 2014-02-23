@@ -5,7 +5,7 @@ defmodule Yugioh.Data.Cards do
       id: 1,
       attack: 1000,
       defense: 1000,
-      level: 8
+      level: 7
       )
   end
   
@@ -14,7 +14,7 @@ defmodule Yugioh.Data.Cards do
       id: 2,
       attack: 200,
       defense: 200,
-      level: 8
+      level: 2
       )
   end
 
@@ -23,7 +23,7 @@ defmodule Yugioh.Data.Cards do
       id: 3,
       attack: 300,
       defense: 300,
-      level: 8
+      level: 3
       )
   end
 
@@ -32,7 +32,7 @@ defmodule Yugioh.Data.Cards do
       id: 4,
       attack: 400,
       defense: 400,
-      level: 8
+      level: 4
       )
   end
 
@@ -41,7 +41,7 @@ defmodule Yugioh.Data.Cards do
       id: 5,
       attack: 500,
       defense: 500,
-      level: 8
+      level: 5
       )
   end
 end

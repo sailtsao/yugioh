@@ -43,7 +43,7 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
-  defp encode_summon_type summon_type do
+  def encode_summon_type summon_type do
     case summon_type do      
       :attack->
         1
@@ -57,26 +57,38 @@ defmodule Yugioh.Proto.PT12 do
   def decode_scene_type_id scene_type_id do
     case scene_type_id do
       1->
-        :handcard_scene
+        :monster_card_zone
       2->
-        :graveyard_scene
+        :spell_trap_zone
       3->
-        :monster_scene
+        :graveyard_zone
       4->
-        :magic_trap_scene
+        :deck_zone
+      5->
+        :field_card_zone
+      6->
+        :extra_deck_zone
+      7->
+        :handcard_zone
     end
   end
 
   def encode_scene_type scene_type do
     case scene_type do
-      :handcard_scene->
+      :monster_card_zone->
         1
-      :graveyard_scene->
+      :spell_trap_zone->
         2
-      :monster_scene->
+      :graveyard_zone->
         3
-      :magic_trap_scene->
+      :deck_zone->
         4
+      :field_card_zone->
+        5
+      :extra_deck_zone->
+        6
+      :handcard_zone->
+        7
     end    
   end
   
@@ -118,25 +130,44 @@ defmodule Yugioh.Proto.PT12 do
     end    
   end
 
+  def deocde_effect_type_id effect_type_id do
+    case effect_type_id do
+      1 ->
+        :pay_tribute_effect
+      2 ->
+        :summon_effect
+    end
+  end
+  
+  def encode_effect_type effect_type do
+    case effect_type do
+      :pay_tribute_effect ->
+        1
+      :summon_effect ->
+        2      
+    end
+  end
+  
+
   def read(12000,bin) do
-    <<phase_number::size(8)>> = bin
+    <<phase_number::8>> = bin
     phase = phase_number_to_phase phase_number
     {:ok,{:change_phase_to,phase}}
   end
 
   def read(12001,bin) do
-    <<handcards_index::size(8),summon_type::size(8)>> = bin
+    <<handcards_index::8,summon_type::8>> = bin
     summon_type = decode_summon_type summon_type
     {:ok,{:summon,handcards_index,summon_type}}
   end
 
   def read(12003,bin) do
-    <<attacker_pos::size(8),defender_pos::size(8)>> = bin
+    <<attacker_pos::8,defender_pos::8>> = bin
     {:ok,{:attack,attacker_pos,defender_pos}}
   end
 
   def read(12004,bin) do
-    <<card_index::size(8)>> = bin
+    <<card_index::8>> = bin
     {:ok,{:flip_card,card_index}}
   end
 
@@ -145,47 +176,57 @@ defmodule Yugioh.Proto.PT12 do
   end  
 
   def read(12007,bin) do
-    <<scene_type_id::size(8),index::size(8)>> = bin
+    <<scene_type_id::8,index::8>> = bin
     {:ok,{:get_card_operations,decode_scene_type_id(scene_type_id),index}}
   end
   
+  def read(12008,bin) do
+    <<len::16,data::binary>> = bin
+    fun = fn(_, [bin1,list]) ->
+        <<index::8, rest::binary>> = bin1
+        list = list ++ [index]
+        [rest, list]
+    end
+    [_, index_list] = List.foldl(List.duplicate(1, len),[bin,[]],fun)
+    {:ok,{:choose_card,index_list}}
+  end
 
   def write(:change_phase_to,phase) do    
     phase_number = phase_to_phase_number phase
-    Yugioh.Proto.pack(12000,<<phase_number::size(8)>>)
+    Yugioh.Proto.pack(12000,<<phase_number::8>>)
   end
 
   def write(:new_turn_draw,[turn_count,phase,operator_id,draw_card_id]) do
     phase_number = phase_to_phase_number phase
-    data = <<turn_count::size(8),phase_number::size(8),operator_id::size(32),draw_card_id::size(32)>>
+    data = <<turn_count::8,phase_number::8,operator_id::32,draw_card_id::32>>
     Yugioh.Proto.pack(12002,data)
   end  
 
   def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,summon_type]) do
     summon_type = encode_summon_type summon_type
-    Yugioh.Proto.pack(12001,<<player_id::size(32),handcards_index::size(8),summon_card_id::size(32),summon_card_pos::size(8),summon_type::size(8)>>)
+    Yugioh.Proto.pack(12001,<<player_id::32,handcards_index::8,summon_card_id::32,summon_card_pos::8,summon_type::8>>)
   end  
   
 
   def write(:attack,[source_card_index,target_card_index,target_card_id,damage_player_id,hp_damage,destroy_cards,player1_id,graveyard_cards1,player2_id,graveyard_cards2]) do
     destroy_cards_list = Enum.map destroy_cards,fn({player_id,destroy_card_index}) ->          
-      <<player_id::size(32),destroy_card_index::size(8)>>
+      <<player_id::32,destroy_card_index::8>>
     end
 
     destroy_cards_binary = iolist_to_binary(destroy_cards_list)    
 
-    graveyard_cards1_binary = iolist_to_binary(Enum.map(graveyard_cards1,fn(x)-> <<x::size(32)>> end))
-    graveyard_cards2_binary = iolist_to_binary(Enum.map(graveyard_cards2,fn(x)-> <<x::size(32)>> end))
+    graveyard_cards1_binary = iolist_to_binary(Enum.map(graveyard_cards1,fn(x)-> <<x::32>> end))
+    graveyard_cards2_binary = iolist_to_binary(Enum.map(graveyard_cards2,fn(x)-> <<x::32>> end))
 
-    data = <<source_card_index::size(8),target_card_index::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16),length(destroy_cards_list)::size(16),destroy_cards_binary::binary,
-    player1_id::size(32),length(graveyard_cards1)::size(16),graveyard_cards1_binary::binary,player2_id::size(32),length(graveyard_cards2)::size(16),graveyard_cards2_binary::binary>>
+    data = <<source_card_index::8,target_card_index::8,target_card_id::32,damage_player_id::32,hp_damage::16,length(destroy_cards_list)::16,destroy_cards_binary::binary,
+    player1_id::32,length(graveyard_cards1)::16,graveyard_cards1_binary::binary,player2_id::32,length(graveyard_cards2)::16,graveyard_cards2_binary::binary>>
 
     Yugioh.Proto.pack(12003,data)
   end  
 
   def write(:flip_card,[player_id,card_index,card_id,new_status]) do
     new_status = encode_summon_type new_status
-    data = <<player_id::size(32),card_index::size(8),card_id::size(32),new_status::size(8)>>
+    data = <<player_id::32,card_index::8,card_id::32,new_status::8>>
     Yugioh.Proto.pack(12004,data)
   end
   
@@ -196,18 +237,40 @@ defmodule Yugioh.Proto.PT12 do
       :draw ->
         2
     end
-    data = <<result_number::size(8),win_player_id::size(32),lose_player_id::size(32)>>
+    data = <<result_number::8,win_player_id::32,lose_player_id::32>>
     Yugioh.Proto.pack(12005,data)
   end
   
   def write(:get_card_operations,[operations]) do
     operations_list = Enum.map operations,fn(op) ->
       op_id = encode_operation_type(op)
-      <<op_id::size(8)>>
+      <<op_id::8>>
     end
     operations_binary = iolist_to_binary(operations_list)
-    data = <<length(operations_list)::size(16),operations_binary::binary>>
+    data = <<length(operations_list)::16,operations_binary::binary>>
     Yugioh.Proto.pack(12007,data)
   end
   
+  def write(:choose_card,[scene_target,scene_type,choose_number,index_list]) do
+    scene_target_id = (&(
+    case &1 do
+      :self->
+        0
+      :other->
+        1
+    end
+    )).(scene_target)
+    index_binary = List.foldl index_list,<<>>,&(&2 <> <<&1::8>>)
+    data = <<scene_target_id::8,decode_scene_type_id(scene_type)::8,choose_number::8,length(index_list)::16,index_binary::binary>>
+    Yugioh.Proto.pack(12008,data)
+  end
+
+  def write(:effects,[effects]) do
+    effects_binary = List.foldl effects,<<>>,fn(effect,acc)->
+      acc <> <<encode_effect_type(effect.type)::32>> <> Yugioh.Proto.pack_string(effect.params) <> <<length(effect.targets)::16>> <>
+      List.foldl(effect.targets,<<>>,&(&2 <> <<&1.player_id::32,encode_scene_type(&1.scene_type)::8,&1.index::8>>))
+    end
+    data = <<length(effects)::16,effects_binary::binary>>
+    Yugioh.Proto.pack(12009,data)
+  end
 end

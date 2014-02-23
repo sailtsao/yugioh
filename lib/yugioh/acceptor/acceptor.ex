@@ -12,30 +12,28 @@ defmodule Yugioh.Acceptor.Acceptor do
   def decode_message(cmd,bin) do
     [h1,h2,_,_,_] = integer_to_list(cmd)
     module = list_to_atom('Elixir.Yugioh.Proto.PT'++[h1,h2])
-    # Lager.debug "get cmd belonged to module [~p]",[module]
     module.read(cmd,bin)
   end
   
-  def do_error(socket,reason,client) do        
+  def do_error(socket,reason,client) do
     Lager.debug "client [~p] died by reason [~p]",[client,reason]
-    # stop player
     if is_pid(client.player_pid),do: Yugioh.Player.stop_cast(client.player_pid,reason)
     :gen_tcp.close(socket)
-  end  
+  end
 
   def parse_packet_loop(socket,client) do
     case :gen_tcp.recv(socket,4,2000) do
-      {:ok,<<msgLength::size(16),msgID::size(16)>>} ->
+      {:ok,<<msgLength::16,msgID::16>>} ->
         Lager.debug "get message [~p] length [~p] from client [~p]",[msgID,msgLength,client]
-        case msgLength > 4 do
-          true->
+        case msgLength do
+          x when x > 4->
             case :gen_tcp.recv(socket,msgLength-4,2000) do
               {:ok,binaryData} ->
                 route_message(msgID,binaryData,socket,client)
               other ->
                 do_error(socket,other,client)
             end        
-          false->
+          _->
             route_message(msgID,<<>>,socket,client)
         end
       {:error,:timeout} ->

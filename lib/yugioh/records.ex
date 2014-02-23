@@ -11,6 +11,10 @@ defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_m
   end
 end
 
+defrecord Target,player_id: 0,scene_type: 0,index: 0
+
+defrecord Effect,type: 0,params: "",targets: nil
+
 defrecord PlayerOnline,id: 0,player_pid: nil
 
 defrecord RoomInfo,id: 0,status: nil,name: "",type: 0,owner_pid: nil,members: nil

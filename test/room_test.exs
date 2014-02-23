@@ -143,16 +143,14 @@ defmodule RoomTest do
     # 2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
     # >> = data 
 
-    :gen_tcp.send socket1,<<6::size(16),12007::size(16),1::size(8),0::size(8)>>
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert <<8::size(16),12007::size(16),2::size(16),1::size(8),2::size(8)>>
     # summon
     :gen_tcp.send socket1,<<6::size(16),12001::size(16),0::size(8),2::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert <<15::size(16), 12001::size(16),6::size(32),0::size(8),_summon_card_id::size(32),2::size(8),2::size(8)>> = data
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert <<15::size(16), 12001::size(16),6::size(32),0::size(8),_summon_card_id::size(32),2::size(8),2::size(8)>> = data
-
+    assert <<_::16, 12009::16,1::16,2::32,5::16,params::[5,unit(8),binary],1::16,6::32,1::8,2::8>> = data
+    IO.puts params
+    {:ok,data}=:gen_tcp.recv(socket2,0)    
+    assert <<_::16, 12009::16,1::16,2::32,5::16,params::[5,unit(8),binary],1::16,6::32,1::8,2::8>> = data
+    IO.puts params
     # flip card test
     # :gen_tcp.send socket1,<<5::size(16), 12004::size(16),2::size(8)>>
     # {:ok,data}=:gen_tcp.recv(socket1,0)
@@ -206,71 +204,22 @@ defmodule RoomTest do
 
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<5::size(16),12000::size(16),3::size(8)>>    
-
-    # ep
-    :gen_tcp.send socket1,<<5::size(16),12000::size(16),6::size(8)>>
-    {:ok,data}=:gen_tcp.recv(socket1,5)
-    assert data == <<5::size(16),12000::size(16),6::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket2,5)
-    assert data == <<5::size(16),12000::size(16),6::size(8)>>
-
-    # player1 receive new turn draw
-    {:ok,data}=:gen_tcp.recv(socket1,14)    
-    assert <<14::size(16),12002::size(16),3::size(8),1::size(8),6::size(32),_draw_card_id::size(32)>> = data
-
-    {:ok,data}=:gen_tcp.recv(socket1,5)
-    assert data == <<5::size(16),12000::size(16),2::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert data == <<5::size(16),12000::size(16),3::size(8)>>
-
-
-    # player2 receive new turn draw
-    {:ok,data}=:gen_tcp.recv(socket2,14)
-    assert <<14::size(16),12002::size(16),3::size(8),1::size(8),6::size(32),_draw_card_id::size(32)>> = data
-
-    {:ok,data}=:gen_tcp.recv(socket2,5)
-    assert data == <<5::size(16),12000::size(16),2::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert data == <<5::size(16),12000::size(16),3::size(8)>>    
-
-    # ep
-    :gen_tcp.send socket1,<<5::size(16),12000::size(16),6::size(8)>>
-    {:ok,data}=:gen_tcp.recv(socket1,5)
-    assert data == <<5::size(16),12000::size(16),6::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket2,5)
-    assert data == <<5::size(16),12000::size(16),6::size(8)>>
-
-    # player1 receive new turn draw
-    {:ok,data}=:gen_tcp.recv(socket1,14)    
-    assert <<14::size(16),12002::size(16),4::size(8),1::size(8),8::size(32),_draw_card_id::size(32)>> = data
-
-    {:ok,data}=:gen_tcp.recv(socket1,5)
-    assert data == <<5::size(16),12000::size(16),2::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert data == <<5::size(16),12000::size(16),3::size(8)>>
-
-
-    # player2 receive new turn draw
-    {:ok,data}=:gen_tcp.recv(socket2,14)
-    assert <<14::size(16),12002::size(16),4::size(8),1::size(8),8::size(32),_draw_card_id::size(32)>> = data
-
-    {:ok,data}=:gen_tcp.recv(socket2,5)
-    assert data == <<5::size(16),12000::size(16),2::size(8)>>
-
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert data == <<5::size(16),12000::size(16),3::size(8)>>    
+    
 
     # summon test
-    :gen_tcp.send socket2,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>>
+    :gen_tcp.send socket2,<<6::size(16),12001::size(16),0::size(8),1::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    assert <<15::size(16), 12001::size(16),8::size(32),0::size(8),_summon_card_id::size(32),2::size(8),1::size(8)>> = data
+    assert <<_::16, 12009::16,1::16,2::32,5::16,params::[5,unit(8),binary],1::16,8::32,1::8,2::8>> = data
+    IO.puts params
     {:ok,data}=:gen_tcp.recv(socket2,0)
-    assert <<15::size(16), 12001::size(16),8::size(32),0::size(8),_summon_card_id::size(32),2::size(8),1::size(8)>> = data
+    assert <<_::16, 12009::16,1::16,2::32,5::16,params::[5,unit(8),binary],1::16,8::32,1::8,2::8>> = data
+    IO.puts params
+
+    # :gen_tcp.send socket2,<<6::size(16), 12001::size(16),0::size(8),1::size(8)>>
+    # {:ok,data}=:gen_tcp.recv(socket1,0)
+    # assert <<15::size(16), 12009::size(16),8::size(32),0::size(8),_summon_card_id::size(32),2::size(8),1::size(8)>> = data
+    # {:ok,data}=:gen_tcp.recv(socket2,0)
+    # assert <<15::size(16), 12009::size(16),8::size(32),0::size(8),_summon_card_id::size(32),2::size(8),1::size(8)>> = data
 
     # change phase to bp
     :gen_tcp.send socket2,<<5::size(16),12000::size(16),4::size(8)>>
@@ -298,10 +247,10 @@ defmodule RoomTest do
     end    
 
     # battle end receive
-    {:ok,data}=:gen_tcp.recv(socket1,0)
-      assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
-    {:ok,data}=:gen_tcp.recv(socket2,0)
-      assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
+    # {:ok,data}=:gen_tcp.recv(socket1,0)
+    #   assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
+    # {:ok,data}=:gen_tcp.recv(socket2,0)
+    #   assert data == <<13::size(16),12005::size(16),1::size(8),8::size(32),6::size(32)>>
 
     #leave room
     :gen_tcp.send socket1,<<4::size(16),11004::size(16)>>

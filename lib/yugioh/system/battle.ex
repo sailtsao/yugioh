@@ -83,4 +83,19 @@ defmodule Yugioh.System.Battle do
         {:error,:invalid_battle_pid}
     end
   end
+
+  def handle({:choose_card,choose_index_list},player_state) do
+    case is_pid(player_state.battle_pid) do
+      true ->
+        case Yugioh.Battle.choose_card(player_state.battle_pid,player_state.id,choose_index_list) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+      false ->
+        {:error,:invalid_battle_pid}
+    end
+  end
+  
 end
