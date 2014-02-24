@@ -3,7 +3,7 @@ defmodule Yugioh.Proto.PT11 do
   def read(11000,bin) do
     {name,rest} = Yugioh.Proto.read_string(bin)
     <<type::size(16)>> = rest
-    {:ok,{:create_room,name,type}}
+    {:ok,:create_room}
   end
 
   def read(11001,_) do

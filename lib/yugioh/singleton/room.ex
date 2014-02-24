@@ -7,8 +7,8 @@ defmodule Yugioh.Singleton.Room do
     initial_state(1)
   end
 
-  defcall create_room(name,type),from: {pid,_},state: auto_id do
-    room_info = RoomInfo.new(id: auto_id,type: type,status: :wait,name: name,owner_pid: pid,members:  HashDict.new([{1,{pid,:ready}}]))
+  defcall create_room(),from: {pid,_},state: auto_id do
+    room_info = RoomInfo.new(id: auto_id,status: :wait,name: "Room#{auto_id}",owner_pid: pid,members:  HashDict.new([{1,{pid,:ready}}]))
     :ets.insert(:room,room_info)
     Lager.debug "create new room with name ~s,room_info:~p,room count ~p",[name,room_info,:ets.info(:room,:size)]
     set_and_reply(auto_id+1,{:ok,room_info})

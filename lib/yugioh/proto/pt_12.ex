@@ -267,7 +267,8 @@ defmodule Yugioh.Proto.PT12 do
 
   def write(:effects,[effects]) do
     effects_binary = List.foldl effects,<<>>,fn(effect,acc)->
-      acc <> <<encode_effect_type(effect.type)::32>> <> Yugioh.Proto.pack_string(effect.params) <> <<length(effect.targets)::16>> <>
+      acc <> <<encode_effect_type(effect.type)::32>> <> Yugioh.Proto.pack_string(effect.params) <> 
+      <<length(effect.targets)::16>> <>
       List.foldl(effect.targets,<<>>,&(&2 <> <<&1.player_id::32,encode_scene_type(&1.scene_type)::8,&1.index::8>>))
     end
     data = <<length(effects)::16,effects_binary::binary>>
