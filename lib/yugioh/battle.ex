@@ -37,7 +37,7 @@ defmodule Yugioh.Battle do
       ^player2_id->
         player2_battle_info
     end
-
+    Lager.debug "player_battle_info when get card operations: [~p] ",[player_battle_info]
     monster = Dict.get player_battle_info.monster_card_zone,index
     operations = case monster.level do
       x when x==5 or x==6 ->
@@ -698,7 +698,7 @@ defmodule Yugioh.Battle do
         message = Yugioh.Proto.PT12.write(:new_turn_draw,[new_battle_data.turn_count,new_battle_data.phase,new_battle_data.operator_id,draw_card_id])
         send battle_data.player2_battle_info.player_pid , {:send,message}
     end
-    
+    Lager.debug "battle_state when start new turn [~p]",[new_battle_data]
     send self, :standby_phase
     new_state new_battle_data
   end
@@ -754,5 +754,9 @@ defmodule Yugioh.Battle do
   defp hide_handcards battle_info do
     cards_size = length battle_info.handcards
     battle_info.handcards(Enum.take Stream.cycle([0]),cards_size)
+  end
+
+  def terminate(reason,battle_data) do
+    Lager.debug "battle_state when battle termianted [~p]",[battle_data]
   end
 end
