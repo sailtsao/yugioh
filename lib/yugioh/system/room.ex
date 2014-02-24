@@ -6,7 +6,7 @@ defmodule Yugioh.System.Room do
   def handle(:create_room,player_state) do
     case player_state.in_room_id do
       0 ->
-        {:ok,room_info} = Room.create_room()
+        {:ok,room_info} = Room.create_room
         spawn(fn-> 
           :gen_tcp.send(player_state.socket,PT11.write(11000,[1,room_info])) 
         end )

@@ -17,7 +17,7 @@ defrecord Effect,type: 0,params: "",targets: nil
 
 defrecord PlayerOnline,id: 0,player_pid: nil
 
-defrecord RoomInfo,id: 0,status: nil,name: "",type: 0,owner_pid: nil,members: nil
+defrecord RoomInfo,id: 0,status: nil,name: "",type: 1,owner_pid: nil,members: nil
 
 defrecord BattleInfo,
   player_pid: nil,
