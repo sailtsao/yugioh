@@ -148,6 +148,14 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
   
+  def choose_type_id_from choose_type do
+    case choose_type do
+      :tribute_choose ->
+        1
+      :attack_choose ->
+        2
+    end
+  end
 
   def read(12000,bin) do
     <<phase_number::8>> = bin
@@ -187,7 +195,7 @@ defmodule Yugioh.Proto.PT12 do
         list = list ++ [index]
         [rest, list]
     end
-    [_, index_list] = List.foldl(List.duplicate(1, len),[bin,[]],fun)
+    [_, index_list] = List.foldl(List.duplicate(1, len),[data,[]],fun)
     {:ok,{:choose_card,index_list}}
   end
 
@@ -251,7 +259,7 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12007,data)
   end
   
-  def write(:choose_card,[scene_target,scene_type,choose_number,index_list]) do
+  def write(:choose_card,[choose_type,scene_target,scene_type,choose_number,index_list]) do
     scene_target_id = (&(
     case &1 do
       :self->
@@ -261,7 +269,7 @@ defmodule Yugioh.Proto.PT12 do
     end
     )).(scene_target)
     index_binary = List.foldl index_list,<<>>,&(&2 <> <<&1::8>>)
-    data = <<scene_target_id::8,decode_scene_type_id(scene_type)::8,choose_number::8,length(index_list)::16,index_binary::binary>>
+    data = <<choose_type_id_from(choose_type)::8,scene_target_id::8,decode_scene_type_id(scene_type)::8,choose_number::8,length(index_list)::16,index_binary::binary>>
     Yugioh.Proto.pack(12008,data)
   end
 

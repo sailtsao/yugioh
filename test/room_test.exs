@@ -18,7 +18,7 @@ defmodule RoomTest do
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
     {:ok,socket2} = :gen_tcp.connect('localhost',1234,[:binary,{:packet,0},{:active,false},{:reuseaddr,true}])
-    :gen_tcp.send(socket2,<<17::size(16),10000::size(16),3::size(16),"xqy",6::size(16),"123456">>)
+    :gen_tcp.send(socket2,<<14::size(16),10000::size(16),3::size(16),"xqy",3::size(16),"123">>)
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert data == <<6::size(16),10000::size(16),1::size(16)>>
 
@@ -261,7 +261,7 @@ defmodule RoomTest do
 
     {:ok,data}=:gen_tcp.recv(socket2,0)
     assert <<
-    _::size(16),11005::size(16),room_id::size(32),1::size(16),4::size(16),"room",1::size(16),
+    _::size(16),11005::size(16),room_id::size(32),1::size(16),5::size(16),_::[5,unit(8),binary],1::size(16),
     1::size(16),
     2::size(8),8::size(32),3::size(16),"xqy",1::size(8),1::size(8),1::size(8)
     >> = data 

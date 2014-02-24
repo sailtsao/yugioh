@@ -3,7 +3,7 @@ defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,so
   extra_deck: [],
   side_deck: []
 
-defrecord Card,id: 0,attack: 0,defense: 0,level: 0
+defrecord Card,id: 0,type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0
 
 defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,attacked: false do
   def turn_reset(record) do

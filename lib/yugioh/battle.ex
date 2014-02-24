@@ -264,7 +264,7 @@ defmodule Yugioh.Battle do
         set_and_reply new_battle_data,result
       else
         index_list = Dict.keys player_battle_info.monster_card_zone
-        message_data = Yugioh.Proto.PT12.write(:choose_card,[:self,:monster_card_zone,tribute_number,index_list])
+        message_data = Yugioh.Proto.PT12.write(:choose_card,[:tribute_choose,:self,:monster_card_zone,tribute_number,index_list])
         send player_battle_info.player_pid,message_data
         new_battle_data = battle_data.update(phase: {:choose_tribute_card_for_summon_phase,phase,tribute_number,handcards_index,summon_type})
         set_and_reply new_battle_data,result
