@@ -142,7 +142,9 @@ defmodule RoomTest do
     # 1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),1::size(8),
     # 2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
     # >> = data 
-
+    :gen_tcp.send socket1,<<6::16,12007::16,7::8,0::8>>
+    {:ok,data} = :gen_tcp.recv(socket1,0)
+    IO.inspect data
     # summon
     :gen_tcp.send socket1,<<6::size(16),12001::size(16),0::size(8),2::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)

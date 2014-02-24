@@ -38,8 +38,8 @@ defmodule Yugioh.Battle do
         player2_battle_info
     end
     Lager.debug "player_battle_info when get card operations: [~p] ",[player_battle_info]
-    monster = Dict.get player_battle_info.monster_card_zone,index
-    operations = case monster.level do
+    card = Enum.at(player_battle_info.handcards,index) |> Cards.get
+    operations = case card.level do
       x when x==5 or x==6 ->
         monster_size = Dict.size player_battle_info.monster_card_zone
         if monster_size >=1 do
