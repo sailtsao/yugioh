@@ -28,10 +28,10 @@ defmodule Yugioh.System.Battle do
     end
   end
 
-  def handle({:attack,summon_card_index,target_card_index},player_state) do
+  def handle({:attack,summon_card_index},player_state) do
     case is_pid(player_state.battle_pid) do
       true ->
-        case Yugioh.Battle.attack(player_state.battle_pid,player_state.id,summon_card_index,target_card_index) do
+        case Yugioh.Battle.attack(player_state.battle_pid,player_state.id,summon_card_index) do
           :ok->
             {:ok,player_state}
           reason->

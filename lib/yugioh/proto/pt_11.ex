@@ -1,5 +1,10 @@
 defmodule Yugioh.Proto.PT11 do
 
+  def send_message player_pid,message,params do
+    message_data = write(message,params)
+    send player_pid,{:send,message_data}
+  end  
+
   def read(11000,_) do
     {:ok,:create_room}
   end

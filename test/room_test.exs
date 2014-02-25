@@ -103,7 +103,7 @@ defmodule RoomTest do
     # battle start notify
 
     {:ok,data}=:gen_tcp.recv(socket1,0)
-    # IO.inspect data,limit: 1000    
+    IO.inspect data,limit: 1000    
     assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data
     
     {:ok,data}=:gen_tcp.recv(socket2,0)
@@ -142,9 +142,12 @@ defmodule RoomTest do
     # 1::size(8),6::size(32),4::size(16),"sail",2::size(8),1::size(8),1::size(8),
     # 2::size(8),8::size(32),3::size(16),"xqy",1::size(8),0::size(8),0::size(8)
     # >> = data 
+
+    # get card operations
     :gen_tcp.send socket1,<<6::16,12007::16,7::8,0::8>>
     {:ok,data} = :gen_tcp.recv(socket1,0)
     IO.inspect data
+    
     # summon
     :gen_tcp.send socket1,<<6::size(16),12001::size(16),0::size(8),2::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
@@ -232,15 +235,20 @@ defmodule RoomTest do
     assert data == <<5::size(16),12000::size(16),4::size(8)>>
 
     # attack
-    :gen_tcp.send socket2,<<6::size(16),12003::size(16),2::size(8),2::size(8)>>
+    :gen_tcp.send socket2,<<5::size(16),12003::size(16),2::size(8)>>
+    {:ok,data} = :gen_tcp.recv(socket2,0)
+    assert <<_::16,12008::16,2::8,1::8,1::8,1::8,1::16,2::8>> = data
 
-    {:ok,data}=:gen_tcp.recv(socket1,16)
-    assert <<total_size::size(16),12003::size(16),2::size(8),2::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16)>> = data    
-    IO.puts damage_player_id
-    IO.puts hp_damage
-    if total_size>16 do
-      IO.inspect :gen_tcp.recv(socket1,total_size-16)
-    end
+    :gen_tcp.send socket2,<<7::16,12008::16,1::16,2::8>>
+    {:ok,data} = :gen_tcp.recv(socket2,0)
+    # assert <<>>
+    # {:ok,data}=:gen_tcp.recv(socket1,16)
+    # assert <<total_size::size(16),12003::size(16),2::size(8),2::size(8),target_card_id::size(32),damage_player_id::size(32),hp_damage::size(16)>> = data    
+    # IO.puts damage_player_id
+    # IO.puts hp_damage
+    # if total_size>16 do
+    #   IO.inspect :gen_tcp.recv(socket1,total_size-16)
+    # end
     
     {:ok,data}=:gen_tcp.recv(socket2,16)
     assert <<total_size::size(16),12003::size(16),2::size(8),2::size(8),target_card_id::size(32),_damage_player_id::size(32),_hp_damage::size(16)>> = data
