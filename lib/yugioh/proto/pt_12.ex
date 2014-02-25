@@ -140,6 +140,8 @@ defmodule Yugioh.Proto.PT12 do
         :summon_effect
       3 ->
         :attack_effect
+      4 ->
+        :move_to_graveyard_effect
     end
   end
   
@@ -151,6 +153,8 @@ defmodule Yugioh.Proto.PT12 do
         2      
       :attack_effect ->
         3
+      :move_to_graveyard_effect ->
+        4
     end
   end
   

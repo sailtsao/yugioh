@@ -30,7 +30,7 @@ defmodule Yugioh.Battle do
   from: {pid,_},
   state: battle_data = BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do
-    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
     card_id = Enum.at(player_battle_info.handcards,index)
     operations = BattleCore.get_handcard_operations Cards.get(card_id).level,Dict.size(player_battle_info.monster_card_zone)
     BattleCore.send_message pid,:get_card_operations,operations
@@ -51,10 +51,10 @@ defmodule Yugioh.Battle do
 
   # monster operations in bp phase
   defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
-    state: BattleData[phase: phase,turn_count: turn_count],
+    state: battle_data = BattleData[phase: phase,turn_count: turn_count],
   when: phase == :bp do
 
-    player_battle_info = BattleCore.get_player_battle_info player_id
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
 
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
@@ -63,15 +63,15 @@ defmodule Yugioh.Battle do
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
-    reply :ok
+    set_and_reply battle_data,:ok
   end
 
   # monster operations in mp1 or mp2
   defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
-    state: BattleData[phase: phase],
+    state: battle_data = BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do
 
-    player_battle_info = BattleCore.get_player_battle_info player_id
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
 
     operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index 
@@ -81,7 +81,7 @@ defmodule Yugioh.Battle do
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
-    reply :ok
+    set_and_reply battle_data,:ok
   end
 
   # monster operations in dp sp ep phase
@@ -91,7 +91,7 @@ defmodule Yugioh.Battle do
   end
 
   # magic trap operations
-  defcall get_card_operations(_player_id,:magic_trap_zone,_index),from: {pid,_},state: _battle_data do
+  defcall get_card_operations(_player_id,:magic_trap_zone,_index),from: {pid,_} do
     BattleCore.send_message pid,:get_card_operations,[:fire_effect_operation]
     reply :ok
   end
@@ -99,7 +99,7 @@ defmodule Yugioh.Battle do
 # battle_load_finish
   defcall battle_load_finish,state: battle_data=BattleData[phase: phase], when: phase ==:wait_load_finish_1 or phase == :wait_load_finish_2 do
     # 0->1->first dp
-  # phase is atom,0 and 1 is used to count the ready message
+    # phase is atom,0 and 1 is used to count the ready message    
     case phase do
       # get one ready message
       :wait_load_finish_1->
@@ -445,6 +445,7 @@ defmodule Yugioh.Battle do
     new_state BattleData[turn_count: 0,phase: :wait_load_finish_1,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
                           player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
   end
+
 # stop cast
   defcast stop_cast,state: state do
     {:stop, :normal, state}
@@ -455,8 +456,8 @@ defmodule Yugioh.Battle do
 # new turn
   definfo :new_turn_draw_phase,state: battle_data do
     operator_id = BattleCore.get_new_turn_operator_id battle_data
-    player_atom = BattleCore.get_player_atom operator_id,battle_data
-    player_battle_info = BattleCore.get_player_battle_info operator_id,battle_data
+    player_atom = BattleCore.get_operator_atom battle_data
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
     [draw_card_id|deckcards] = player_battle_info.deckcards
     handcards = player_battle_info.handcards ++ [draw_card_id]
     monster_card_zone = Enum.map(player_battle_info.monster_card_zone,fn({index,monster})-> {index,monster.turn_reset} end)
