@@ -76,9 +76,10 @@ defmodule Yugioh.Battle do
 
     player_battle_info = BattleCore.get_operator_battle_info battle_data
 
+    operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
     if monster.attacked == false and turn_count > 1 and monster.presentation == :attack do
-      operations = :attack_operation
+      operations = [:attack_operation]
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
