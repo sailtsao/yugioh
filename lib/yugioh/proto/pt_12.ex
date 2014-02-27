@@ -34,8 +34,8 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
-  defp summon_type_from summon_type do
-    case summon_type do
+  defp presentation_from presentation do
+    case presentation do
       1->
         :attack
       2->
@@ -45,8 +45,8 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
-  def summon_type_id_from summon_type do
-    case summon_type do      
+  def presentation_id_from presentation do
+    case presentation do      
       :attack->
         1
       :defense_down->  
@@ -58,6 +58,8 @@ defmodule Yugioh.Proto.PT12 do
 
   def scene_type_from scene_type_id do
     case scene_type_id do
+      0->
+        :player_zone
       1->
         :monster_card_zone
       2->
@@ -72,11 +74,15 @@ defmodule Yugioh.Proto.PT12 do
         :extra_deck_zone
       7->
         :handcard_zone
+      8->
+        :banished_zone
     end
   end
 
   def scene_type_id_from scene_type do
     case scene_type do
+      :player_zone ->
+        0
       :monster_card_zone->
         1
       :spell_trap_zone->
@@ -91,6 +97,8 @@ defmodule Yugioh.Proto.PT12 do
         6
       :handcard_zone->
         7
+      :banished_zone->
+        8
     end    
   end
   
@@ -110,6 +118,8 @@ defmodule Yugioh.Proto.PT12 do
         :change_to_defense_present_operation
       7->
         :reverse_operation
+      8->
+        :special_summon_operation
     end
   end
 
@@ -129,31 +139,33 @@ defmodule Yugioh.Proto.PT12 do
         6
       :reverse_operation->
         7
+      :special_summon_operation->
+        8
     end    
   end
 
   def effect_type_from effect_type_id do
     case effect_type_id do
       1 ->
-        :pay_tribute_effect
+        :move_to_graveyard_effect
       2 ->
         :summon_effect
       3 ->
         :attack_effect
       4 ->
-        :move_to_graveyard_effect
+        :card_presentation_change_effect
     end
   end
   
   def effect_type_id_from effect_type do
     case effect_type do
-      :pay_tribute_effect ->
+      :move_to_graveyard_effect ->
         1
       :summon_effect ->
         2      
       :attack_effect ->
         3
-      :move_to_graveyard_effect ->
+      :card_presentation_change_effect ->
         4
     end
   end
@@ -174,9 +186,9 @@ defmodule Yugioh.Proto.PT12 do
   end
 
   def read(12001,bin) do
-    <<handcards_index::8,summon_type::8>> = bin
-    summon_type = summon_type_from summon_type
-    {:ok,{:summon,handcards_index,summon_type}}
+    <<handcards_index::8,presentation::8>> = bin
+    presentation = presentation_from presentation
+    {:ok,{:summon,handcards_index,presentation}}
   end
 
   def read(12003,bin) do
@@ -209,6 +221,12 @@ defmodule Yugioh.Proto.PT12 do
     {:ok,{:choose_card,index_list}}
   end
 
+  def read(12010,bin) do
+    <<player_id::32,scene_type_id::8>> = bin
+    {:ok,{:get_cards_of_scene_type,player_id,scene_type_from(scene_type_id)}}
+  end
+  
+
   def write(:change_phase_to,phase) do    
     phase_number = phase_id_from phase
     Yugioh.Proto.pack(12000,<<phase_number::8>>)
@@ -220,9 +238,9 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12002,data)
   end  
 
-  def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,summon_type]) do
-    summon_type = summon_type_id_from summon_type
-    Yugioh.Proto.pack(12001,<<player_id::32,handcards_index::8,summon_card_id::32,summon_card_pos::8,summon_type::8>>)
+  def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,presentation]) do
+    presentation = presentation_id_from presentation
+    Yugioh.Proto.pack(12001,<<player_id::32,handcards_index::8,summon_card_id::32,summon_card_pos::8,presentation::8>>)
   end  
   
 
@@ -243,7 +261,7 @@ defmodule Yugioh.Proto.PT12 do
   # end  
 
   def write(:flip_card,[player_id,card_index,card_id,new_status]) do
-    new_status = summon_type_id_from new_status
+    new_status = presentation_id_from new_status
     data = <<player_id::32,card_index::8,card_id::32,new_status::8>>
     Yugioh.Proto.pack(12004,data)
   end
@@ -273,9 +291,9 @@ defmodule Yugioh.Proto.PT12 do
     target_type_id = (&(
     case &1 do
       :self->
-        0
-      :other->
         1
+      :other->
+        0
     end
     )).(target_type)
     index_binary = List.foldl index_list,<<>>,&(&2 <> <<&1::8>>)
@@ -291,5 +309,11 @@ defmodule Yugioh.Proto.PT12 do
     end
     data = <<length(effects)::16,effects_binary::binary>>
     Yugioh.Proto.pack(12009,data)
+  end
+
+  def write(:get_cards_of_scene_type,[player_id,scene_type,graveyardcards]) do
+    graveyardcards_binary = List.foldl graveyardcards,<<>>,&(&2 <> <<&1::32>>)
+    data = <<player_id::32,scene_type_id_from(scene_type)::8,length(graveyardcards)::16,graveyardcards_binary::binary>>
+    Yugioh.Proto.pack(12010,data)
   end
 end

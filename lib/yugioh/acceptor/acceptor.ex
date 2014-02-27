@@ -16,8 +16,8 @@ defmodule Yugioh.Acceptor.Acceptor do
   end
   
   def do_error(socket,reason,client) do
-    Lager.debug "client [~p] died by reason [~p]",[client,reason]
-    if is_pid(client.player_pid),do: Yugioh.Player.stop_cast(client.player_pid,reason)
+    Lager.error "client [~p] died by reason [~p]",[client,reason]
+    if is_pid(client.player_pid),do: Yugioh.Player.stop_cast(client.player_pid)
     :gen_tcp.close(socket)
   end
 
@@ -43,9 +43,10 @@ defmodule Yugioh.Acceptor.Acceptor do
     end
   end
   
-  defp route_message(msgID,binaryData,socket,client) do
-    case decode_message(msgID,binaryData) do
-      {:ok,:login,[account,password]} ->
+  def route_message(msgID,binaryData,socket,client) do
+    {:ok,message,params} = decode_message(msgID,binaryData)
+    case {message,params} do
+      {:login,[account,password]} ->
         case Login.login([account,password],socket) do
           {:ok,account_id}->
             client = client.update(account_id: account_id,logined: true)
@@ -55,29 +56,29 @@ defmodule Yugioh.Acceptor.Acceptor do
           {:error,reason}->
             do_error(socket,reason,client)
         end
-      {:ok,:web_login,[user_id,auth_string]} ->
+      {:web_login,[user_id,auth_string]} ->
           case Login.web_login([user_id,auth_string],socket) do
-          {:ok,account_id}->
-            client = client.update(account_id: account_id,logined: true)
-            parse_packet_loop(socket,client)
-          {:fail,_reason}->
-            parse_packet_loop(socket,client)
-          {:error,reason}->
-            do_error(socket,reason,client)
+            {:ok,account_id}->
+              client = client.update(account_id: account_id,logined: true)
+              parse_packet_loop(socket,client)
+            {:fail,_reason}->
+              parse_packet_loop(socket,client)
+            {:error,reason}->
+              do_error(socket,reason,client)
           end
-      {:ok,:check_role_name,name} ->
+      {:check_role_name,name} ->
         Login.check_role_exist(name,socket)
         parse_packet_loop(socket,client)
-      {:ok,:create_role,[name,avatar,card_type]} ->
+      {:create_role,[name,avatar,card_type]} ->
         Login.create_role([client.account_id,name,avatar,card_type],socket)
         parse_packet_loop(socket,client)
-      {:ok,:delete_role,name} ->
+      {:delete_role,name} ->
         Login.delete_role(name,socket)
         parse_packet_loop(socket,client)
-      {:ok,:get_roles} ->
+      {:get_roles,[]} ->
         Login.get_roles(client.account_id,socket)
         parse_packet_loop(socket,client)
-      {:ok,:enter_game,role_id} ->
+      {:enter_game,role_id} ->
         case Login.enter_game(role_id,socket) do
           {:ok,player_pid}->
             client=client.update(player_pid: player_pid,role_id: role_id)
@@ -85,51 +86,51 @@ defmodule Yugioh.Acceptor.Acceptor do
           {:fail,reason}->
             do_error(socket,reason,client)
         end
-      other-> # out of pre-enter-game area message
-        do_error(socket,other,client)
+      other-> # we only process these message above
+        do_error(socket,{:out_of_pre_entergame_area_message,other},client)
+    end
+  end
+
+  def process_message_packet(msgLength,msgID,socket,client) when msgLength<4 do
+    do_error(socket,{:messag_length_invalid,msgID,msgLength},client)
+  end
+
+  def process_message_packet 4,msgID,socket,client do
+    {:ok,data} = decode_message(msgID,<<>>)
+    route_message_to_player client,socket,msgID,data
+  end
+
+  def process_message_packet msgLength,msgID,socket,client do
+    case :gen_tcp.recv(socket,msgLength-4,2000) do
+      {:ok,binaryData} ->
+        {:ok,data} = decode_message(msgID,binaryData)
+        route_message_to_player client,socket,msgID,data
+      {:error,:timeout} ->
+        parse_game_packet_loop(socket,client)  
+      {:error,reason}->
+        do_error(socket,reason,client)
     end
   end
 
   def parse_game_packet_loop(socket,client) do
-      case :gen_tcp.recv(socket,4,2000) do
+    case :gen_tcp.recv(socket,4,2000) do
       {:ok,<<msgLength::size(16),msgID::size(16)>>} ->
         Lager.debug "*** get game message *** [~p] length [~p] from client [~p]",[msgID,msgLength,client]
-        case msgLength > 4 do
-          true->
-            case :gen_tcp.recv(socket,msgLength-4,2000) do
-              {:ok,binaryData} ->
-                case decode_message(msgID,binaryData) do
-                  {:ok,data}->
-                    case Yugioh.Player.socket_event(client.player_pid,msgID,data) do
-                      :ok->
-                        parse_game_packet_loop(socket,client)
-                      {:error,reason}->
-                        do_error(socket,reason,client)
-                    end
-                  other->
-                    do_error(socket,other,client)
-                end
-              other ->
-                do_error(socket,other,client)
-            end        
-          false->
-            case decode_message(msgID,<<>>) do
-              {:ok,data}->
-                case Yugioh.Player.socket_event(client.player_pid,msgID,data) do
-                  :ok->
-                    parse_game_packet_loop(socket,client)
-                  {:error,reason}->
-                    do_error(socket,reason,client)
-                end
-              other->
-                do_error(socket,other,client)
-            end
-        end
+        process_message_packet msgLength,msgID,socket,client
       {:error,:timeout} ->
         parse_game_packet_loop(socket,client)  
-      other ->
-        do_error(socket,other,client)
+      {:error,reason}->
+        do_error(socket,reason,client)
     end
   end
   
+  def route_message_to_player client,socket,msgID,data do
+    case Yugioh.Player.socket_event(client.player_pid,msgID,data) do
+      :ok->
+        parse_game_packet_loop(socket,client)
+      {:error,reason}->
+        do_error(socket,reason,client)
+    end
+  end
+
 end

@@ -34,6 +34,26 @@ defmodule Yugioh.Core.BattleCore do
     end
   end
 
+  def get_player_battle_info player_id,BattleData[operator_id: operator_id,player1_id: player1_id,player2_id: player2_id,
+                                player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info] do
+    case player_id do
+      ^player1_id ->
+        player1_battle_info
+      ^player2_id ->
+        player2_battle_info
+    end
+  end
+
+  def get_player_atom player_id,BattleData[operator_id: operator_id,player1_id: player1_id,player2_id: player2_id] do
+    case player_id do
+      ^player1_id ->
+        :player1_battle_info
+      ^player2_id ->
+        :player2_battle_info
+    end
+  end
+
+
   def get_opponent_player_id BattleData[operator_id: operator_id,player1_id: player1_id,player2_id: player2_id] do
     case operator_id do
       ^player1_id->
@@ -100,25 +120,62 @@ defmodule Yugioh.Core.BattleCore do
           []
         end
       x when x>8 ->
-        [:summon_operation,:place_operation]
+        if monster_summoned_count >=3 do
+          [:summon_operation,:place_operation]
+        else
+          []
+        end
       _ ->
         [:summon_operation,:place_operation]
     end
   end
-  def create_attack_card_effect attack_player_id,attack_card_index,defense_player_id,defense_card_index,damage_player_id,hp_damage,destroy_cards do
+
+  def get_graveyard_params_string battle_data do
+    player1_graveyard_card_id = if(Enum.empty?(battle_data.player1_battle_info.graveyardcards)) do
+      0
+    else
+      hd(battle_data.player1_battle_info.graveyardcards)
+    end
+    player2_graveyard_card_id = if(Enum.empty?(battle_data.player2_battle_info.graveyardcards)) do
+      0
+    else
+      hd(battle_data.player2_battle_info.graveyardcards)
+    end
+    "#{battle_data.player1_id};#{player1_graveyard_card_id};#{battle_data.player2_id};#{player2_graveyard_card_id}"
+  end
+
+  def create_card_presentation_change_effect card_id,new_presentation,player_id,scene_type,index do
+    attack_effect = Effect.new(type: :card_presentation_change_effect,
+      params: "#{card_id};#{Yugioh.Proto.PT12.presentation_id_from(new_presentation)}",
+      targets: [Target[player_id: player_id,scene_type: scene_type,index: index]])
+  end
+  
+  def create_attack_card_effect attack_player_id,attack_card_index,defense_player_id,defense_card_index,
+  damage_player_id,hp_damage do
     attack_target = Target[player_id: attack_player_id,scene_type: :monster_card_zone,index: attack_card_index]
     defense_target = Target[player_id: defense_player_id,scene_type: :monster_card_zone,index: defense_card_index]
-    attack_effect = Effect.new(type: :attack_effect,
+    Effect.new(type: :attack_effect,
       params: "#{attack_player_id};#{defense_player_id};#{damage_player_id};#{hp_damage}",
-      targets: [attack_target,defense_target])    
-    destroy_effects = Enum.map destroy_cards,fn({player_id,card_id,card_index})->
-      destroy_target = Target[player_id: player_id,scene_type: :monster_card_zone,index: card_index]
-      destroy_effect = Effect.new(type: :move_to_graveyard_effect,
-        params: "#{card_id}",
-        targets: [destroy_target])
-    end
-    [attack_effect|destroy_effects]
+      targets: [attack_target,defense_target])        
   end
+
+  def create_attack_player_effect attack_player_id,attack_card_index,defense_player_id,hp_damage do
+    attack_target = Target[player_id: attack_player_id,scene_type: :monster_card_zone,index: attack_card_index]
+    defense_target = Target[player_id: defense_player_id,scene_type: :player_zone,index: 0]
+    Effect.new(type: :attack_effect,
+      params: "#{attack_player_id};#{defense_player_id};#{defense_player_id};#{hp_damage}",
+      targets: [attack_target,defense_target])
+  end
+
+  def create_move_to_graveyard_effect destroy_cards,battle_data do
+    targets = Enum.map destroy_cards,fn({player_id,card_id,card_index})->
+      Target[player_id: player_id,scene_type: :monster_card_zone,index: card_index]
+    end
+    Effect.new(type: :move_to_graveyard_effect,
+        params: get_graveyard_params_string(battle_data),
+        targets: targets)
+  end
+  
   # already_attacked
   def attack_card_caculation(_player,_opponent_player,Monster[attacked: attacked],_opponent_monster,battle_data) 
   when attacked == true do
@@ -160,9 +217,10 @@ defmodule Yugioh.Core.BattleCore do
     if opponent_curhp <= 0 do
       send self,:battle_end
     end
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      damage_player_id,hp_damage,destroy_cards)
-    {:ok,battle_data,effects}
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      damage_player_id,hp_damage)
+    move_to_graveyard_effect = create_move_to_graveyard_effect(destroy_cards,battle_data)
+    {:ok,battle_data,[attack_card_effect,move_to_graveyard_effect]}
   end
 
   # attack a < b
@@ -185,9 +243,10 @@ defmodule Yugioh.Core.BattleCore do
     end
     player_battle_info = player_battle_info.update(curhp: curhp,monster_card_zone: monster_card_zone,graveyardcards: graveyardcards)
     battle_data = battle_data.update([{player_atom,player_battle_info}])
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      damage_player_id,hp_damage,destroy_cards)
-    {:ok,battle_data,effects}
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      damage_player_id,hp_damage)
+    move_to_graveyard_effect = create_move_to_graveyard_effect(destroy_cards,battle_data)
+    {:ok,battle_data,[attack_card_effect,move_to_graveyard_effect]}
   end
 
   # attack a == b
@@ -204,9 +263,10 @@ defmodule Yugioh.Core.BattleCore do
     player_battle_info = player_battle_info.update(monster_card_zone: monster_card_zone,graveyardcards: graveyardcards)
     opponent_player_battle_info = opponent_player_battle_info.update(monster_card_zone: opponent_monster_card_zone,graveyardcards: opponent_graveyardcards)
     battle_data = battle_data.update([{opponent_player_atom,opponent_player_battle_info},{player_atom,player_battle_info}])
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      0,0,destroy_cards)
-    {:ok,battle_data,effects}
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      0,0)
+    move_to_graveyard_effect = create_move_to_graveyard_effect(destroy_cards,battle_data)
+    {:ok,battle_data,[attack_card_effect,move_to_graveyard_effect]}
   end
 
   # defense a > b
@@ -223,8 +283,15 @@ defmodule Yugioh.Core.BattleCore do
     monster_card_zone = Dict.put player_battle_info.monster_card_zone,source_card_index,attack_monster.attacked(true)
     player_battle_info = player_battle_info.monster_card_zone monster_card_zone
     battle_data = battle_data.update([{opponent_player_atom,opponent_player_battle_info},{player_atom,player_battle_info}])
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      0,0,destroy_cards)
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      0,0)
+    move_to_graveyard_effect = create_move_to_graveyard_effect(destroy_cards,battle_data)
+    effects = if defense_state == :defense_down do
+      card_presentation_change_effect =  create_card_presentation_change_effect(opponent_monster.id,:defense_up,opponent_player_id,:monster_card_zone,target_card_index)
+      [attack_card_effect,card_presentation_change_effect,move_to_graveyard_effect]
+    else
+      [attack_card_effect,move_to_graveyard_effect]
+    end
     {:ok,battle_data,effects}
   end
 
@@ -246,16 +313,22 @@ defmodule Yugioh.Core.BattleCore do
       opponent_monster_card_zone = Dict.put opponent_player_battle_info.monster_card_zone,target_card_index,opponent_monster.presentation(:defense_up)
       opponent_player_battle_info = opponent_player_battle_info.monster_card_zone opponent_monster_card_zone
       battle_data = battle_data.update([{player_atom,player_battle_info},
-        {opponent_player_atom,opponent_player_battle_info}])
+        {opponent_player_atom,opponent_player_battle_info}])      
     else
       battle_data = battle_data.update([{player_atom,player_battle_info}])
     end
-
     if curhp <= 0 do
       send self,:battle_end
+    end    
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      damage_player_id,hp_damage)
+    move_to_graveyard_effect = create_move_to_graveyard_effect([],battle_data)
+    effects = if defense_state == :defense_down do
+      card_presentation_change_effect =  create_card_presentation_change_effect(opponent_monster.id,:defense_up,opponent_player_id,:monster_card_zone,target_card_index)
+      [attack_card_effect,card_presentation_change_effect,move_to_graveyard_effect]
+    else
+      [attack_card_effect,move_to_graveyard_effect]
     end
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      damage_player_id,hp_damage,[])
     {:ok,battle_data,effects}
   end
 
@@ -275,8 +348,15 @@ defmodule Yugioh.Core.BattleCore do
       battle_data = battle_data.update([{player_atom,player_battle_info}])
     end
     Lager.debug "battle_data [~p]",battle_data
-    effects = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
-      0,0,[])
+    attack_card_effect = create_attack_card_effect(player_id,source_card_index,opponent_player_id,target_card_index,
+      0,0)
+    move_to_graveyard_effect = create_move_to_graveyard_effect([],battle_data)
+    effects = if defense_state == :defense_down do
+      card_presentation_change_effect =  create_card_presentation_change_effect(opponent_monster.id,:defense_up,opponent_player_id,:monster_card_zone,target_card_index)
+      [attack_card_effect,card_presentation_change_effect,move_to_graveyard_effect]
+    else
+      [attack_card_effect,move_to_graveyard_effect]
+    end
     {:ok,battle_data,effects}
   end
 
@@ -302,47 +382,35 @@ defmodule Yugioh.Core.BattleCore do
 
   def attack_player player_id,source_card_index,battle_data = BattleData[player1_id: player1_id,player2_id: player2_id] do
 
-    {source_player_id,target_player_id,source_player_atom,source_player_battle_info,target_player_atom,opponent_player_battle_info} = case player_id do
-      ^player1_id->
-        {player1_id,player2_id,:player1_battle_info,battle_data.player1_battle_info,:player2_battle_info,battle_data.player2_battle_info}
-      ^player2_id->
-        {player2_id,player1_id,:player2_battle_info,battle_data.player2_battle_info,:player1_battle_info,battle_data.player1_battle_info}
-    end
+    {player_id,player_atom,player_battle_info} = {battle_data.operator_id,get_operator_atom(battle_data),
+    get_operator_battle_info(battle_data)}
 
-    attack_monster = Dict.get source_player_battle_info.monster_card_zone,source_card_index
-    hp_damage = 0
+    {opponent_player_id,opponent_player_atom,opponent_player_battle_info} = {get_opponent_player_id(battle_data),get_opponent_player_atom(battle_data),
+    get_opponent_player_battle_info(battle_data)}
+    
+    attack_monster = Dict.get player_battle_info.monster_card_zone,source_card_index    
     result = :ok
-    cond do
-      attack_monster.attacked ->
-        result = :already_attacked
-      Dict.size(opponent_player_battle_info.monster_card_zone)!=0->
-        result = :attack_directly_invalid
-      true->
-        hp_damage = attack_monster.attack
-        if hp_damage>opponent_player_battle_info.curhp do
-          hp_damage = opponent_player_battle_info.curhp
-        end
-        opponent_player_battle_info = opponent_player_battle_info.curhp - hp_damage |> opponent_player_battle_info.curhp 
-
-        source_player_battle_info = source_player_battle_info.monster_card_zone
-        |> Dict.put source_card_index,attack_monster.attacked(true)
-        |> source_player_battle_info.monster_card_zone
-         
-        battle_data = battle_data.update([{target_player_atom,opponent_player_battle_info},
-            {source_player_atom,source_player_battle_info}])
-        if opponent_player_battle_info.curhp <= 0 do
-          send self,:battle_end
-        end
-    end
+    if Dict.size(opponent_player_battle_info.monster_card_zone)!=0 do
+      result = :attack_directly_invalid
+    end      
     if result == :ok do
-      # TODO
-      attack_effect = Effect.new(type: :attack_effect,params: "",targets: [])
-      message_data = Yugioh.Proto.PT12.write(:effects,[attack_effect])
-      # message = Yugioh.Proto.PT12.write(:attack,[source_card_index,11,0,target_player_id,hp_damage,[],
-      #   source_player_id,source_player_battle_info.graveyardcards,target_player_id,opponent_player_battle_info.graveyardcards])
-      send battle_data.player1_battle_info.player_pid , {:send,message_data}
-      send battle_data.player2_battle_info.player_pid , {:send,message_data}
-    end
+      hp_damage = attack_monster.attack
+      if hp_damage>opponent_player_battle_info.curhp do
+        hp_damage = opponent_player_battle_info.curhp
+      end
+
+      opponent_player_battle_info = opponent_player_battle_info.curhp(opponent_player_battle_info.curhp - hp_damage)
+      player_battle_info = player_battle_info.monster_card_zone(Dict.put(player_battle_info.monster_card_zone,source_card_index,attack_monster.attacked(true)))
+       
+      battle_data = battle_data.update([{opponent_player_atom,opponent_player_battle_info},
+          {player_atom,player_battle_info}])
+      if opponent_player_battle_info.curhp <= 0 do
+        send self,:battle_end
+      end
+      attack_effect = create_attack_player_effect player_id,source_card_index,opponent_player_id,hp_damage
+      send_message battle_data.player1_battle_info.player_pid,:effects,[attack_effect]
+      send_message battle_data.player2_battle_info.player_pid,:effects,[attack_effect]
+    end    
     {result,battle_data}
   end  
 end

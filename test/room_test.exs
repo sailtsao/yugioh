@@ -147,7 +147,7 @@ defmodule RoomTest do
     :gen_tcp.send socket1,<<6::16,12007::16,7::8,0::8>>
     {:ok,data} = :gen_tcp.recv(socket1,0)
     IO.inspect data
-    
+
     # summon
     :gen_tcp.send socket1,<<6::size(16),12001::size(16),0::size(8),2::size(8)>> 
     {:ok,data}=:gen_tcp.recv(socket1,0)
@@ -237,7 +237,7 @@ defmodule RoomTest do
     # attack
     :gen_tcp.send socket2,<<5::size(16),12003::size(16),2::size(8)>>
     {:ok,data} = :gen_tcp.recv(socket2,0)
-    assert <<_::16,12008::16,2::8,1::8,1::8,1::8,1::16,2::8>> = data
+    assert <<_::16,12008::16,2::8,0::8,1::8,1::8,1::16,2::8>> = data
 
     :gen_tcp.send socket2,<<7::16,12008::16,1::16,2::8>>
     {:ok,data} = :gen_tcp.recv(socket2,0)

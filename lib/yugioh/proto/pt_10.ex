@@ -22,7 +22,7 @@ defmodule Yugioh.Proto.PT10 do
   end
 
   def read(10004,_bin) do
-    {:ok,:get_roles}
+    {:ok,:get_roles,[]}
   end
 
   def read(10005,bin) do

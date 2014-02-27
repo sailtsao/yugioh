@@ -21,7 +21,7 @@ defmodule Yugioh.Player do
       {:ok,new_player_state}->
         set_and_reply new_player_state,:ok
       {:error,reason}->
-        {:stop,reason,{:error,reason},player_state}
+        {:stop,:normal,{:error,reason},player_state}
     end
   end
 
@@ -42,8 +42,8 @@ defmodule Yugioh.Player do
     new_state player_state
   end
 
-  defcast stop_cast(reason),state: player_state do
-    {:stop, reason, player_state}
+  defcast stop_cast,state: player_state do
+    {:stop, :normal, player_state}
   end  
 
   definfo {:new_room_member,seat,pid},state: player_state do
@@ -86,7 +86,6 @@ defmodule Yugioh.Player do
       Yugioh.Battle.stop_cast player_state.battle_pid
     end
     Lager.debug "player process [~p] died reason [~p]",[self,reason]
-    :gen_tcp.close player_state.socket
   end  
     
 end

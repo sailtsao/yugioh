@@ -13,14 +13,34 @@ defmodule Yugioh.Battle do
 
   #############
   # call
+  defcall get_cards_of_scene_type(player_id,:graveyard_zone),from: {pid,_},state: battle_data do
+    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    BattleCore.send_message pid,:get_cards_of_scene_type,[player_id,:graveyard_zone,player_battle_info.graveyardcards]
+    set_and_reply battle_data,:ok
+  end
 
+  defcall get_cards_of_scene_type(player_id,:extra_deck_zone),from: {pid,_},state: battle_data do
+    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    BattleCore.send_message pid,:get_cards_of_scene_type,[player_id,:extra_deck_zone,player_battle_info.extradeckcards]
+    set_and_reply battle_data,:ok
+  end
+
+  defcall get_cards_of_scene_type(player_id,:banished_zone),from: {pid,_},state: battle_data do
+    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    BattleCore.send_message pid,:get_cards_of_scene_type,[player_id,:banished_zone,player_battle_info.banishedcards]
+    set_and_reply battle_data,:ok
+  end
+
+  defcall get_cards_of_scene_type(_player_id,_scene_type) do    
+    reply :get_cards_of_invalid_scene_type
+  end
   # get card operations  
   # already summoned monster in this turn
   defcall get_card_operations(_player_id,:handcard_zone,_index),
   from: {pid,_},
   state: BattleData[normal_summoned: normal_summoned],
   when: normal_summoned==true do
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[[]])
+    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[])
     send pid,{:send,message_data}
     reply :ok
   end
@@ -29,8 +49,11 @@ defmodule Yugioh.Battle do
   defcall get_card_operations(player_id,:handcard_zone,index),
   from: {pid,_},
   state: battle_data = BattleData[phase: phase],
-  when: phase == :mp1 or phase == :mp2 do
+  when: phase == :mp1 or phase == :mp2 do    
     player_battle_info = BattleCore.get_operator_battle_info battle_data
+    Lager.debug "player_id [~p]",[player_id]
+    Lager.debug "battle_data [~p]",[battle_data]
+    Lager.debug "player_battle_info [~p]",[player_battle_info]
     card_id = Enum.at(player_battle_info.handcards,index)
     operations = BattleCore.get_handcard_operations Cards.get(card_id).level,Dict.size(player_battle_info.monster_card_zone)
     BattleCore.send_message pid,:get_card_operations,operations
@@ -50,16 +73,15 @@ defmodule Yugioh.Battle do
   end
 
   # monster operations in bp phase
-  defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
+  defcall get_card_operations(_player_id,:monster_card_zone,index),from: {pid,_},
     state: battle_data = BattleData[phase: phase,turn_count: turn_count],
   when: phase == :bp do
 
     player_battle_info = BattleCore.get_operator_battle_info battle_data
 
-    operations = []
     monster = Dict.get player_battle_info.monster_card_zone,index
     if monster.attacked == false and turn_count > 1 and monster.presentation == :attack do
-      operations = [:attack_operation | operations]
+      operations = :attack_operation
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
@@ -67,7 +89,7 @@ defmodule Yugioh.Battle do
   end
 
   # monster operations in mp1 or mp2
-  defcall get_card_operations(player_id,:monster_card_zone,index),from: {pid,_},
+  defcall get_card_operations(_player_id,:monster_card_zone,index),from: {pid,_},
     state: battle_data = BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do
 
@@ -77,7 +99,7 @@ defmodule Yugioh.Battle do
     monster = Dict.get player_battle_info.monster_card_zone,index 
 
     if monster.presentation_changed == false do
-      operations = [BattleCore.get_presentation_operation(monster.presentation)|operations]
+      operations = BattleCore.get_presentation_operation(monster.presentation)
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
@@ -96,6 +118,10 @@ defmodule Yugioh.Battle do
     reply :ok
   end
 
+  defcall get_card_operations(player_id,_,_),state: BattleData[operator_id: operator_id],
+  when: operator_id != player_id do
+    reply :cant_get_card_operation_when_not_your_turn
+  end
 # battle_load_finish
   defcall battle_load_finish,state: battle_data=BattleData[phase: phase], when: phase ==:wait_load_finish_1 or phase == :wait_load_finish_2 do
     # 0->1->first dp
@@ -120,7 +146,7 @@ defmodule Yugioh.Battle do
   end
 
 # normal summon in mp1 mp2 phase
-  defcall summon(player_id,handcards_index,summon_type),
+  defcall summon(player_id,handcards_index,presentation),
     state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
     when: phase == :mp1 or phase == :mp2 do
 
@@ -139,7 +165,7 @@ defmodule Yugioh.Battle do
     
     summon_card_id = Enum.at(player_battle_info.handcards,handcards_index)
     card = Cards.get(summon_card_id)
-    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
+    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: presentation,presentation_changed: true]
     tribute_number = 0
     case monster.level do
       x when x==5 or x==6 ->
@@ -181,11 +207,11 @@ defmodule Yugioh.Battle do
 
         battle_data = battle_data.update [{player_atom,player_battle_info},{:normal_summoned,true}]
 
-        summon_type_id = Yugioh.Proto.PT12.summon_type_id_from(summon_type)
-        summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
-        summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
+        presentation_id = Yugioh.Proto.PT12.presentation_id_from(presentation)
+        summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{presentation_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
+        summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{presentation_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
     
-        if summon_type == :defense_down do
+        if presentation == :defense_down do
           case player_atom do
             :player1_battle_info->
               message_data = Yugioh.Proto.PT12.write(:effects,[summon_effect])
@@ -209,8 +235,8 @@ defmodule Yugioh.Battle do
       else
         index_list = Dict.keys player_battle_info.monster_card_zone
         message_data = Yugioh.Proto.PT12.write(:choose_card,[:tribute_choose,:self,:monster_card_zone,tribute_number,index_list])
-        send player_battle_info.player_pid,message_data
-        battle_data = battle_data.update(phase: {:choose_tribute_card_for_summon_phase,phase,tribute_number,handcards_index,summon_type})
+        send player_battle_info.player_pid,{:send,message_data}
+        battle_data = battle_data.update(phase: {:choose_tribute_card_for_summon_phase,phase,tribute_number,handcards_index,presentation})
         set_and_reply battle_data,result
       end
     else
@@ -223,7 +249,7 @@ defmodule Yugioh.Battle do
   end
 
   defcall choose_card(player_id,choose_index_list),
-  state: battle_data=BattleData[phase: {:choose_tribute_card_for_summon_phase,old_phase,tribute_number,handcards_index,summon_type},
+  state: battle_data=BattleData[phase: {:choose_tribute_card_for_summon_phase,old_phase,tribute_number,handcards_index,presentation},
   player1_id: player1_id,player2_id: player2_id,player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info] do    
     {player_atom,player_battle_info} = case player_id do
       ^player1_id->
@@ -242,13 +268,9 @@ defmodule Yugioh.Battle do
     graveyardcards = player_battle_info.graveyardcards
     handcards = player_battle_info.handcards
 
-    targets = List.foldl choose_index_list,[],&(&2 ++ [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: &1)])
+    move_to_graveyard_targets = List.foldl choose_index_list,[],&(&2 ++ [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: &1)])
 
-    died_monster_id_list = choose_index_list
-    |> Enum.map fn(index)->
-      Dict.get(monster_card_zone,index).id
-    end    
-    graveyardcards = graveyardcards ++ died_monster_id_list
+    graveyardcards = List.foldl choose_index_list,graveyardcards,&([Dict.get(monster_card_zone,&1).id|&2])
 
     monster_card_zone = Dict.drop monster_card_zone,choose_index_list
 
@@ -258,36 +280,36 @@ defmodule Yugioh.Battle do
     summon_card_id = Enum.at(handcards,handcards_index)    
     handcards = List.delete_at(handcards,handcards_index)    
     card = Cards.get(summon_card_id)
-    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: summon_type,presentation_changed: true]
+    monster = Monster[id: card.id,attack: card.attack,defense: card.defense,level: card.level,presentation: presentation,presentation_changed: true]
     monster_card_zone = Dict.put monster_card_zone,pos,monster
-    player_battle_info = player_battle_info.update(monster_card_zone: monster_card_zone,graveyardcards: graveyardcards,handcards: handcards)
+    player_battle_info = player_battle_info.update(monster_card_zone: monster_card_zone,graveyardcards: graveyardcards,handcards: handcards)    
+    battle_data = battle_data.update([{:phase, old_phase},{player_atom,player_battle_info},{:normal_summoned,true}])
 
-    tribute_effect = Effect.new(type: :pay_tribute_effect,targets: targets)
-    summon_type_id = Yugioh.Proto.PT12.summon_type_id_from summon_type
-    summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
-    summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{summon_type_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
+    move_to_graveyard_effect = Effect.new(type: :move_to_graveyard_effect,params: BattleCore.get_graveyard_params_string(battle_data),targets: move_to_graveyard_targets)
+    presentation_id = Yugioh.Proto.PT12.presentation_id_from presentation
+    summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{summon_card_id};#{presentation_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])
+    summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{presentation_id}",targets: [Target.new(player_id: player_id,scene_type: :monster_card_zone,index: pos)])    
     
-    if summon_type == :defense_down do
+    if presentation == :defense_down do
       case player_atom do
         :player1_battle_info->
-          message_data = Yugioh.Proto.PT12.write(:effects,[tribute_effect,summon_effect])
+          message_data = Yugioh.Proto.PT12.write(:effects,[move_to_graveyard_effect,summon_effect])
           send battle_data.player2_battle_info.player_pid , {:send,message_data}
-          message_data = Yugioh.Proto.PT12.write(:effects,[tribute_effect,summon_effect_masked])
+          message_data = Yugioh.Proto.PT12.write(:effects,[move_to_graveyard_effect,summon_effect_masked])
           send battle_data.player2_battle_info.player_pid , {:send,message_data}
         :player2_battle_info->
-          message_data = Yugioh.Proto.PT12.write(:effects,[tribute_effect,summon_effect_masked])
+          message_data = Yugioh.Proto.PT12.write(:effects,[move_to_graveyard_effect,summon_effect_masked])
           send battle_data.player1_battle_info.player_pid , {:send,message_data}
-          message_data = Yugioh.Proto.PT12.write(:effects,[tribute_effect,summon_effect])
+          message_data = Yugioh.Proto.PT12.write(:effects,[move_to_graveyard_effect,summon_effect])
           send battle_data.player2_battle_info.player_pid , {:send,message_data}
       end
     else
-      message_data = Yugioh.Proto.PT12.write(:effects,[tribute_effect,summon_effect])
+      message_data = Yugioh.Proto.PT12.write(:effects,[move_to_graveyard_effect,summon_effect])
       send battle_data.player1_battle_info.player_pid , {:send,message_data}
       send battle_data.player2_battle_info.player_pid , {:send,message_data}          
     end
 
-    battle_data.update [{phase: old_phase},{player_atom,player_battle_info}]
-    |> set_and_reply result
+    set_and_reply battle_data,result
   end
 
   # choose_target_card_for_attack_phase
@@ -375,7 +397,7 @@ defmodule Yugioh.Battle do
     reply :cant_attack_at_first_turn
   end
 
-  defcall attack(_,_),state: battle_data do
+  defcall attack(_,_) do
     reply :attack_in_invalid_phase
   end  
 
@@ -456,10 +478,10 @@ defmodule Yugioh.Battle do
 # new turn
   definfo :new_turn_draw_phase,state: battle_data do
     operator_id = BattleCore.get_new_turn_operator_id battle_data
-    player_atom = BattleCore.get_operator_atom battle_data
-    player_battle_info = BattleCore.get_operator_battle_info battle_data
+    player_atom = BattleCore.get_player_atom operator_id,battle_data
+    player_battle_info = BattleCore.get_player_battle_info operator_id,battle_data
     [draw_card_id|deckcards] = player_battle_info.deckcards
-    handcards = player_battle_info.handcards ++ [draw_card_id]
+    handcards = player_battle_info.handcards++[draw_card_id]
     monster_card_zone = Enum.map(player_battle_info.monster_card_zone,fn({index,monster})-> {index,monster.turn_reset} end)
     player_battle_info = player_battle_info.update(deck: deckcards,handcards: handcards,monster_card_zone: monster_card_zone)
     battle_data = battle_data.update([{player_atom,player_battle_info},{:turn_count,battle_data.turn_count+1},
