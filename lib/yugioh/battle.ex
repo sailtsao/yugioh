@@ -350,9 +350,9 @@ defmodule Yugioh.Battle do
         monster_card_zone = Dict.put(player_battle_info.monster_card_zone,card_index,monster)
         player_battle_info = player_battle_info.update(monster_card_zone: monster_card_zone)
         battle_data = battle_data.update([{player_atom,player_battle_info}])
-        message_data = Yugioh.Proto.PT12.write(:flip_card,[player_id,card_index,monster.id,monster.presentation])
-        send battle_data.player1_battle_info.player_pid , {:send,message_data}
-        send battle_data.player2_battle_info.player_pid , {:send,message_data}
+        presentation_change_effect = BattleCore.create_card_presentation_change_effect(monster.id,monster.presentation,player_id,:monster_card_zone,card_index)
+        BattleCore.send_message battle_data.player1_battle_info.player_pid,:effects,[presentation_change_effect]
+        BattleCore.send_message battle_data.player2_battle_info.player_pid,:effects,[presentation_change_effect]
         set_and_reply battle_data,:ok      
     end    
   end
