@@ -106,7 +106,7 @@ defmodule Yugioh.Core.BattleCore do
   
 
   def get_handcard_operations card_id,monster_summoned_count do
-    card_level = Card.get(card_id).level
+    card_level = Yugioh.Data.Cards.get(card_id).level
     case card_level do
       x when x==5 or x==6 ->        
         if monster_summoned_count >=1 do
