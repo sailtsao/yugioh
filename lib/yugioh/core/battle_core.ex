@@ -93,19 +93,20 @@ defmodule Yugioh.Core.BattleCore do
     get_opponent_player_id battle_data
   end  
 
-  def get_presentation_operation presentation do
+  def get_presentation_operations presentation do
     case presentation do
       :attack ->
-        :change_to_defense_present_operation
+        [:change_to_defense_present_operation]
       :defense_down ->
-        :reverse_operation
+        [:reverse_operation]
       :defense_up ->
-        :change_to_attack_present_operation
+        [:change_to_attack_present_operation]
     end
   end
   
 
-  def get_handcard_operations card_level,monster_summoned_count do
+  def get_handcard_operations card_id,monster_summoned_count do
+    card_level = Card.get(card_id).level
     case card_level do
       x when x==5 or x==6 ->        
         if monster_summoned_count >=1 do
@@ -128,6 +129,10 @@ defmodule Yugioh.Core.BattleCore do
       _ ->
         [:summon_operation,:place_operation]
     end
+  end
+
+  def get_handcard_normal_operations _,5 do
+    []
   end
 
   def get_graveyard_params_string battle_data do

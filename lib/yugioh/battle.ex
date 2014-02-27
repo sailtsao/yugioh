@@ -46,16 +46,13 @@ defmodule Yugioh.Battle do
   end
 
   # handcard operations in phase mp1 or mp2 without summoned
-  defcall get_card_operations(player_id,:handcard_zone,index),
+  defcall get_card_operations(_player_id,:handcard_zone,index),
   from: {pid,_},
   state: battle_data = BattleData[phase: phase],
   when: phase == :mp1 or phase == :mp2 do    
     player_battle_info = BattleCore.get_operator_battle_info battle_data
-    Lager.debug "player_id [~p]",[player_id]
-    Lager.debug "battle_data [~p]",[battle_data]
-    Lager.debug "player_battle_info [~p]",[player_battle_info]
     card_id = Enum.at(player_battle_info.handcards,index)
-    operations = BattleCore.get_handcard_operations Cards.get(card_id).level,Dict.size(player_battle_info.monster_card_zone)
+    operations = BattleCore.get_handcard_operations card_id,Dict.size(player_battle_info.monster_card_zone)
     BattleCore.send_message pid,:get_card_operations,operations
     set_and_reply battle_data,:ok
   end
@@ -99,7 +96,7 @@ defmodule Yugioh.Battle do
     monster = Dict.get player_battle_info.monster_card_zone,index 
 
     if monster.presentation_changed == false do
-      operations = BattleCore.get_presentation_operation(monster.presentation)
+      operations = BattleCore.get_presentation_operations(monster.presentation)
     end
 
     BattleCore.send_message pid,:get_card_operations,operations
