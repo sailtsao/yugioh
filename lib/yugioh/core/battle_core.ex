@@ -1,5 +1,10 @@
-defmodule Yugioh.Core.BattleCore do
+defmodule BattleCore do
   require Lager
+
+  def send_choose_message player_pid,choose_type,self_or_other,scene_type,chooose_number,index_list do
+    message_data = Yugioh.Proto.PT12.write(:choose_card,[choose_type,self_or_other,scene_type,chooose_number,index_list])
+    send player_pid,{:send,message_data}
+  end
 
   def send_message player_pid,message,params do
     message_data = Yugioh.Proto.PT12.write(message,params)
@@ -14,6 +19,15 @@ defmodule Yugioh.Core.BattleCore do
   def is_operator? player_id,BattleData[operator_id: operator_id] do
     operator_id == player_id
   end
+
+  def get_scene_atom scene_type do
+    case scene_type do
+      :handcard_zone ->
+        :handcards
+      :deck_zone ->
+        :deckcards
+    end
+  end  
 
   def get_operator_battle_info BattleData[operator_id: operator_id,player1_id: player1_id,player2_id: player2_id,
                                 player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info] do
@@ -103,9 +117,50 @@ defmodule Yugioh.Core.BattleCore do
         [:change_to_attack_present_operation]
     end
   end
-  
 
-  def get_handcard_operations card_id,monster_summoned_count do
+  def is_card_can_be_special_summoned card_data,player_battle_info do
+    case Util.get_special_summon_skill(card_data.skills) do
+      nil->
+        false
+      skill->
+        ConditionCore.is_skill_conditions_satisfied skill,player_battle_info
+    end
+  end
+
+  def is_card_can_fire_effect(card_data,player_battle_info) do
+    case Util.get_normal_skills(card_data.skills) do
+      []->
+        false
+      skills->
+        Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied &1,player_battle_info))
+    end
+  end
+
+  def get_fire_effect_operations card_id,player_battle_info do
+    card_data = Yugioh.Data.Cards.get(card_id)
+    case is_card_can_fire_effect(card_data,player_battle_info) do
+      true->
+        [:fire_effect_operation]
+      false->
+        []
+    end
+  end  
+
+  def get_handcard_special_summon_operations card_id,player_battle_info do
+    card_data = Yugioh.Data.Cards.get(card_id)
+    case is_card_can_be_special_summoned(card_data,player_battle_info) do
+      true ->
+        [:special_summon_operation]
+      false ->
+        []
+    end
+  end
+
+  def get_handcard_normal_summon_operations _,5 do
+    []
+  end
+
+  def get_handcard_normal_summon_operations card_id,monster_summoned_count do
     card_level = Yugioh.Data.Cards.get(card_id).level
     case card_level do
       x when x==5 or x==6 ->        
@@ -129,10 +184,6 @@ defmodule Yugioh.Core.BattleCore do
       _ ->
         [:summon_operation,:place_operation]
     end
-  end
-
-  def get_handcard_normal_operations _,5 do
-    []
   end
 
   def get_graveyard_params_string battle_data do

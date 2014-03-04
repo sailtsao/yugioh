@@ -2,7 +2,6 @@ defmodule Yugioh.Battle do
   require Lager
   use ExActor.GenServer
   alias Yugioh.Data.Cards
-  alias Yugioh.Core.BattleCore
 
   # init
   definit {player1_pid,player2_pid} do
@@ -13,6 +12,26 @@ defmodule Yugioh.Battle do
 
   #############
   # call
+  defcall fire_effect(player_id,scene_type,index),state: battle_data do
+    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    card_id = case scene_type do
+      :handcard_zone->
+        Enum.at player_battle_info.handcards,index
+      :monster_card_zone->
+        Dict.get(player_battle_info.monster_card_zone,index).id
+    end
+    card_data = Cards.get(card_id)
+    [skill] = Util.get_normal_skills(card_data.skills)
+    result = :ok
+
+    if ConditionCore.is_skill_conditions_satisfied(skill,player_battle_info) != true,do: result = :card_cant_fire_effect
+    
+    if result == :ok do
+      battle_data = EffectCore.execute_skill_effects(skill,battle_data,[])
+    end
+    set_and_reply battle_data,result
+  end
+
   defcall get_cards_of_scene_type(player_id,:graveyard_zone),from: {pid,_},state: battle_data do
     player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
     BattleCore.send_message pid,:get_cards_of_scene_type,[player_id,:graveyard_zone,player_battle_info.graveyardcards]
@@ -31,18 +50,26 @@ defmodule Yugioh.Battle do
     set_and_reply battle_data,:ok
   end
 
+  defcall get_cards_of_scene_type(player_id,:deck_zone),from: {pid,_},state: battle_data do
+    player_battle_info = BattleCore.get_player_battle_info player_id,battle_data
+    BattleCore.send_message pid,:get_cards_of_scene_type,[player_id,:deck_zone,player_battle_info.deckcards]
+    set_and_reply battle_data,:ok
+  end
+
   defcall get_cards_of_scene_type(_player_id,_scene_type) do    
     reply :get_cards_of_invalid_scene_type
   end
   # get card operations  
   # already summoned monster in this turn
-  defcall get_card_operations(_player_id,:handcard_zone,_index),
+  defcall get_card_operations(_player_id,:handcard_zone,index),
   from: {pid,_},
-  state: BattleData[normal_summoned: normal_summoned],
+  state: battle_data = BattleData[normal_summoned: normal_summoned],
   when: normal_summoned==true do
-    message_data = Yugioh.Proto.PT12.write(:get_card_operations,[])
-    send pid,{:send,message_data}
-    reply :ok
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
+    card_id = Enum.at(player_battle_info.handcards,index)
+    special_summon_operations = BattleCore.get_handcard_special_summon_operations card_id,player_battle_info
+    BattleCore.send_message pid,:get_card_operations,special_summon_operations
+    set_and_reply battle_data,:ok
   end
 
   # handcard operations in phase mp1 or mp2 without summoned
@@ -52,8 +79,9 @@ defmodule Yugioh.Battle do
   when: phase == :mp1 or phase == :mp2 do    
     player_battle_info = BattleCore.get_operator_battle_info battle_data
     card_id = Enum.at(player_battle_info.handcards,index)
-    operations = BattleCore.get_handcard_operations card_id,Dict.size(player_battle_info.monster_card_zone)
-    BattleCore.send_message pid,:get_card_operations,operations
+    normal_operations = BattleCore.get_handcard_normal_summon_operations card_id,Dict.size(player_battle_info.monster_card_zone)
+    special_summon_operations = BattleCore.get_handcard_special_summon_operations card_id,player_battle_info    
+    BattleCore.send_message pid,:get_card_operations,normal_operations++special_summon_operations
     set_and_reply battle_data,:ok
   end
 
@@ -81,7 +109,6 @@ defmodule Yugioh.Battle do
     if monster.attacked == false and turn_count > 1 and monster.presentation == :attack do
       operations = [:attack_operation]
     end
-
     BattleCore.send_message pid,:get_card_operations,operations
     set_and_reply battle_data,:ok
   end
@@ -100,7 +127,9 @@ defmodule Yugioh.Battle do
       operations = BattleCore.get_presentation_operations(monster.presentation)
     end
 
-    BattleCore.send_message pid,:get_card_operations,operations
+    fire_effect_operations = BattleCore.get_fire_effect_operations monster.id,player_battle_info
+
+    BattleCore.send_message pid,:get_card_operations,operations++fire_effect_operations
     set_and_reply battle_data,:ok
   end
 
@@ -135,16 +164,30 @@ defmodule Yugioh.Battle do
     end
   end
 
-# normal summon when already summmoned
-  defcall summon(_,_,_),
-    state: BattleData[normal_summoned: normal_summoned],
-    when: normal_summoned == true do
+  defcall summon(player_id,handcards_index,presentation,:special_summon),
+  state: battle_data = BattleData[phase: phase],
+  when: phase == :mp1 or phase == :mp2 do
+    Lager.debug "battle before summon battle data [~p]",[battle_data]
+
+    operator_atom = BattleCore.get_operator_atom battle_data
+    operator_battle_info = BattleCore.get_operator_battle_info battle_data
+
+    result = :ok
+    card_id = Enum.at(operator_battle_info.handcards,handcards_index)
+    card_data = Yugioh.Data.Cards.get(card_id)
+    skill = Util.get_special_summon_skill(card_data.skills)
+    if ConditionCore.is_skill_conditions_satisfied(skill,operator_battle_info) != true,do: result = :card_cant_be_special_summoned
+
+    if result == :ok do      
+      battle_data = EffectCore.execute_skill_effects(skill,battle_data,[{:handcards_index,handcards_index},{:presentation,presentation}])
+    end    
     
-    reply :cant_normal_summon_twice_in_one_turn
+    Lager.debug "battle after summon state [~p]",[battle_data]
+    set_and_reply battle_data,result
   end
 
 # normal summon in mp1 mp2 phase
-  defcall summon(player_id,handcards_index,presentation),
+  defcall summon(player_id,handcards_index,presentation,:normal_summon),
     state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
     when: phase == :mp1 or phase == :mp2 do
 
@@ -231,7 +274,9 @@ defmodule Yugioh.Battle do
         Lager.debug "battle after summon state [~p]",[battle_data]
         set_and_reply battle_data,result
       else
-        index_list = Dict.keys player_battle_info.monster_card_zone
+        index_list = Enum.map player_battle_info.monster_card_zone,fn({index,monster})->
+          {monster.id,index}
+        end
         message_data = Yugioh.Proto.PT12.write(:choose_card,[:tribute_choose,:self,:monster_card_zone,tribute_number,index_list])
         send player_battle_info.player_pid,{:send,message_data}
         battle_data = battle_data.update(phase: {:choose_tribute_card_for_summon_phase,phase,tribute_number,handcards_index,presentation})
@@ -242,7 +287,15 @@ defmodule Yugioh.Battle do
     end
   end
 
-  defcall summon(_,_,_) do    
+# normal summon when already summmoned
+  defcall summon(_,_,_,:normal_summon),
+    state: BattleData[normal_summoned: normal_summoned],
+    when: normal_summoned == true do
+    
+    reply :cant_normal_summon_twice_in_one_turn
+  end
+
+  defcall summon(_,_,_,_) do    
     reply :summon_in_invalid_phase
   end
 
@@ -320,6 +373,13 @@ defmodule Yugioh.Battle do
     set_and_reply battle_data,result
   end
 
+  # choose card for effect
+  defcall choose_card(player_id,choose_cards_index),
+  state: battle_data do
+    battle_data = EffectCore.resume_execute_effect_after_choose choose_cards_index,battle_data
+    set_and_reply battle_data,:ok
+  end
+
 # flip card in mp1 mp2 phase
   defcall flip_card(player_id,card_index),
   state: battle_data = BattleData[phase: phase,player1_id: player1_id,player2_id: player2_id],
@@ -384,7 +444,10 @@ defmodule Yugioh.Battle do
     else      
       # need to choose a card to attack
       index_list = Dict.keys target_player_battle_info.monster_card_zone
-      message_data = Yugioh.Proto.PT12.write(:choose_card,[:attack_choose,:other,:monster_card_zone,1,index_list])
+      index_with_id_list = Enum.map target_player_battle_info.monster_card_zone,fn({index,monster})->
+        {monster.id,index}
+      end
+      message_data = Yugioh.Proto.PT12.write(:choose_card,[:attack_choose,:other,:monster_card_zone,1,index_with_id_list])
       send source_player_battle_info.player_pid,{:send,message_data}
       battle_data = battle_data.update(phase: {:choose_target_card_for_attack_phase,phase,1,index_list,source_card_index})
       set_and_reply battle_data,:ok

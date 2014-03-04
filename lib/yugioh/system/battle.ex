@@ -1,9 +1,9 @@
 defmodule Yugioh.System.Battle do
 
-  def handle({:summon,handcards_index,summon_type},player_state) do
+  def handle({:summon,handcards_index,presentation,summon_type},player_state) do
     case is_pid(player_state.battle_pid) do
       true ->
-        case Yugioh.Battle.summon(player_state.battle_pid,player_state.id,handcards_index,summon_type) do
+        case Yugioh.Battle.summon(player_state.battle_pid,player_state.id,handcards_index,presentation,summon_type) do
           :ok->
             {:ok,player_state}
           reason->
@@ -112,4 +112,17 @@ defmodule Yugioh.System.Battle do
     end
   end
   
+  def handle({:fire_effect,scene_type,index},player_state) do
+    case is_pid(player_state.battle_pid) do
+      true ->
+        case Yugioh.Battle.fire_effect(player_state.battle_pid,player_state.id,scene_type,index) do
+          :ok->
+            {:ok,player_state}
+          reason->
+            {:error,reason}
+        end
+      false ->
+        {:error,:invalid_battle_pid}
+    end
+  end
 end

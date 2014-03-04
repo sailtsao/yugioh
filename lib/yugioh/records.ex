@@ -3,7 +3,7 @@ defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,so
   extra_deck: [],
   side_deck: []
 
-defrecord Card,id: 0,type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0
+defrecord Card,id: 0,type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0,skills: []
 
 defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,attacked: false do
   def turn_reset(record) do
@@ -32,6 +32,11 @@ defrecord BattleInfo,
   handcards: [],
   field_card: nil
 
+defrecord Skill,type: 0,check_phase: 0,skill_effects: [],and_conditions: [],or_conditions: []
+
+defrecord Condition,id: 0,params: ""
+
+defrecord SkillEffect,id: 0,params: "",priority: 0
 
 defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,
   player1_battle_info: nil,player2_battle_info: nil,normal_summoned: false

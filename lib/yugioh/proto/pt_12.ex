@@ -34,6 +34,40 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
+  def check_phase_from check_phase_id do
+    case check_phase_id do
+      1->
+        :draw_phase
+      2->
+        :suspend_phase
+      3->
+        :main_phase_1
+      4->
+        :battle_phase
+      5->
+        :main_phase_2
+      6->
+        :end_phase
+    end
+  end
+
+  def check_phase_id_from check_phase do
+    case check_phase do
+      :draw_phase->
+        1        
+      :suspend_phase->
+        2        
+      :main_phase_1->
+        3        
+      :battle_phase->
+        4        
+      :main_phase_2->
+        5        
+      :end_phase->
+        6        
+    end
+  end
+
   defp presentation_from presentation do
     case presentation do
       1->
@@ -176,6 +210,30 @@ defmodule Yugioh.Proto.PT12 do
         1
       :attack_choose ->
         2
+      :handcard_tribute_choose ->
+        3
+    end
+  end
+
+  def attribute_id_from attribute do
+    case attribute do
+      :none ->
+        0
+      :dark_attribute ->
+        1
+      # :light ->
+      #   2
+    end
+  end
+  
+  def attribute_from attribute_id do
+    case attribute_id do
+      0 ->
+        :none
+      1 ->
+        :dark_attribute
+      # :light ->
+      #   2
     end
   end
 
@@ -186,9 +244,17 @@ defmodule Yugioh.Proto.PT12 do
   end
 
   def read(12001,bin) do
-    <<handcards_index::8,presentation::8>> = bin
-    presentation = presentation_from presentation
-    {:ok,{:summon,handcards_index,presentation}}
+    <<handcards_index::8,presentation_id::8,is_special_summon::8>> = bin
+    presentation = presentation_from presentation_id
+    summon_type = (&(
+    case &1 do
+      0->
+        :normal_summon
+      1->
+        :special_summon
+    end
+    )).(is_special_summon)
+    {:ok,{:summon,handcards_index,presentation,summon_type}}
   end
 
   def read(12003,bin) do
@@ -226,7 +292,11 @@ defmodule Yugioh.Proto.PT12 do
     {:ok,{:get_cards_of_scene_type,player_id,scene_type_from(scene_type_id)}}
   end
   
-
+  def read(12011,bin) do
+    <<scene_type_id::8,index::8>> = bin
+    {:ok,{:fire_effect,scene_type_from(scene_type_id),index}}
+  end
+  
   def write(:change_phase_to,phase) do    
     phase_number = phase_id_from phase
     Yugioh.Proto.pack(12000,<<phase_number::8>>)
@@ -238,10 +308,10 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12002,data)
   end  
 
-  def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,presentation]) do
-    presentation = presentation_id_from presentation
-    Yugioh.Proto.pack(12001,<<player_id::32,handcards_index::8,summon_card_id::32,summon_card_pos::8,presentation::8>>)
-  end  
+  # def write(:summon,[player_id,handcards_index,summon_card_id,summon_card_pos,presentation]) do
+  #   presentation = presentation_id_from presentation
+  #   Yugioh.Proto.pack(12001,<<player_id::32,handcards_index::8,summon_card_id::32,summon_card_pos::8,presentation::8>>)
+  # end  
   
 
   # def write(:attack,[source_card_index,target_card_index,target_card_id,damage_player_id,hp_damage,destroy_cards,player1_id,graveyard_cards1,player2_id,graveyard_cards2]) do
@@ -296,7 +366,7 @@ defmodule Yugioh.Proto.PT12 do
         0
     end
     )).(target_type)
-    index_binary = List.foldl index_list,<<>>,&(&2 <> <<&1::8>>)
+    index_binary = List.foldl index_list,<<>>,fn({card_id,index},bin)-> bin <> <<card_id::32,index::8>> end
     data = <<choose_type_id_from(choose_type)::8,target_type_id::8,scene_type_id_from(scene_type)::8,choose_number::8,length(index_list)::16,index_binary::binary>>
     Yugioh.Proto.pack(12008,data)
   end

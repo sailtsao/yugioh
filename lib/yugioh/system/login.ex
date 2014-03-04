@@ -71,7 +71,7 @@ defmodule Yugioh.System.Login do
           false->
             0
         end
-        cards = Enum.take Stream.cycle([1,2,3,4,5]),40
+        cards = Enum.take Stream.cycle([1,2,3,4,5,6,7,8,9,10,11,12]),40
         r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: :erlang.term_to_binary(cards)],hp: 3000,win: 0,lose: 0)
         Yugioh.Repo.create(r)
         :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10002,1))
@@ -121,7 +121,10 @@ defmodule Yugioh.System.Login do
     nl = byte_size(role.name)
     
     # make cards binary
-    cards_list=:erlang.binary_to_term(role.cards)
+
+    # cards_list = :erlang.binary_to_term(role.cards)
+    cards_list = Enum.take Stream.cycle([1,1,2,3,7,7]),40
+
     cards_binary = iolist_to_binary(Enum.map(cards_list,fn(x)-> <<x::size(32)>> end))
     # send player data to client
     :gen_tcp.send(socket,Yugioh.Proto.PT10.write(10005,<<role.id::size(32), role.avatar::size(8), nl::size(16), role.name::bitstring,
