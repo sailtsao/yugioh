@@ -116,6 +116,7 @@ defmodule Login do
 
   def enter_game([role_id],socket,client) do
     # TODO:check the role_id is belonged to the user
+    
     # if(Online.is_player_online(role_id)) do
       # message_data = Proto.PT10.write(:tips,Yugioh.Data.Strings.get(:login_again_string))
       # player_pid = Online.get_online_player(role_id).player_pid

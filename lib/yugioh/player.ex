@@ -17,19 +17,7 @@ defmodule Player do
     set_and_reply player_state,player_state
   end
 
-  defcast init_cast(socket),state: player_state do
-    player_state = player_state.socket(socket)
-
-    # Yugioh.Library.Online.add_onine_player(player_state.id,self)
-
-    new_state player_state
-  end
-
-  defcast stop_cast,state: player_state do
-    {:stop, :normal, player_state}
-  end  
-
-  defcast socket_event(cmd,data),state: player_state do
+  defcall socket_event(cmd,data),state: player_state do
     Lager.debug "receive socket event cmd [~p] data [~p]",[cmd,data]
     [h1,h2,_,_,_] = integer_to_list(cmd)
     case [h1,h2] do
@@ -44,7 +32,19 @@ defmodule Player do
       reason->
         {:stop,:normal,{:error,reason},player_state}
     end
+  end  
+
+  defcast init_cast(socket),state: player_state do
+    player_state = player_state.socket(socket)
+
+    # Yugioh.Library.Online.add_onine_player(player_state.id,self)
+
+    new_state player_state
   end
+
+  defcast stop_cast,state: player_state do
+    {:stop, :normal, player_state}
+  end    
 
   definfo {:new_room_member,seat,pid},state: player_state do
     other_player_state = Yugioh.Player.player_state(pid)

@@ -33,4 +33,10 @@ defmodule TestHelper do
     data
   end
   
+  def enter_game_quick socket,user_name,password do
+    normal_login socket,user_name,password
+    <<_::16,10004::16,1::16,player_id::32,rest::binary>> = TestHelper.get_roles socket
+    enter_game socket,player_id
+  end
+  
 end
