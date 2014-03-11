@@ -14,20 +14,22 @@ defmodule Player do
 
   defcall update_player_state(params),state: player_state do
     player_state = player_state.update(params)
-    set_and_reply player_state,player_state
+    set_and_reply player_state,:ok
   end
 
-  defcall socket_event(cmd,data),state: player_state do
-    Lager.debug "receive socket event cmd [~p] data [~p]",[cmd,data]
-    [h1,h2,_,_,_] = integer_to_list(cmd)
+  defcall socket_event(message_id,binary_data),state: player_state do
+    {:ok,{func_atom,params}} = ProtoUtil.decode_message(message_id,binary_data)
+    Lager.debug "message_id [~p] func_atom [~p] params [~p]",[message_id,func_atom,params]
+    [h1,h2,_,_,_] = integer_to_list(message_id)
     case [h1,h2] do
       '11'->
-        result = Yugioh.System.Room.handle(data,player_state)
+        {result,player_state} = Yugioh.System.Room.handle({func_atom,params},player_state)
       '12'->
-        result = Yugioh.System.Battle.handle(data,player_state)
+        {result,player_state} = Yugioh.System.Battle.handle({func_atom,params},player_state)
     end
     case result do
       :ok->
+        Lager.debug "player_state after handle message [~p]",[player_state]
         set_and_reply player_state,:ok
       reason->
         {:stop,:normal,{:error,reason},player_state}
@@ -46,27 +48,10 @@ defmodule Player do
     {:stop, :normal, player_state}
   end    
 
-  definfo {:new_room_member,seat,pid},state: player_state do
-    other_player_state = Yugioh.Player.player_state(pid)
-    :gen_tcp.send(player_state.socket,Yugioh.Proto.PT11.write(11003,[seat,other_player_state]))
-    noreply
-  end
-
   definfo {:refresh_room_info,room_info},state: player_state do
     spawn(fn-> :gen_tcp.send(player_state.socket,Yugioh.Proto.PT11.write(11005,room_info)) end)
     noreply
-  end
-  
-  definfo {:refresh_ready_state,seat,ready_state},state: player_state do
-    ready_data = case ready_state do
-      :ready->
-        1
-      :unready->
-        0
-    end
-    :gen_tcp.send(player_state.socket,Yugioh.Proto.PT11.write(11006,[seat,ready_data]))
-    noreply
-  end
+  end  
 
   definfo {:send,data},state: player_state do
     :gen_tcp.send(player_state.socket,data)
@@ -76,11 +61,11 @@ defmodule Player do
   
   def terminate(reason,player_state) do
     # update online system
-    Yugioh.Library.Online.remove_online_player(player_state.id)
+    # Yugioh.Library.Online.remove_online_player(player_state.id)
 
-    if player_state.in_room_id != 0 do
-      Yugioh.Singleton.Room.leave_room(player_state.in_room_id)
-    end
+    # if player_state.in_room_id != 0 do
+    #   Yugioh.System.Room.leave_room(player_state.in_room_id)
+    # end
 
     if player_state.battle_pid != nil do
       Yugioh.Battle.stop_cast player_state.battle_pid

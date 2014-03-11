@@ -85,7 +85,7 @@ defmodule Client do
 
   def disconnect_client(message_id,reason,socket,client) do
     Lager.error "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]
-    Login.logout(client.player)
+    # Login.logout(client.player_pid)
     exit(reason)
   end
 end

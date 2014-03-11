@@ -91,4 +91,21 @@ defmodule IDUtil do
     end
   end
 
+  def room_status_id_from room_status do
+    case room_status do
+      :wait ->
+        1
+      :battle ->
+        2
+    end
+  end
+
+  def ready_state_id_from ready_state do
+    case ready_state do
+      :ready->
+        1
+      :unready->
+        0
+    end
+  end
 end

@@ -418,11 +418,11 @@ defmodule Yugioh.System.Battle do
   defcast init_cast(player1_pid,player2_pid) do
 
     # set battle pid to player state
-    player1_state = :gen_server.call(player1_pid,:player_state)
-    player2_state = :gen_server.call(player2_pid,:player_state)
+    player1_state = Player.player_state player1_pid
+    player2_state = Player.player_state player2_pid
 
-    :ok = :gen_server.call(player1_pid,{:update_player_state,player1_state.battle_pid(self)})
-    :ok = :gen_server.call(player2_pid,{:update_player_state,player2_state.battle_pid(self)})
+    Player.update_player_state(player1_pid,[{:battle_pid,self}])
+    Player.update_player_state(player2_pid,[{:battle_pid,self}])    
 
     # set random seed
     :random.seed(:erlang.now)
@@ -446,10 +446,10 @@ defmodule Yugioh.System.Battle do
 
     # send battle_start message
     params = [1,player1_state.id,:dp,player1_state,player1_battle_info,player2_state,BattleCore.hide_handcards(player2_battle_info)]    
-    Yugioh.Proto.PT11.send_message player1_pid,:battle_start,params
+    send player1_pid,{:send,Proto.PT11.write(:battle_start,params)}
 
     params = [1,player1_state.id,:dp,player1_state,BattleCore.hide_handcards(player1_battle_info),player2_state,player2_battle_info]
-    Yugioh.Proto.PT11.send_message player2_pid,:battle_start,params
+    send player2_pid,{:send,Proto.PT11.write(:battle_start,params)}
 
     new_state BattleData[turn_count: 0,phase: :wait_load_finish_1,operator_id: player1_state.id,player1_id: player1_state.id,player2_id: player2_state.id,
                           player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]

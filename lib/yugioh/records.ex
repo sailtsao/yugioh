@@ -1,4 +1,4 @@
-defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,socket: nil,in_room_id: 0,battle_pid: nil,
+defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,socket: nil,room_id: 0,battle_pid: nil,
   deck: [],
   extra_deck: [],
   side_deck: []
@@ -18,7 +18,9 @@ defrecord Effect,type: 0,params: "",targets: nil
 
 defrecord PlayerOnline,id: 0,player_pid: nil
 
-defrecord RoomInfo,id: 0,status: nil,name: "",type: 1,owner_pid: nil,members: nil
+defrecord RoomInfo,id: 0,status: nil,name: "",type: 1,owner_seat: 0,members_dict: nil
+
+defrecord RoomPlayerInfo,id: 0,player_pid: nil,socket: nil,name: "",avatar: 0,ready_state: :unready
 
 defrecord BattleInfo,
   player_pid: nil,
@@ -45,7 +47,6 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
 defmodule RecordHelper do
   require Lager
   alias Yugioh.Proto
-  alias Yugioh.Player
 
   def card_become_to_monster(card_data) do
     Monster[id: card_data.id,attack: card_data.attack,defense: card_data.defense,level: card_data.level,skills: card_data.skills]
@@ -55,50 +56,10 @@ defmodule RecordHelper do
   def encode_player_brief_info(player_state) do
     <<
     player_state.id::size(32),
-    Proto.pack_string(player_state.name)::binary,
+    ProtoUtil.pack_string(player_state.name)::binary,
     player_state.avatar::size(8)
     >>
-  end
-
-  def encode_room_info(room_info) do
-    status = case room_info.status do
-      :wait ->
-        1
-      :battle ->
-        2
-    end
-
-    members_list = Dict.to_list(room_info.members)
-    members_data_list = Enum.map members_list,fn({seat,{player_pid,ready_state}}) ->
-      owner_pid = room_info.owner_pid
-      is_owner = case player_pid do
-        ^owner_pid ->
-          1
-        _other ->
-          0
-      end
-      is_ready = case ready_state do
-        :ready->
-          1
-        :unready->
-          0
-      end
-      player_state = Player.player_state(player_pid)
-      brief_info = encode_player_brief_info(player_state)
-      <<seat::size(8),brief_info::binary,is_owner::size(8),is_ready::size(8)>>
-    end
-
-    members_data_binary = iolist_to_binary(members_data_list)
-
-    <<
-    room_info.id::size(32),
-    status::size(16),
-    Proto.pack_string(room_info.name)::binary,
-    room_info.type::size(16),
-    length(members_list)::size(16),
-    members_data_binary::binary
-    >>
-  end
+  end  
 
   def encode_battle_info(battle_info) do
     handcards_binary = iolist_to_binary(Enum.map(battle_info.handcards,fn(x)-> <<x::size(32)>> end))

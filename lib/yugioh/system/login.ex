@@ -12,7 +12,7 @@ defmodule Login do
 
   def socket_event message_id,binary_data,socket,client do
     {:ok,func_atom,params} = ProtoUtil.decode_message(message_id,binary_data)
-    apply(__MODULE__,func_atom,[params,socket,client])                  
+    apply(__MODULE__,func_atom,[params,socket,client])
   end
   
 
@@ -137,7 +137,7 @@ defmodule Login do
 
     player_state=PlayerState.new(id: role.id,name: role.name,gender: role.gender,avatar: role.avatar,
                           hp: role.hp,win: role.win,lose: role.lose,deck: cards_list)
-    player_pid = Player.start({player_state,socket})
+    {:ok,player_pid} = Player.start({player_state,socket})
 
     client=client.player_pid player_pid
     {:ok,client}

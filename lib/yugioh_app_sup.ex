@@ -1,6 +1,6 @@
 defmodule YugiohAppSup do
   use Supervisor.Behaviour
-
+  
   def start_link [acceptor_count,port] do
     :supervisor.start_link __MODULE__,[acceptor_count,port]
   end  
@@ -8,6 +8,7 @@ defmodule YugiohAppSup do
   def init [acceptor_count,port] do
     children = [
       worker(Yugioh.Repo, []),
+      worker(Yugioh.System.Room,[]),
       supervisor(TcpListenerSup, [[acceptor_count,port]]),
       supervisor(ClientSup,[])
     ]

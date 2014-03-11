@@ -2,46 +2,63 @@ defmodule Yugioh.System.Room do
   require Lager
   use ExActor.GenServer, export: :room_server
 
+  defrecord State,auto_id: 1,rooms_dict: HashDict.new
   definit do
-    init_cast
-    initial_state(1)
+    initial_state(State.new)
   end
 
   # if recycle_room_ids is empty,then use the auto_id to create a new id
-  # use gen_server state to maintain the room list data
   
-  defcall create_room([player_state]),from: {pid,_},state: auto_id do
-    room_info = RoomInfo.new(id: auto_id,status: :wait,name: "Room#{auto_id}",owner_pid: pid,members:  HashDict.new([{1,{pid,:ready}}]))
-    :ets.insert(:room,room_info)
-    player_state = Player.update_player_state(in_room_id: room_info.id)    
-    send pid,{:send,PT11.write(11000,[1,room_info])}
-    Lager.debug "create new room with name ~s,room_info:~p,room count ~p",[room_info.name,room_info,:ets.info(:room,:size)]
-    set_and_reply(auto_id+1,{:ok,room_info})
+  defcall create_room([],player_state),from: {pid,_},state: state do
+    room_player_info = RoomPlayerInfo.new(id: player_state.id,player_pid: pid,socket: player_state.socket,name: player_state.name,
+      avatar: player_state.avatar,ready_state: :ready)
+    room_info = RoomInfo.new(id: state.auto_id,status: :wait,name: "Room#{state.auto_id}",owner_seat: 1,
+      members_dict:  HashDict.new([{1,room_player_info}]))
+    rooms_dict = Dict.put state.rooms_dict,state.auto_id,room_info
+    state = state.update [auto_id: state.auto_id+1,rooms_dict: rooms_dict]
+
+
+    player_state = player_state.room_id(room_info.id)
+    send pid,{:send,Proto.PT11.write(:create_room,[1,room_info])}
+    Lager.debug "create new room,room_info:[~p],room count:[~p]",[room_info,Dict.size(rooms_dict)]
+    set_and_reply(state,{:ok,player_state})
   end
 
-  defcall get_rooms,do: reply({:ok,:ets.tab2list(:room)})
+  defcall get_rooms([],player_state),from: {pid,_},state: state do
+    send pid,{:send,Proto.PT11.write(:get_rooms,[Dict.values(state.rooms_dict)])}
+    set_and_reply(state,{:ok,player_state})
+  end
 
-  defcall enter_room(room_id),from: {pid,_} do
-    case :ets.lookup(:room,room_id) do
-      []->
-        reply :invalid_room_id
-      [room_info]->
-        avaible_seat = :lists.subtract([1,2],Dict.keys(room_info.members))
-        case avaible_seat do
-          []->
-            reply :room_already_full
-          _->
-            [seat|_rest] = avaible_seat
-            Enum.each Dict.to_list(room_info.members),fn({_,{other_player_pid,_}}) ->
-              send other_player_pid , {:new_room_member,seat,pid}
-            end
-            new_members = Dict.put(room_info.members,seat,{pid,:unready})
-            new_room_info = room_info.update(members: new_members)
-            Lager.debug "new enter room room_info:~p",[new_room_info]
-            :ets.insert :room,new_room_info
-            reply {:ok,new_room_info}
-        end        
+  defcall enter_room([room_id],player_state),from: {pid,_},state: state do
+    result = :ok
+    room_info = Dict.get(state.rooms_dict,room_id)
+    if room_info == nil do
+      result = :invalid_room_id
     end
+
+    if Dict.size(room_info.members_dict) == 2 do
+      result = :room_already_full
+    end
+
+    if result == :ok do
+      avaible_seat = :lists.subtract([1,2],Dict.keys(room_info.members_dict))
+      [seat|_rest] = avaible_seat            
+      room_player_info = RoomPlayerInfo.new(id: player_state.id,player_pid: pid,socket: player_state.socket,name: player_state.name,
+        avatar: player_state.avatar,ready_state: :unready)
+      Enum.each room_info.members_dict,fn({_,other_room_player_info})->
+        send other_room_player_info.player_pid,{:send,Proto.PT11.write(:new_members,[seat,room_player_info])}
+      end
+      members_dict = Dict.put(room_info.members_dict,seat,room_player_info)
+      room_info = room_info.members_dict members_dict
+      rooms_dict = Dict.put state.rooms_dict,room_info.id,room_info
+      state = state.rooms_dict(rooms_dict)
+      
+
+      player_state = player_state.room_id(room_info.id)
+      send pid,{:send,Proto.PT11.write(:enter_room,[1,room_info])}
+      Lager.debug "enter room room_info:[~p]",[room_info]
+    end
+    set_and_reply(state,{result,player_state})
   end
 
   defcall leave_room(room_id),from: {pid,_} do     
@@ -87,95 +104,105 @@ defmodule Yugioh.System.Room do
     end
   end
 
-  defcall battle_ready(room_id),from: {pid,_} do
-    case :ets.lookup(:room,room_id) do
-      [room_info]->
-        Enum.each Dict.to_list(room_info.members),fn({seat,{player_pid,ready_state}}) ->
-          if pid === player_pid do
-            new_ready_state = case ready_state do
-              :ready->
-                :unready
-              :unready->
-                :ready
-            end
-            members = Dict.put(room_info.members,seat,{player_pid,new_ready_state})
-            new_room_info = room_info.update(members: members)
-            :ets.insert :room,new_room_info
-            Lager.debug "battle ready new_room_info:~p",[new_room_info]
-            Enum.each Dict.to_list(room_info.members),fn({_,{pid,_}}) ->
-              send pid , {:refresh_ready_state,seat,new_ready_state}
-            end
-          end
-        end
-        reply :ok
-      []->
-        reply :invalid_room_id
+  defcall battle_ready([],player_state),from: {pid,_},state: state do
+    result = :ok
+    room_info = Dict.get(state.rooms_dict,player_state.room_id)
+    if room_info == nil do
+      result = :invalid_room_id
     end
-  end
 
-  defcall battle_start(room_id),from: {pid,_} do
-    case :ets.lookup(:room,room_id) do
-      [room_info]->
-        cond do
-          Dict.size(room_info.members) != 2 ->
-            reply :not_enough_members
-
-          pid == room_info.owner_pid ->
-            unready_list = Enum.filter Dict.to_list(room_info.members),
-            fn({_,{_player_pid,ready_state}}) ->
-              ready_state == :unready
-            end
-
-            case Enum.empty?(unready_list) do 
-              true->
-                {player1_pid,_} = Dict.get room_info.members,1
-                {player2_pid,_} = Dict.get room_info.members,2
-                {:ok,_battle_pid} = Yugioh.Battle.start({player1_pid,player2_pid})
-                new_members =
-                cond do 
-                  player1_pid != room_info.owner_pid ->
-                    Dict.put room_info.members,1,{player1_pid,:unready}
-                  player2_pid != room_info.owner_pid ->
-                    Dict.put room_info.members,2,{player2_pid,:unready}
-                end
-                new_room_info = room_info.update(members: new_members)
-                :ets.insert :room,new_room_info
-                Lager.debug "battle start new_room_info:~p",[new_room_info]
-                reply :ok
-              false->
-                reply :unready
-            end
-
-          true->
-            reply :not_owner
-        end
-      []->
-        reply :invalid_room_id
-    end
-  end
-
-  defcast init_cast do
-    :ets.new(:room,[{:keypos,RoomInfo.__record__(:index,:id)+1},:named_table,:set,:public])
-    noreply
-  end  
-
-  def handle({func_atom,params},player_state) do
-    case player_state.in_room_id do
-      0 ->
-        :player_not_in_room
-      _->        
-        apply(__MODULE__,func_atom,params)
+    owner_room_player_info = Dict.get room_info.members_dict,room_info.owner_seat
+    if pid == owner_room_player_info.player_pid do
+      result = :room_owner_cant_unready
     end    
+
+    if result == :ok do
+      [{seat,room_player_info}] = Enum.filter room_info.members_dict,fn({_,room_player_info})->
+        room_player_info.player_pid == pid
+      end
+      
+      ready_state = case room_player_info.ready_state do
+        :ready->
+          :unready
+        :unready->
+          :ready
+      end
+      room_player_info = room_player_info.ready_state(ready_state)
+      
+      room_info = members_dict = Dict.put(room_info.members_dict,seat,room_player_info) |> room_info.members_dict 
+      state = Dict.put(state.rooms_dict,room_info.id,room_info) |> state.rooms_dict
+
+      Lager.debug "battle ready room_info:~p",[room_info]
+      Enum.each room_info.members_dict,fn({_,room_player_info}) ->
+        send room_player_info.player_pid, {:send,Proto.PT11.write(:refresh_ready_state,[seat,ready_state])}
+      end
+    end
+    set_and_reply state,{:ok,player_state}
   end
-  
-  def handle({:create_room,[]},player_state) do
-    case player_state.in_room_id do
+
+  defcall battle_start([],player_state),from: {pid,_},state: state do
+    result = :ok
+    room_info = Dict.get(state.rooms_dict,player_state.room_id)
+    if room_info == nil do
+      result = :invalid_room_id
+    end
+
+    if Dict.size(room_info.members_dict) < 2 do
+      result = :battle_start_not_enough_members
+    end
+
+    unready_list = Enum.filter room_info.members_dict,fn({_,room_player_info}) ->
+      room_player_info.ready_state == :unready
+    end
+    if Enum.count(unready_list)>0 do
+      result = :battle_start_not_all_members_ready
+    end
+
+    owner_room_player_info = Dict.get room_info.members_dict,room_info.owner_seat
+    if pid != owner_room_player_info.player_pid do
+      result = :battle_start_not_room_owner
+    end
+
+    if result == :ok do
+      room_player1_info = Dict.get room_info.members_dict,1
+      room_player2_info = Dict.get room_info.members_dict,2
+      {:ok,battle_pid} = Yugioh.System.Battle.start({room_player1_info.player_pid,room_player2_info.player_pid})
+    
+      members_dict = Enum.map room_info.members_dict,fn({seat,room_player_info}) ->
+        if seat == room_info.owner_seat do
+          room_player_info
+        else
+          room_player_info.ready_state :unready
+        end
+      end      
+      room_info = room_info.members_dict members_dict
+      state = Dict.put state.rooms_dict,room_info.id,room_info
+      Lager.debug "battle start room_info:~p",[room_info]
+    end
+    set_and_reply state,{result,player_state}
+  end
+
+  def handle({func_atom,params},player_state) 
+  when func_atom in [:create_room,:get_rooms,:enter_room] do
+
+    case player_state.room_id do
       0 ->
-        apply(__MODULE__,:create_room,[player_state])
+        apply(__MODULE__,func_atom,[params,player_state])
       _->
         :already_in_room
     end
   end
+
+  def handle({func_atom,params},player_state) do
+
+    case player_state.room_id do
+      0 ->
+        :player_not_in_room
+      _->        
+        apply(__MODULE__,func_atom,[params,player_state])
+    end    
+  end  
+  
 
   def terminate(reason,state) do
     Lager.debug "room died with reason [~p] state [~p]",[reason,state]

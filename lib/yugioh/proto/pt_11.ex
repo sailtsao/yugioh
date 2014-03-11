@@ -5,67 +5,98 @@ defmodule Proto.PT11 do
     send player_pid,{:send,message_data}
   end  
 
+  def pack_room_info room_info do
+    room_status_id = IDUtil.room_status_id_from room_info.status
+    members_data_binary = Enum.map_join room_info.members_dict,fn({seat,room_player_info}) ->
+      is_owner = case room_info.owner_seat do
+        ^seat ->
+          1
+        _ ->
+          0
+      end
+      <<seat::8,room_player_info.id::32,ProtoUtil.pack_string(room_player_info.name)::binary,
+        room_player_info.avatar::8,is_owner::8,IDUtil.ready_state_id_from(room_player_info.ready_state)::8>>
+    end
+    <<room_info.id::32,
+    room_status_id::16,
+    ProtoUtil.pack_string(room_info.name)::binary,
+    room_info.type::16,
+    Dict.size(room_info.members_dict)::16,
+    members_data_binary::binary>>
+  end
+  
+
   def read(11000,_) do
-    {:ok,:create_room}
+    {:ok,{:create_room,[]}}
   end
 
   def read(11001,_) do
-    {:ok,:get_rooms}
+    {:ok,{:get_rooms,[]}}
   end
 
   def read(11002,bin) do
-    <<room_id::size(32)>> = bin
-    {:ok,{:enter_room,room_id}}
+    <<room_id::32>> = bin
+  {:ok,{:enter_room,[room_id]}}
   end
 
   def read(11004,_) do
-    {:ok,:leave_room}
+    {:ok,{:leave_room,[]}}
   end
 
   def read(11005,_bin) do
-    {:ok,:refresh_roominfo}
+    {:ok,{:refresh_roominfo,[]}}
   end
 
   def read(11006,_bin) do
-    {:ok,:battle_ready}
+    {:ok,{:battle_ready,[]}}
   end
 
   def read(11007,_bin) do
-    {:ok,:battle_start}
+    {:ok,{:battle_start,[]}}
   end
 
-  def write(11000,[code,room_info])do
-    data = <<code::size(16),RecordHelper.encode_room_info(room_info)::binary>>
-    Yugioh.Proto.pack(11000,data)
+  def write(:create_room,[code,room_info])do    
+    data = <<code::16,
+    pack_room_info(room_info)::binary
+    >>
+    ProtoUtil.pack(11000,data)
   end
 
-  def write(11001,data)do
-    Yugioh.Proto.pack(11001,data)
+  def write(:get_rooms,[rooms_list])do
+    data = ProtoUtil.pack_list rooms_list,fn(room_info)-> 
+      <<
+      room_info.id::32,
+      ProtoUtil.pack_string(room_info.name)::binary,
+      room_info.type::16
+      >> 
+    end        
+    ProtoUtil.pack(11001,data)
   end
 
-  def write(11002,[code,room_info])do
-    data = <<code::size(16),RecordHelper.encode_room_info(room_info)::binary>>
-    Yugioh.Proto.pack(11002,data)
+  def write(:enter_room,[code,room_info])do
+    data = <<code::16,pack_room_info(room_info)::binary>>
+    ProtoUtil.pack(11002,data)
   end
 
-  def write(11003,[seat,player_state])do
-    data = <<seat::size(8),RecordHelper.encode_player_brief_info(player_state)::binary>>
-    Yugioh.Proto.pack(11003,data)
+  def write(:new_members,[seat,room_player_info])do
+    data = <<seat::8,room_player_info.id::32,ProtoUtil.pack_string(room_player_info.name)::binary,room_player_info.avatar::8>>
+    ProtoUtil.pack(11003,data)
   end
 
-  def write(11004,code)do
-    data = <<code::size(16)>>
-    Yugioh.Proto.pack(11004,data)
+  def write(:leave_room,code)do
+    data = <<code::16>>
+    ProtoUtil.pack(11004,data)
   end
 
-  def write(11005,room_info)do
+  def write(:refresh_roominfo,room_info)do
     data = <<RecordHelper.encode_room_info(room_info)::binary>>
-    Yugioh.Proto.pack(11005,data)
+    ProtoUtil.pack(11005,data)
   end
 
-  def write(11006,[seat,ready_state]) do
-    data = <<seat::size(8),ready_state::size(8)>>
-    Yugioh.Proto.pack(11006,data)
+  def write(:refresh_ready_state,[seat,ready_state]) do
+
+    data = <<seat::8,IDUtil.ready_state_id_from(ready_state)::8>>
+    ProtoUtil.pack(11006,data)
   end
   
   def write(:battle_start,[code,cur_player_id,phase,player_state1,battle_info1,player_state2,battle_info2]) do
@@ -81,11 +112,11 @@ defmodule Proto.PT11 do
       :mp2->
         5
     end
-    data = <<code::size(16),cur_player_id::size(32),phase_number::size(8),
+    data = <<code::16,cur_player_id::32,phase_number::8,
     RecordHelper.encode_player_brief_info(player_state1)::binary,
     RecordHelper.encode_battle_info(battle_info1)::binary,
     RecordHelper.encode_player_brief_info(player_state2)::binary,
     RecordHelper.encode_battle_info(battle_info2)::binary>>
-    Yugioh.Proto.pack(11007,data)
+    ProtoUtil.pack(11007,data)
   end
 end

@@ -2,7 +2,7 @@ defmodule TcpListener do
   require Lager
   use ExActor.GenServer  
 
-  definit [acceptor_count,port] do
+  definit [acceptor_count,port] do    
     :erlang.process_flag(:trap_exit,true)
     tcp_options = [:binary, {:packet, 0}, {:active, false}, {:reuseaddr, true},
     {:nodelay, false}, {:delay_send, true}, {:send_timeout, 5000}, {:keepalive, true}, {:exit_on_close, true}]
