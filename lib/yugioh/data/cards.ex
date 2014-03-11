@@ -225,6 +225,18 @@ defmodule Yugioh.Data.Cards do
   defense: 0,
   level: 0,
   skills: [
+      Skill.new(type: :normal_skill,
+      check_phase: [],
+      skill_effects: [
+      ],
+      and_conditions: [
+          Condition.new(id: 2,
+          params: "0;2;1;1"
+          )
+      ],
+      or_conditions: [
+      ]
+      )
   ]
   )
   end

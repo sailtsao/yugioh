@@ -1,4 +1,4 @@
-defmodule Yugioh.Singleton.Room do
+defmodule Yugioh.System.Room do
   require Lager
   use ExActor.GenServer, export: :room_server
 
@@ -7,9 +7,14 @@ defmodule Yugioh.Singleton.Room do
     initial_state(1)
   end
 
-  defcall create_room(),from: {pid,_},state: auto_id do
+  # if recycle_room_ids is empty,then use the auto_id to create a new id
+  # use gen_server state to maintain the room list data
+  
+  defcall create_room([player_state]),from: {pid,_},state: auto_id do
     room_info = RoomInfo.new(id: auto_id,status: :wait,name: "Room#{auto_id}",owner_pid: pid,members:  HashDict.new([{1,{pid,:ready}}]))
     :ets.insert(:room,room_info)
+    player_state = Player.update_player_state(in_room_id: room_info.id)    
+    send pid,{:send,PT11.write(11000,[1,room_info])}
     Lager.debug "create new room with name ~s,room_info:~p,room count ~p",[room_info.name,room_info,:ets.info(:room,:size)]
     set_and_reply(auto_id+1,{:ok,room_info})
   end
@@ -153,10 +158,27 @@ defmodule Yugioh.Singleton.Room do
     :ets.new(:room,[{:keypos,RoomInfo.__record__(:index,:id)+1},:named_table,:set,:public])
     noreply
   end  
+
+  def handle({func_atom,params},player_state) do
+    case player_state.in_room_id do
+      0 ->
+        :player_not_in_room
+      _->        
+        apply(__MODULE__,func_atom,params)
+    end    
+  end
   
-  # def terminate(reason,state) do
-  #   Lager.debug "room process [~p] died with reason [~p] state",[self,reason,state]
-  #   :ok
-  # end
+  def handle({:create_room,[]},player_state) do
+    case player_state.in_room_id do
+      0 ->
+        apply(__MODULE__,:create_room,[player_state])
+      _->
+        :already_in_room
+    end
+  end
+
+  def terminate(reason,state) do
+    Lager.debug "room died with reason [~p] state [~p]",[reason,state]
+  end
 
 end

@@ -1,4 +1,4 @@
-defmodule Yugioh.Acceptor.Supervisor do
+defmodule ClientSup do
   use Supervisor.Behaviour  
   
   def start_link do
@@ -7,7 +7,7 @@ defmodule Yugioh.Acceptor.Supervisor do
 
   def init([]) do
    children = [
-     worker(Yugioh.Acceptor.Acceptor, [], restart: :temporary)
+     worker(Client, [])
    ]
 
    supervise(children, strategy: :simple_one_for_one)

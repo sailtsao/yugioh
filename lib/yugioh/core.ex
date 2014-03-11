@@ -44,9 +44,9 @@ defmodule Yugioh.Core do
         {:stop,reason,state}
     end
     
-    :ets.new(:online,[{:keypos,PlayerOnline.__record__(:index,:id)+1},:named_table,:set,:public])    
+    # :ets.new(:online,[{:keypos,PlayerOnline.__record__(:index,:id)+1},:named_table,:set,:public])    
     
-    Yugioh.Singleton.Room.start
+    Yugioh.System.Room.start
 
     {:noreply, state}
   end

@@ -3,11 +3,12 @@ defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,so
   extra_deck: [],
   side_deck: []
 
-defrecord Card,id: 0,type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0,skills: []
+defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0,skills: []
 
-defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,attacked: false do
+defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,
+attacked: false,effect_fired: false,skills: [] do
   def turn_reset(record) do
-    record.update(effect_monster: false,presentation_changed: false,attacked: false)
+    record.update(effect_monster: false,presentation_changed: false,attacked: false,effect_fired: false)
   end
 end
 
@@ -46,6 +47,10 @@ defmodule RecordHelper do
   alias Yugioh.Proto
   alias Yugioh.Player
 
+  def card_become_to_monster(card_data) do
+    Monster[id: card_data.id,attack: card_data.attack,defense: card_data.defense,level: card_data.level,skills: card_data.skills]
+  end
+  
   
   def encode_player_brief_info(player_state) do
     <<

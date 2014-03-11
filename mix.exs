@@ -14,7 +14,7 @@ defmodule Yugioh.Mixfile do
   # Configuration for the OTP application
   def application do
     [
-      mod: { Yugioh, [] },
+      mod: { YugiohApp, [acceptor_count: 10,port: 1234] },
       applications: [
         :exlager
       ]

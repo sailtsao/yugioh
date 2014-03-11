@@ -1,4 +1,4 @@
-defmodule Yugioh.Proto.PT12 do
+defmodule Proto.PT12 do
 
   defp phase_id_from phase do
     case phase do
@@ -68,14 +68,16 @@ defmodule Yugioh.Proto.PT12 do
     end
   end
 
-  defp presentation_from presentation do
-    case presentation do
+  defp presentation_from presentation_id do
+    case presentation_id do
       1->
         :attack
       2->
         :defense_down
       3->
         :defense_up
+      4->
+        :place
     end
   end
 
@@ -87,6 +89,8 @@ defmodule Yugioh.Proto.PT12 do
         2
       :defense_up->  
         3
+      :place->
+        4
     end
   end
 
@@ -240,7 +244,7 @@ defmodule Yugioh.Proto.PT12 do
   def read(12000,bin) do
     <<phase_number::8>> = bin
     phase = phase_from phase_number
-    {:ok,{:change_phase_to,phase}}
+    {:ok,{:change_phase_to,[phase]}}
   end
 
   def read(12001,bin) do
@@ -254,48 +258,54 @@ defmodule Yugioh.Proto.PT12 do
         :special_summon
     end
     )).(is_special_summon)
-    {:ok,{:summon,handcards_index,presentation,summon_type}}
+    {:ok,{:summon,[handcards_index,presentation,summon_type]}}
   end
 
   def read(12003,bin) do
     <<source_card_index::8>> = bin
-    {:ok,{:attack,source_card_index}}
+    {:ok,{:attack,[source_card_index]}}
   end
 
   def read(12004,bin) do
     <<card_index::8>> = bin
-    {:ok,{:flip_card,card_index}}
+    {:ok,{:flip_card,[card_index]}}
   end
 
   def read(12006,_bin) do
-    {:ok,:battle_load_finish}
+    {:ok,{:battle_load_finish,[]}}
   end  
 
   def read(12007,bin) do
     <<scene_type_id::8,index::8>> = bin
     {:ok,{:get_card_operations,scene_type_from(scene_type_id),index}}
   end
-  
+
   def read(12008,bin) do
-    <<len::16,data::binary>> = bin
-    fun = fn(_, [bin1,list]) ->
-        <<index::8, rest::binary>> = bin1
-        list = list ++ [index]
-        [rest, list]
+    <<len::16,rest::binary>> = bin        
+    [_,scene_list] = List.foldl List.duplicate(1, len),[rest,[]],fn(_,[bin_data,scene_list])->
+      <<player_id::32,scene_type_id::8,rest1::binary>> = bin_data
+      <<len::16,rest2::binary>> = rest1
+      [rest3,index_list] = List.foldl List.duplicate(1,len),[rest2,[]],fn(_,[bin_data,index_list])->
+        <<index::8,rest::binary>> = bin_data
+        index_list = [index|index_list]
+        [rest, index_list]
+      end
+      scene_list = [{player_id,IDUtil.scene_type_from(scene_type_id),index_list}|scene_list]
+      [rest3, scene_list]
     end
-    [_, index_list] = List.foldl(List.duplicate(1, len),[data,[]],fun)
-    {:ok,{:choose_card,index_list}}
+    {:ok,{:choose_card,[scene_list]}}
   end
 
   def read(12010,bin) do
     <<player_id::32,scene_type_id::8>> = bin
-    {:ok,{:get_cards_of_scene_type,player_id,scene_type_from(scene_type_id)}}
+    {:ok,{:get_cards_of_scene_type,[player_id,scene_type_from(scene_type_id)]}}
   end
   
   def read(12011,bin) do
     <<scene_type_id::8,index::8>> = bin
-    {:ok,{:fire_effect,scene_type_from(scene_type_id),index}}
+    {:ok,{:fire_effect,[scene_type_from(scene_type_id),index]}}
   end
+  
   
   def write(:change_phase_to,phase) do    
     phase_number = phase_id_from phase
@@ -357,17 +367,14 @@ defmodule Yugioh.Proto.PT12 do
     Yugioh.Proto.pack(12007,data)
   end
   
-  def write(:choose_card,[choose_type,target_type,scene_type,choose_number,index_list]) do
-    target_type_id = (&(
-    case &1 do
-      :self->
-        1
-      :other->
-        0
+  def write(:choose_card,[choose_type,choose_number,choose_scenes_list]) do
+    choose_scenes_binary = List.foldl choose_scenes_list,<<>>,fn({player_id,scene_type,id_index_list},bin)->
+      id_index_binary = List.foldl id_index_list,<<>>,fn({card_id,index},bin)->
+        bin <> <<card_id::32,index::8>>
+      end
+      bin <> <<player_id::32,scene_type_id_from(scene_type)::8,length(id_index_list)::16,id_index_binary::binary>> 
     end
-    )).(target_type)
-    index_binary = List.foldl index_list,<<>>,fn({card_id,index},bin)-> bin <> <<card_id::32,index::8>> end
-    data = <<choose_type_id_from(choose_type)::8,target_type_id::8,scene_type_id_from(scene_type)::8,choose_number::8,length(index_list)::16,index_binary::binary>>
+    data = <<choose_type_id_from(choose_type)::8,choose_number::8,length(choose_scenes_list)::16,choose_scenes_binary::binary>>
     Yugioh.Proto.pack(12008,data)
   end
 

@@ -1,4 +1,4 @@
-defmodule Yugioh.Proto.PT11 do
+defmodule Proto.PT11 do
 
   def send_message player_pid,message,params do
     message_data = write(message,params)

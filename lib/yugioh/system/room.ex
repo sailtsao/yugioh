@@ -1,4 +1,4 @@
-defmodule Yugioh.System.Room do
+defmodule Yugioh.System.Room.Unused do
   require Lager
   alias Yugioh.Singleton.Room
   alias Yugioh.Proto.PT11
