@@ -1,18 +1,38 @@
 defmodule BattleCore do
   require Lager
 
+  def destroy_card(battle_data,player_id,scene_type,pos) do
+    Lager.debug "destory card [~p] [~p] [~p] [~p]",[battle_data,player_id,scene_type,pos]
+    player_battle_info = get_player_battle_info player_id,battle_data
+
+    case scene_type do
+      :spell_trap_zone->
+        player_battle_info = [Dict.get(player_battle_info.spell_trap_zone,pos).id|player_battle_info.graveyardcards] 
+          |> player_battle_info.graveyardcards
+        player_battle_info = Dict.drop(player_battle_info.spell_trap_zone,[pos])|>player_battle_info.spell_trap_zone
+    end
+
+    player_atom = get_player_atom player_id,battle_data
+    battle_data = battle_data.update([{player_atom,player_battle_info}])
+
+    targets = create_effect_targets player_id,scene_type,[pos]
+    move_to_graveyard_effect = create_move_to_graveyard_effect(targets,battle_data)
+    send_message_to_all battle_data,:effects,[move_to_graveyard_effect]
+    battle_data
+   end
+    
   def send_choose_message player_pid,choose_type,choose_number,choose_scene_list do
-    message_data = Yugioh.Proto.PT12.write(:choose_card,[choose_type,choose_number,choose_scene_list])
+    message_data = Proto.PT12.write(:choose_card,[choose_type,choose_number,choose_scene_list])
     send player_pid,{:send,message_data}
   end
 
   def send_message player_pid,message_atom,params do
-    message_data = Yugioh.Proto.PT12.write(message_atom,params)
+    message_data = Proto.PT12.write(message_atom,params)
     send player_pid,{:send,message_data}
   end  
 
   def send_message_to_all battle_data,message_atom,params do
-    message_data = Yugioh.Proto.PT12.write(message_atom,params)
+    message_data = Proto.PT12.write(message_atom,params)
     send battle_data.player1_battle_info.player_pid,{:send,message_data}
     send battle_data.player2_battle_info.player_pid,{:send,message_data}
   end  
@@ -28,10 +48,22 @@ defmodule BattleCore do
 
   def get_scene_atom scene_type do
     case scene_type do
+      :spell_trap_zone->
+        :spell_trap_zone
+      :monster_card_zone->
+        :monster_card_zone
       :handcard_zone ->
         :handcards
       :deck_zone ->
         :deckcards
+      :graveyard_zone->
+        :graveyardcards
+      :banished_zone->
+        :banishedcards
+      :extra_deck_zone->
+        :extradeckcards
+      :field_card_zone->
+        :field_card
     end
   end  
 
@@ -138,7 +170,7 @@ defmodule BattleCore do
   end
   
   def get_monster_zone_fire_effect_operations(monster,battle_data) do
-    case is_monster_zone_can_fire_effect(monster.skills,battle_data) do
+    case is_monster_zone_can_fire_effect(monster,battle_data) do
       true->
         [:fire_effect_operation]
       false->
@@ -187,16 +219,21 @@ defmodule BattleCore do
       []->
         false
       skills->
-        Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied &1,battle_data))
+        Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied(&1,battle_data)))
     end
   end
 
   def get_handcard_spell_trap_fire_effect_operation card_data,battle_data do
-    case is_handcard_spell_trap_can_fire_effect(card_data,battle_data) do
-      true->
-        [:fire_effect_operation]
-      false->
-        []
+    player_battle_info = get_operator_battle_info battle_data
+    if Dict.size(player_battle_info.spell_trap_zone) == 5 do
+      []
+    else
+      case is_handcard_spell_trap_can_fire_effect(card_data,battle_data) do
+        true->
+          [:fire_effect_operation]
+        false->
+          []
+      end
     end
   end  
 
@@ -248,7 +285,7 @@ defmodule BattleCore do
   end
 
   def get_handcard_monster_normal_summon_operations(card_data = Card[level: level],summoned_count,_)
-  when level >= 5 and summoned_count >=1 do
+  when level > 4 and summoned_count >=1 do
     case is_handcard_monster_can_be_normal_summoned(card_data,summoned_count) do
       true->
         [:summon_operation,:place_operation]
@@ -257,12 +294,51 @@ defmodule BattleCore do
     end
   end
 
+  def get_handcard_monster_normal_summon_operations(card_data = Card[level: level],0,_)
+  when level > 4 do
+    []
+  end
+
   def get_handcard_monster_normal_summon_operations _,_,_ do
     [:summon_operation,:place_operation]
   end
 
   def is_handcard_monster_can_be_normal_summoned(card_data,summoned_count) do
     get_handcard_monster_normal_summon_tribute_number(card_data)<=summoned_count
+  end
+
+  def summon_spell_card_for_fire(card_data,handcards_index,battle_data)do
+    Lager.debug "battle before summon state [~p]",[battle_data]
+
+    player_id = battle_data.operator_id
+    player_atom = BattleCore.get_operator_atom battle_data
+    player_battle_info = BattleCore.get_operator_battle_info battle_data
+    result = :ok
+    if Dict.size(player_battle_info.spell_trap_zone)==5 do
+      result = :already_have_5_magic_trap
+    end
+    pos = 0
+    if result == :ok do
+      handcards = List.delete_at(player_battle_info.handcards,handcards_index)
+
+      avaible_pos = :lists.subtract([2,1,3,0,4],Dict.keys(player_battle_info.spell_trap_zone))
+
+      pos = hd avaible_pos
+      spell_trap = RecordHelper.card_become_spell_trap card_data
+      spell_trap_zone = Dict.put(player_battle_info.spell_trap_zone,pos,spell_trap)
+
+      player_battle_info = player_battle_info.update(handcards: handcards,spell_trap_zone: spell_trap_zone)
+
+      battle_data = battle_data.update [{player_atom,player_battle_info}]
+
+      presentation_id = IDUtil.presentation_id_from :attack
+      targets = BattleCore.create_effect_targets player_id,:spell_trap_zone,[pos]
+      summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{card_data.id};#{presentation_id}",targets: targets)
+      send_message_to_all battle_data,:effects,[summon_effect]
+
+      Lager.debug "battle after summon state [~p]",[battle_data]
+    end
+    {result,battle_data,pos}
   end
 
   def summon_card(card_data = Card[card_type: card_type],handcards_index,_presentation,battle_data)
@@ -281,14 +357,14 @@ defmodule BattleCore do
       avaible_pos = :lists.subtract([2,1,3,0,4],Dict.keys(player_battle_info.spell_trap_zone))
 
       pos = hd avaible_pos
-      
-      spell_trap_zone = Dict.put(player_battle_info.spell_trap_zone,pos,card_data.id)
+      spell_trap = RecordHelper.card_become_spell_trap card_data
+      spell_trap_zone = Dict.put(player_battle_info.spell_trap_zone,pos,spell_trap)
 
       player_battle_info = player_battle_info.update(handcards: handcards,spell_trap_zone: spell_trap_zone)
 
       battle_data = battle_data.update [{player_atom,player_battle_info}]
 
-      presentation_id = Yugioh.Proto.PT12.presentation_id_from :place
+      presentation_id = IDUtil.presentation_id_from :place
       targets = BattleCore.create_effect_targets player_id,:spell_trap_zone,[pos]
       summon_effect = Effect.new(type: :summon_effect,params: "#{handcards_index};#{card_data.id};#{presentation_id}",targets: targets)
       summon_effect_masked = Effect.new(type: :summon_effect,params: "#{handcards_index};0;#{presentation_id}",targets: targets)    
@@ -358,16 +434,16 @@ defmodule BattleCore do
   end  
 
   def send_message_to_all_with_mask(battle_data,:player1_battle_info,message_atom,message_params,masked_message_params) do
-    message_data = Yugioh.Proto.PT12.write(message_atom,message_params)
+    message_data = Proto.PT12.write(message_atom,message_params)
     send battle_data.player1_battle_info.player_pid,{:send,message_data}
-    message_data = Yugioh.Proto.PT12.write(message_atom,masked_message_params)
+    message_data = Proto.PT12.write(message_atom,masked_message_params)
     send battle_data.player2_battle_info.player_pid,{:send,message_data}
   end
 
   def send_message_to_all_with_mask(battle_data,:player2_battle_info,message_atom,message_params,masked_message_params) do
-    message_data = Yugioh.Proto.PT12.write(message_atom,masked_message_params)
+    message_data = Proto.PT12.write(message_atom,masked_message_params)
     send battle_data.player1_battle_info.player_pid,{:send,message_data}
-    message_data = Yugioh.Proto.PT12.write(message_atom,message_params)
+    message_data = Proto.PT12.write(message_atom,message_params)
     send battle_data.player2_battle_info.player_pid,{:send,message_data}
   end
 
@@ -389,7 +465,7 @@ defmodule BattleCore do
 
   def create_card_presentation_change_effect card_id,new_presentation,player_id,scene_type,index do
     Effect.new(type: :card_presentation_change_effect,
-      params: "#{card_id};#{Yugioh.Proto.PT12.presentation_id_from(new_presentation)}",
+      params: "#{card_id};#{IDUtil.presentation_id_from(new_presentation)}",
       targets: [Target[player_id: player_id,scene_type: scene_type,index: index]])
   end
   
@@ -410,7 +486,7 @@ defmodule BattleCore do
   end
 
   def create_summon_effect handcards_index,card_id,presentation,targets do
-    presentation_id = Yugioh.Proto.PT12.presentation_id_from(presentation)
+    presentation_id = IDUtil.presentation_id_from(presentation)
     Effect.new(type: :summon_effect,
       params: "#{handcards_index};#{card_id};#{presentation_id}",
       targets: targets)

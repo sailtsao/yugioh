@@ -1,4 +1,4 @@
-defmodule Login do
+defmodule System.Login do
   @moduledoc """
   callback funtion must use this format
   message_atom([params],socket,client)
@@ -7,8 +7,6 @@ defmodule Login do
   import Ecto.Query
   require Lager
   require Integer
-
-  alias Yugioh.Library.Online
 
   def socket_event message_id,binary_data,socket,client do
     {:ok,func_atom,params} = ProtoUtil.decode_message(message_id,binary_data)
@@ -21,7 +19,7 @@ defmodule Login do
   """
   def login([acc,pwd],socket,client) do
       query = from(u in Model.User,where: u.name == ^acc,select: u)
-      case Yugioh.Repo.all(query) do
+      case Repo.all(query) do
         [user]->
           case user.password==pwd do
             true->
@@ -42,7 +40,7 @@ defmodule Login do
   """
   def web_login([user_id,auth_string],socket,client) do
     query = from(u in Model.User,where: u.id == ^user_id,select: u)
-    case Yugioh.Repo.all(query) do
+    case Repo.all(query) do
       [user]->
         if user.auth_string==auth_string do
           login_at = user.login_at
@@ -80,7 +78,7 @@ defmodule Login do
         :gen_tcp.send(socket,Proto.PT10.write(10002,0))
         {:fail,:role_name_exist}
       false->
-        user = Yugioh.Repo.get(Model.User,user_id)
+        user = Repo.get(Model.User,user_id)
         # if avatar_id is even then the gender is female(which is 1 in integer),else is male(whihc is 0 in integer)
         gender = case Integer.even? avatar do
           true->
@@ -90,19 +88,19 @@ defmodule Login do
         end
         cards = Enum.take Stream.cycle([1,2,3,4,5,6,7,8,9,10,11,12]),40
         r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: :erlang.term_to_binary(cards)],hp: 3000,win: 0,lose: 0)
-        Yugioh.Repo.create(r)
+        Repo.create(r)
         :gen_tcp.send(socket,Proto.PT10.write(10002,1))
         {:ok,client}
     end
   end
 
   def delete_role([name],socket,client) do
-    case Yugioh.Repo.all(from(r in Model.Role,where: r.name == ^name,select: r)) do
+    case Repo.all(from(r in Model.Role,where: r.name == ^name,select: r)) do
       nil->
         :gen_tcp.send(socket,Proto.PT10.write(10003,0))
         {{:fail,:role_didnt_exist},client}
       [role]->
-        Yugioh.Repo.delete(role)
+        Repo.delete(role)
         :gen_tcp.send(socket,Proto.PT10.write(10003,1))
         {:ok,client}
     end
@@ -118,18 +116,19 @@ defmodule Login do
     # TODO:check the role_id is belonged to the user
     
     # if(Online.is_player_online(role_id)) do
-      # message_data = Proto.PT10.write(:tips,Yugioh.Data.Strings.get(:login_again_string))
+      # message_data = Proto.PT10.write(:tips,Data.Strings.get(:login_again_string))
       # player_pid = Online.get_online_player(role_id).player_pid
       # send(player_pid,{:send,message_data})
-      # Yugioh.Player.stop_cast player_pid,:login_again
+      # Player.stop_cast player_pid,:login_again
     # end
 
     # fetch role data from database
     role = DBUtil.get_role_data(role_id)
-    cards_list = :erlang.binary_to_term(role.cards)
+    
+    # cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
-    cards_list = Enum.take Stream.cycle([1,1,2,3,11,11,12,12,7,7]),40
+    cards_list = Enum.take Stream.cycle([1,7,8,11,11]),40
     # !!!!!!!!!! just for test !!!!!!!!!!!
 
     message_data = Proto.PT10.write(:enter_game,[role,cards_list])
@@ -143,4 +142,7 @@ defmodule Login do
     {:ok,client}
   end
 
+  def logout player_pid do
+    Player.stop_cast player_pid
+  end
 end

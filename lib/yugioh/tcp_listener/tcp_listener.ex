@@ -19,6 +19,7 @@ defmodule TcpListener do
   end
 
   def terminate(reason,listen_socket) do
+    Lager.debug "tcp listener terminate with reason [~p]",[reason]
     :gen_tcp.close(listen_socket)
   end
   

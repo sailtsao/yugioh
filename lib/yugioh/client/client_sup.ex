@@ -7,7 +7,7 @@ defmodule ClientSup do
 
   def init([]) do
    children = [
-     worker(Client, [])
+     worker(Client, [],restart: :transient)
    ]
 
    supervise(children, strategy: :simple_one_for_one)

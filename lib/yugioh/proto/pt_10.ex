@@ -58,7 +58,7 @@ defmodule Proto.PT10 do
     {auth_string,_} = ProtoUtil.read_string(rest)
     {:ok,:web_login,[user_id,auth_string]}
   end
-
+  
   @doc """
     encode login message data to protocol binary
 
@@ -118,4 +118,5 @@ defmodule Proto.PT10 do
     message_binary = ProtoUtil.pack_string(message)
     ProtoUtil.pack(10006,message_binary)
   end
+  
 end

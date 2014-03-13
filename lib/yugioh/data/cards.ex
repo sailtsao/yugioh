@@ -122,13 +122,13 @@ defmodule Yugioh.Data.Cards do
           priority: 2
           ),
           SkillEffect.new(id: 1,
-          params: "1;7;5;1",
+          params: "1;1;7;5;1;1;3",
           priority: 1
           )
       ],
       and_conditions: [
           Condition.new(id: 1,
-          params: "7;1;5;1"
+          params: "1;7;5;1;1;1;0"
           )
       ],
       or_conditions: [
@@ -138,20 +138,20 @@ defmodule Yugioh.Data.Cards do
       check_phase: [:main_phase_1,:main_phase_2],
       skill_effects: [
           SkillEffect.new(id: 1,
-          params: "1;7;0;1",
+          params: "1;1;7;0;1;1;3",
           priority: 1
           ),
           SkillEffect.new(id: 1,
-          params: "1;4;0;1",
+          params: "1;1;4;0;1;1;3",
           priority: 2
           )
       ],
       and_conditions: [
           Condition.new(id: 1,
-          params: "7;1;0;1"
+          params: "1;7;0;1;1;1;0"
           ),
           Condition.new(id: 1,
-          params: "4;1;0;1"
+          params: "1;4;0;1;1;1;0"
           )
       ],
       or_conditions: [
@@ -228,10 +228,14 @@ defmodule Yugioh.Data.Cards do
       Skill.new(type: :normal_skill,
       check_phase: [],
       skill_effects: [
+          SkillEffect.new(id: 1,
+          params: "1;0;2;0;0;0;3",
+          priority: 0
+          )
       ],
       and_conditions: [
-          Condition.new(id: 2,
-          params: "0;2;1;1"
+          Condition.new(id: 1,
+          params: "0;2;0;0;0;1;0"
           )
       ],
       or_conditions: [

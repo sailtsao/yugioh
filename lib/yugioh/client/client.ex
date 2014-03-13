@@ -28,34 +28,47 @@ defmodule Client do
   end
 
   def parse_packet_loop(socket,client) do
-    ref = async_recv(socket,4,60000)
+    async_recv(socket,4,70000)
     receive do
-      {:inet_async, socket, ref, {:ok, <<message_length::16, message_id::16>>}} ->
+      {:inet_async, socket, _ref, {:ok, <<message_length::16, message_id::16>>}} ->
         case message_length do
           x when x>4 ->
-            ref = async_recv(socket, message_length-4, 1000)
+            async_recv(socket, message_length-4, 1000)
             receive do
-              {:inet_async, socket, ref, {:ok, binary_data}} ->
+              {:inet_async, socket, _ref, {:ok, binary_data}} ->
                 route_message(message_id,binary_data,socket,client)
-              {:inet_async, socket, ref, {:error,:timeout}} ->        
+              {:inet_async, socket, _ref, {:error,:timeout}} ->        
                 disconnect_client(message_id, {:error,:timeout}, socket, client)
+              {:inet_async, socket, _ref, {:error,:closed}} ->        
+                disconnect_client(0, {:error,:closed},socket, client)
             end
           _ ->
             route_message(message_id,<<>>,socket,client)
         end
-      {:inet_async, socket, ref, {:error,:timeout}} ->        
-        disconnect_client(socket, client, 0, {:error,:timeout})
+      {:inet_async, socket, _ref, {:error,:timeout}} ->        
+        disconnect_client(0, {:error,:timeout},socket, client)
+      {:inet_async, socket, _ref, {:error,:closed}} ->        
+        disconnect_client(0, {:error,:closed},socket, client)
+      other ->
+        disconnect_client(0, other,socket, client)
     end
   end
 
-  def route_message(message_id,binary_data,socket,client = ClientRecord[user_id: 0])
+  def route_message(9999,_,socket,client) do
+    message_data = ProtoUtil.pack(9999,<<Time.now(:msec)::float>>)
+    :gen_tcp.send(socket,message_data)
+    parse_packet_loop(socket,client)
+  end
+  
+  # the login & web login message should have a 0 user_id
+  def route_message(message_id,_,socket,client = ClientRecord[user_id: 0])
   when message_id != 10000 and message_id != 10007 do
     disconnect_client(message_id,:invalid_user_id_message,socket,client)
   end
   
-
+  # before enter game, the message should have a nil player_pid 
   def route_message(message_id,binary_data,socket,client = ClientRecord[player_pid: nil]) do
-    {result,client} = Login.socket_event(message_id,binary_data,socket,client)
+    {result,client} = System.Login.socket_event(message_id,binary_data,socket,client)
     case result do
       :ok ->
         parse_packet_loop(socket,client)
@@ -66,6 +79,7 @@ defmodule Client do
     end    
   end
 
+  # after enter game, the player_pid become not nil
   def route_message(message_id,binary_data,socket,client) do
     case Player.socket_event(client.player_pid,message_id,binary_data) do
       :ok ->
@@ -78,14 +92,26 @@ defmodule Client do
   end
 
   def disconnect_client(message_id,reason,socket,client = ClientRecord[player_pid: nil]) do
-    Lager.error "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]
     :gen_tcp.close(socket)
-    exit(reason)
+    case reason do
+      x when x in [{:error,:timeout},{:error,:closed}]->
+        Lager.debug "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]        
+        exit(:normal)
+      _->
+        Lager.error "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]
+        exit(reason)
+    end    
   end
 
   def disconnect_client(message_id,reason,socket,client) do
-    Lager.error "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]
-    # Login.logout(client.player_pid)
-    exit(reason)
+    System.Login.logout(client.player_pid)
+    case reason do
+      x when x in [{:error,:timeout},{:error,:closed}]->
+        Lager.debug "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]
+        exit(:normal)
+      _->
+        Lager.error "message_id [~p], reason [~p], client [~p] died",[message_id,reason,client]        
+        exit(reason)
+    end
   end
 end

@@ -51,6 +51,12 @@ defmodule RoomMessageTest do
     data = TestHelper.get_message(socket)
     assert data == <<6::16,11006::16,seat1::8,1::8>>
 
+    ready_state1 = 1
+    data = TestHelper.refresh_roominfo(socket)
+    assert data == <<48::16, 11005::16, room_id::32, room_status_id::16, ProtoUtil.pack_string(room_name)::binary, room_type::16,
+      2::16, seat1::8, player1_id::32, ProtoUtil.pack_string(player1_name)::binary, avatar1::8, is_owner1::8, ready_state1::8, 
+      seat::8, player_id::32, ProtoUtil.pack_string(player_name)::binary, avatar::8, is_owner::8, ready_state::8>>
+
 
     data = TestHelper.battle_start(socket)
     assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),
@@ -63,6 +69,6 @@ defmodule RoomMessageTest do
     6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),
     8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data 
   end
-
+  
   # test room owner battle ready
 end

@@ -23,13 +23,12 @@ defmodule Player do
     [h1,h2,_,_,_] = integer_to_list(message_id)
     case [h1,h2] do
       '11'->
-        {result,player_state} = Yugioh.System.Room.handle({func_atom,params},player_state)
+        {result,player_state} = System.Room.handle({func_atom,params},player_state)
       '12'->
-        {result,player_state} = Yugioh.System.Battle.handle({func_atom,params},player_state)
+        {result,player_state} = System.Battle.handle({func_atom,params},player_state)
     end
     case result do
       :ok->
-        Lager.debug "player_state after handle message [~p]",[player_state]
         set_and_reply player_state,:ok
       reason->
         {:stop,:normal,{:error,reason},player_state}
@@ -39,7 +38,7 @@ defmodule Player do
   defcast init_cast(socket),state: player_state do
     player_state = player_state.socket(socket)
 
-    # Yugioh.Library.Online.add_onine_player(player_state.id,self)
+    # Library.Online.add_onine_player(player_state.id,self)
 
     new_state player_state
   end
@@ -48,11 +47,6 @@ defmodule Player do
     {:stop, :normal, player_state}
   end    
 
-  definfo {:refresh_room_info,room_info},state: player_state do
-    spawn(fn-> :gen_tcp.send(player_state.socket,Yugioh.Proto.PT11.write(11005,room_info)) end)
-    noreply
-  end  
-
   definfo {:send,data},state: player_state do
     :gen_tcp.send(player_state.socket,data)
     Lager.debug "send data [~p] to player [~p]",[data,self]
@@ -60,19 +54,20 @@ defmodule Player do
   end
   
   def terminate(reason,player_state) do
+    Lager.debug "player state [~p] died reason [~p]",[player_state,reason]
     # update online system
-    # Yugioh.Library.Online.remove_online_player(player_state.id)
+    # Library.Online.remove_online_player(player_state.id)
 
-    # if player_state.in_room_id != 0 do
-    #   Yugioh.System.Room.leave_room(player_state.in_room_id)
-    # end
+    if player_state.room_id != 0 do
+      System.Room.leave_room([],player_state)
+    end
 
     if player_state.battle_pid != nil do
-      Yugioh.Battle.stop_cast player_state.battle_pid
+      System.Battle.stop_cast player_state.battle_pid
     end
 
     :gen_tcp.close(player_state.socket)
-    Lager.debug "player process [~p] died reason [~p]",[self,reason]
+    
   end  
     
 end

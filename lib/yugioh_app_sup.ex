@@ -7,8 +7,8 @@ defmodule YugiohAppSup do
 
   def init [acceptor_count,port] do
     children = [
-      worker(Yugioh.Repo, []),
-      worker(Yugioh.System.Room,[]),
+      worker(Repo, []),
+      worker(System.Room,[]),
       supervisor(TcpListenerSup, [[acceptor_count,port]]),
       supervisor(ClientSup,[])
     ]
