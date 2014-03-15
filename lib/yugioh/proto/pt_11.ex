@@ -86,9 +86,9 @@ defmodule Proto.PT11 do
     end
     data = <<code::16,cur_player_id::32,phase_number::8,
     player_state1.brief_info_binary::binary,
-    battle_info1.battle_info_binary::binary,
+    battle_info1.battle_player_info_binary::binary,
     player_state2.brief_info_binary::binary,
-    battle_info2.battle_info_binary::binary>>
+    battle_info2.battle_player_info_binary::binary>>
     ProtoUtil.pack(11007,data)
   end
 end

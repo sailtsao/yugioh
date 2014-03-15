@@ -43,12 +43,12 @@ defmodule System.Login do
     case Repo.all(query) do
       [user]->
         if user.auth_string==auth_string do
-          login_at = user.login_at
-          Lager.debug "web login time [~p]",[login_at]
-          login_at_dt = { { login_at.year, login_at.month, login_at.day }, { login_at.hour, login_at.min, login_at.sec } }
-          login_at_date = Date.from(login_at_dt,:local)
-          invalid_date = Date.shift(login_at_date, min: 30)
-          Lager.debug "invalid_date [~p],now date [~p]",[invalid_date,Date.now]
+          # login_at = user.login_at
+          # Lager.debug "web login time [~p]",[login_at]
+          # login_at_dt = { { login_at.year, login_at.month, login_at.day }, { login_at.hour, login_at.min, login_at.sec } }
+          # login_at_date = Date.from(login_at_dt,:local)
+          # _invalid_date = Date.shift(login_at_date, min: 30)
+          # Lager.debug "invalid_date [~p],now date [~p]",[invalid_date,Date.now]
           # if Date.now<invalid_date do
             :gen_tcp.send(socket,Proto.PT10.write(:login,1))
             client = client.user_id(user_id)
@@ -125,10 +125,10 @@ defmodule System.Login do
     # fetch role data from database
     role = DBUtil.get_role_data(role_id)
     
-    # cards_list = :erlang.binary_to_term(role.cards)
+    cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
-    cards_list = Enum.take Stream.cycle([1,7,8,11,11]),40
+    # cards_list = Enum.take Stream.cycle([1,7,8,11,11]),40
     # !!!!!!!!!! just for test !!!!!!!!!!!
 
     message_data = Proto.PT10.write(:enter_game,[role,cards_list])
@@ -139,6 +139,7 @@ defmodule System.Login do
     {:ok,player_pid} = Player.start({player_state,socket})
 
     client=client.player_pid player_pid
+    Lager.debug "new player enter game,player_state: [~p]",[player_state]
     {:ok,client}
   end
 

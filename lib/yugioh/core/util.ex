@@ -55,7 +55,6 @@ defmodule Util do
   end
 
   def filter_id_index_list id_index_list,:monster_card,attribute,level_limit do    
-    Lager.debug "id_index_list,level_limit [~p] [~p]",[id_index_list,level_limit]
     Enum.filter id_index_list,fn({card_id,_})->
       card_data = Yugioh.Data.Cards.get(card_id)
       if attribute == :none do
@@ -66,7 +65,7 @@ defmodule Util do
     end
   end  
 
-  def filter_id_index_list id_index_list,card_type,attribute,level_limit do
+  def filter_id_index_list id_index_list,_card_type,_attribute,_level_limit do
     id_index_list
   end
 
@@ -127,7 +126,7 @@ defmodule Util do
   end
 
   def get_id_index_list_from_scene player_battle_info,:spell_trap_zone,card_type,attribute,level_limit do
-    id_index_list = Enum.filter_map(player_battle_info.spell_trap_zone,fn({index,spell_trap})->
+    id_index_list = Enum.filter_map(player_battle_info.spell_trap_zone,fn({_index,spell_trap})->
       spell_trap.state != :casting
     end,fn({index,spell_trap})->
       {spell_trap.id,index} 

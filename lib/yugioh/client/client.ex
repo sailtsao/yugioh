@@ -103,7 +103,7 @@ defmodule Client do
     end    
   end
 
-  def disconnect_client(message_id,reason,socket,client) do
+  def disconnect_client(message_id,reason,_socket,client) do
     System.Login.logout(client.player_pid)
     case reason do
       x when x in [{:error,:timeout},{:error,:closed}]->

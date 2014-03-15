@@ -1,5 +1,26 @@
 defmodule IDUtil do
 
+  def get_scene_atom scene_type do
+    case scene_type do
+      :spell_trap_zone->
+        :spell_trap_zone
+      :monster_card_zone->
+        :monster_card_zone
+      :handcard_zone ->
+        :handcards
+      :deck_zone ->
+        :deckcards
+      :graveyard_zone->
+        :graveyardcards
+      :banished_zone->
+        :banishedcards
+      :extra_deck_zone->
+        :extradeckcards
+      :field_card_zone->
+        :field_card
+    end
+  end
+
   def presentation_from presentation_id do
     case presentation_id do
       1->
@@ -14,7 +35,7 @@ defmodule IDUtil do
   end
 
   def presentation_id_from presentation do
-    case presentation do      
+    case presentation do
       :attack->
         1
       :defense_down->  

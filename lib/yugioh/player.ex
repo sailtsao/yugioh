@@ -3,7 +3,6 @@ defmodule Player do
   use ExActor.GenServer
 
   definit ({player_state,socket}) do
-    Lager.debug "player process [~p] with status [~p] created",[self,player_state]    
     init_cast(self,socket)
     initial_state(player_state)
   end    
@@ -49,12 +48,14 @@ defmodule Player do
 
   definfo {:send,data},state: player_state do
     :gen_tcp.send(player_state.socket,data)
-    Lager.debug "send data [~p] to player [~p]",[data,self]
+    <<_::16,message_id::16,_rest::binary>>=data
+    Lager.debug "send data message_id [~p] data [~p] to player [~p]",[message_id,data,self]
     noreply
   end
   
   def terminate(reason,player_state) do
     Lager.debug "player state [~p] died reason [~p]",[player_state,reason]
+    
     # update online system
     # Library.Online.remove_online_player(player_state.id)
 

@@ -57,7 +57,7 @@ defmodule Proto.PT12 do
   end
   
   
-  def write(:change_phase_to,phase) do    
+  def write(:change_phase_to,[phase]) do    
     phase_number = IDUtil.phase_id_from phase
     ProtoUtil.pack(12000,<<phase_number::8>>)
   end

@@ -1,4 +1,4 @@
-defmodule RoomMessageTest do
+defmodule RoomTest do
   use ExUnit.Case
   test "room test" do
     socket = TestHelper.connect
@@ -59,15 +59,16 @@ defmodule RoomMessageTest do
 
 
     data = TestHelper.battle_start(socket)
-    assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),
-    6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),
-    8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data
+    assert <<80::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),
+    6::size(32),4::size(16),"sail",2::size(8),3000::size(16),5::size(16),_card_1::size(160),
+    8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),5::size(16),_card_2::size(160)>> = data
 
     # player1 receive player battle start notice message
     data = TestHelper.get_message(socket1)
-    assert <<84::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),
-    6::size(32),4::size(16),"sail",2::size(8),3000::size(16),3000::size(16),5::size(16),_card_1::size(160),
-    8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),3000::size(16),5::size(16),_card_2::size(160)>> = data 
+    assert <<80::size(16),11007::size(16),1::size(16),6::size(32),1::size(8),
+    6::size(32),4::size(16),"sail",2::size(8),3000::size(16),5::size(16),_card_1::size(160),
+    8::size(32),3::size(16),"xqy",1::size(8),3000::size(16),5::size(16),_card_2::size(160)>> = data 
+    
   end
   
   # test room owner battle ready

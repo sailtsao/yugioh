@@ -1,4 +1,4 @@
-defmodule LoginMessageTest do
+defmodule LoginTest do
   use ExUnit.Case
 
   test "normal login" do
@@ -36,10 +36,5 @@ defmodule LoginMessageTest do
     assert <<_::16, 10005::16, 6::32 ,2::8, 4::16,"sail",3000::32,0::32,0::32,
       _rest::binary>> = data
   end
-  # test "create room" do
-  #   socket = TestHelper.connect
-  #   _data = TestHelper.normal_login socket
-  #   _data = TestHelper.get_roles socket
-  #   _data = TestHelper.enter_game socket,6
-  # end
+
 end

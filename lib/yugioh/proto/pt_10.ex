@@ -74,8 +74,8 @@ defmodule Proto.PT10 do
     <<6::16,10003::16,1::16>>
     iex> Proto.PT10.write(:get_roles,[{1,"sail",1}])
     <<17::16,10004::16,1::16,1::32,4::16,"sail",1::8>>
-    iex> Proto.PT10.write(:enter_game,Model.Role.new)
-    <<6::16,10005::16,1::16>>
+    iex> Proto.PT10.write(:enter_game,[Model.Role.Entity[model: Model.Role, id: 8, name: "xqy", avatar: 1,hp: 3000, win: 0, lose: 0],[1,2,3,4,5]])
+    <<0, 48, 39, 21, 0, 0, 0, 8, 1, 0, 3, 120, 113, 121, 0, 0, 11, 184, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5>>
     iex> Proto.PT10.write(:tips,"12345678")
     <<14::16,10006::16,8::16,"12345678">>
     """  

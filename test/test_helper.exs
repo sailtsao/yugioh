@@ -90,9 +90,10 @@ defmodule TestHelper do
     TestHelper.create_room(socket)    
     TestHelper.enter_room(socket1,1)
     get_message socket
-    TestHelper.battle_ready(socket1)
-    get_message socket
+    TestHelper.battle_ready(socket1)    
     TestHelper.battle_start(socket)
+    :timer.sleep 100
+    get_message socket
     get_message socket1
     {socket,socket1}
   end
@@ -136,7 +137,7 @@ defmodule TestHelper do
 
   def fire_effect(socket,scene_type_id,index) do
     message_data = ProtoUtil.pack(12011,<<scene_type_id::8,index::8>>)
-    :timer.sleep 1000
+    :timer.sleep 100
     send_and_receive message_data,socket
   end  
   
@@ -154,4 +155,11 @@ defmodule TestHelper do
     message_data = ProtoUtil.pack(9999,<<>>)
     send_and_receive message_data,socket
   end  
+
+  def get_tribute_params bin do
+    # <<player_id::32,scene_type_id::8,choose_index_length::16,choose_id::32,choose_index::8>> = choose_scene
+    <<player_id::32,scene_type_id::8,_choose_index_length::16,_choose_id::32,choose_index::8,_::binary>> = bin
+    {player_id,scene_type_id,choose_index}
+  end
+  
 end
