@@ -12,7 +12,7 @@ defmodule System.Login do
     {:ok,func_atom,params} = ProtoUtil.decode_message(message_id,binary_data)
     apply(__MODULE__,func_atom,[params,socket,client])
   end
-  
+
 
   @doc """
   login with account&password
@@ -72,7 +72,7 @@ defmodule System.Login do
     {:ok,client}
   end
 
-  def create_role([user_id,name,avatar,_card_type],socket,client) do 
+  def create_role([user_id,name,avatar,_card_type],socket,client) do
     case DBUtil.role_exist?(name) do
       true->
         :gen_tcp.send(socket,Proto.PT10.write(10002,0))
@@ -110,11 +110,11 @@ defmodule System.Login do
     roles = DBUtil.get_roles_list(client.user_id)
     :gen_tcp.send(socket,Proto.PT10.write(:get_roles,roles))
     {:ok,client}
-  end  
+  end
 
   def enter_game([role_id],socket,client) do
     # TODO:check the role_id is belonged to the user
-    
+
     # if(Online.is_player_online(role_id)) do
       # message_data = Proto.PT10.write(:tips,Data.Strings.get(:login_again_string))
       # player_pid = Online.get_online_player(role_id).player_pid
@@ -124,11 +124,11 @@ defmodule System.Login do
 
     # fetch role data from database
     role = DBUtil.get_role_data(role_id)
-    
+
     cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
-    # cards_list = Enum.take Stream.cycle([1,7,8,11,11]),40
+    cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40
     # !!!!!!!!!! just for test !!!!!!!!!!!
 
     message_data = Proto.PT10.write(:enter_game,[role,cards_list])

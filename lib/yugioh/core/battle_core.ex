@@ -2,7 +2,7 @@ defmodule BattleCore do
   require Lager
 
   def destroy_card_to_graveyard(battle_data,player_id,scene_type,pos)
-  when scene_type in [:spell_trap_zone,:monster_card_zone] do
+  when scene_type in [:spell_trap_zone,:monster_zone] do
 
     player_battle_info = battle_data.get_player_battle_info player_id
     cards_dict = Util.get_cards_from_scene player_battle_info,scene_type
@@ -28,17 +28,17 @@ defmodule BattleCore do
       params: "#{card_id};#{IDUtil.presentation_id_from(new_presentation)}",
       targets: [Target[player_id: player_id,scene_type: scene_type,index: index]])
   end
-  
+
   def create_attack_card_effect attack_player_id,attack_card_index,defense_player_id,defense_card_index,damage_player_id,hp_damage do
-    attack_target = Target[player_id: attack_player_id,scene_type: :monster_card_zone,index: attack_card_index]
-    defense_target = Target[player_id: defense_player_id,scene_type: :monster_card_zone,index: defense_card_index]
+    attack_target = Target[player_id: attack_player_id,scene_type: :monster_zone,index: attack_card_index]
+    defense_target = Target[player_id: defense_player_id,scene_type: :monster_zone,index: defense_card_index]
     Effect.new(type: :attack_effect,
       params: "#{attack_player_id};#{defense_player_id};#{damage_player_id};#{hp_damage}",
-      targets: [attack_target,defense_target])        
+      targets: [attack_target,defense_target])
   end
 
   def create_attack_player_effect attack_player_id,attack_card_index,defense_player_id,hp_damage do
-    attack_target = Target[player_id: attack_player_id,scene_type: :monster_card_zone,index: attack_card_index]
+    attack_target = Target[player_id: attack_player_id,scene_type: :monster_zone,index: attack_card_index]
     defense_target = Target[player_id: defense_player_id,scene_type: :player_zone,index: 0]
     Effect.new(type: :attack_effect,
       params: "#{attack_player_id};#{defense_player_id};#{defense_player_id};#{hp_damage}",
@@ -53,13 +53,19 @@ defmodule BattleCore do
   end
 
   def create_effect_targets player_id,scene_type,index_list do
-    Enum.map index_list,&(Target[player_id: player_id,scene_type: scene_type,index: &1])      
+    Enum.map index_list,&(Target[player_id: player_id,scene_type: scene_type,index: &1])
   end
 
-  def create_move_to_graveyard_effect targets,battle_data do    
+  def create_move_to_graveyard_effect targets,battle_data do
     Effect.new(type: :move_to_graveyard_effect,
         params: battle_data.get_graveyard_params_string,
         targets: targets)
-  end    
-  
+  end
+
+  def create_draw_card_effect player_id,card_id do
+    Effect.new(type: :draw_card_effect,
+      params: "#{player_id};#{card_id}",
+      targets: [])
+  end
+
 end

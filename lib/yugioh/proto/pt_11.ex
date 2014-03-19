@@ -30,7 +30,7 @@ defmodule Proto.PT11 do
 
   def write(:create_room,[code,room_info])do    
     data = <<code::16,
-    room_info.to_binary::binary
+    room_info.binary::binary
     >>
     ProtoUtil.pack(11000,data)
   end
@@ -47,7 +47,7 @@ defmodule Proto.PT11 do
   end
 
   def write(:enter_room,[code,room_info])do
-    data = <<code::16,room_info.to_binary::binary>>
+    data = <<code::16,room_info.binary::binary>>
     ProtoUtil.pack(11002,data)
   end
 
@@ -62,7 +62,7 @@ defmodule Proto.PT11 do
   end
 
   def write(:refresh_roominfo,[room_info])do
-    data = room_info.to_binary
+    data = room_info.binary
     ProtoUtil.pack(11005,data)
   end
 
@@ -71,24 +71,12 @@ defmodule Proto.PT11 do
     ProtoUtil.pack(11006,data)
   end
   
-  def write(:battle_start,[code,cur_player_id,phase,player_state1,battle_info1,player_state2,battle_info2]) do
-    phase_number = case phase do
-      :dp->
-        1
-      :sp->
-        2
-      :mp1->
-        3
-      :bp->
-        4
-      :mp2->
-        5
-    end
-    data = <<code::16,cur_player_id::32,phase_number::8,
-    player_state1.brief_info_binary::binary,
-    battle_info1.battle_player_info_binary::binary,
-    player_state2.brief_info_binary::binary,
-    battle_info2.battle_player_info_binary::binary>>
+  def write(:battle_start,[code,cur_player_id,phase,player_state1,battle_info1,player_state2,battle_info2]) do          
+    data = <<code::16,cur_player_id::32,IDUtil.phase_id_from(phase)::8,
+    player_state1.brief_binary::binary,
+    battle_info1.binary::binary,
+    player_state2.brief_binary::binary,
+    battle_info2.binary::binary>>
     ProtoUtil.pack(11007,data)
   end
 end

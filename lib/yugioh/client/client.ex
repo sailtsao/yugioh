@@ -30,6 +30,10 @@ defmodule Client do
   def parse_packet_loop(socket,client) do
     async_recv(socket,4,70000)
     receive do
+      {:inet_async, socket, _ref, {:ok, "<pol"}} ->
+        async_recv(socket, 23-4, 1000)
+        :gen_tcp.send socket,"<cross-domain-policy><allow-access-from domain='*' to-ports='1234' /></cross-domain-policy>"
+        :gen_tcp.close(socket)
       {:inet_async, socket, _ref, {:ok, <<message_length::16, message_id::16>>}} ->
         case message_length do
           x when x>4 ->

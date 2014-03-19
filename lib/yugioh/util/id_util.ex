@@ -4,8 +4,8 @@ defmodule IDUtil do
     case scene_type do
       :spell_trap_zone->
         :spell_trap_zone
-      :monster_card_zone->
-        :monster_card_zone
+      :monster_zone->
+        :monster_zone
       :handcard_zone ->
         :handcards
       :deck_zone ->
@@ -16,7 +16,7 @@ defmodule IDUtil do
         :banishedcards
       :extra_deck_zone->
         :extradeckcards
-      :field_card_zone->
+      :field_zone->
         :field_card
     end
   end
@@ -38,9 +38,9 @@ defmodule IDUtil do
     case presentation do
       :attack->
         1
-      :defense_down->  
+      :defense_down->
         2
-      :defense_up->  
+      :defense_up->
         3
       :place->
         4
@@ -54,7 +54,7 @@ defmodule IDUtil do
       1->
         :special_summon
     end
-  end    
+  end
 
   def card_type_from card_type_id do
     case card_type_id do
@@ -63,7 +63,7 @@ defmodule IDUtil do
       1->
         :monster_card
       2->
-        :magic_card
+        :spell_card
       3->
         :trap_card
     end
@@ -99,7 +99,7 @@ defmodule IDUtil do
         :less
     end
   end
-  
+
 
   def room_status_id_from room_status do
     case room_status do
@@ -173,17 +173,17 @@ defmodule IDUtil do
   def check_phase_id_from check_phase do
     case check_phase do
       :draw_phase->
-        1        
+        1
       :suspend_phase->
-        2        
+        2
       :main_phase_1->
-        3        
+        3
       :battle_phase->
-        4        
+        4
       :main_phase_2->
-        5        
+        5
       :end_phase->
-        6        
+        6
     end
   end
 
@@ -192,7 +192,7 @@ defmodule IDUtil do
       0->
         :player_zone
       1->
-        :monster_card_zone
+        :monster_zone
       2->
         :spell_trap_zone
       3->
@@ -200,7 +200,7 @@ defmodule IDUtil do
       4->
         :deck_zone
       5->
-        :field_card_zone
+        :field_zone
       6->
         :extra_deck_zone
       7->
@@ -214,7 +214,7 @@ defmodule IDUtil do
     case scene_type do
       :player_zone ->
         0
-      :monster_card_zone->
+      :monster_zone->
         1
       :spell_trap_zone->
         2
@@ -222,7 +222,7 @@ defmodule IDUtil do
         3
       :deck_zone->
         4
-      :field_card_zone->
+      :field_zone->
         5
       :extra_deck_zone->
         6
@@ -230,9 +230,9 @@ defmodule IDUtil do
         7
       :banished_zone->
         8
-    end    
+    end
   end
-  
+
   def operation_type_from operation_type_id do
     case operation_type_id do
       1->
@@ -272,35 +272,37 @@ defmodule IDUtil do
         7
       :special_summon_operation->
         8
-    end    
-  end
-
-  def effect_type_from effect_type_id do
-    case effect_type_id do
-      1 ->
-        :move_to_graveyard_effect
-      2 ->
-        :summon_effect
-      3 ->
-        :attack_effect
-      4 ->
-        :card_presentation_change_effect
     end
   end
-  
+
+  # def effect_type_from effect_type_id do
+  #   case effect_type_id do
+  #     1 ->
+  #       :move_to_graveyard_effect
+  #     2 ->
+  #       :summon_effect
+  #     3 ->
+  #       :attack_effect
+  #     4 ->
+  #       :card_presentation_change_effect
+  #   end
+  # end
+
   def effect_type_id_from effect_type do
     case effect_type do
       :move_to_graveyard_effect ->
         1
       :summon_effect ->
-        2      
+        2
       :attack_effect ->
         3
       :card_presentation_change_effect ->
         4
+      :draw_card_effect ->
+        5
     end
   end
-  
+
   def choose_type_id_from choose_type do
     case choose_type do
       :tribute_choose ->
@@ -321,6 +323,15 @@ defmodule IDUtil do
       # :light ->
       #   2
     end
-  end  
+  end
+
+  def answer_from answer_id do
+    case answer_id do
+      0->
+        :no
+      1->
+        :yes
+    end
+  end
 
 end

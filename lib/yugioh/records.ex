@@ -2,13 +2,10 @@ defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,so
   deck: [],
   extra_deck: [],
   side_deck: [] do
-  def brief_info_binary record do
+  def brief_binary record do
     <<record.id::32,ProtoUtil.pack_string(record.name)::binary,record.avatar::8>>
-  end        
+  end
 end
-
-
-defrecord SpellTrap,id: 0,state: nil,skills: []
 
 defrecord Target,player_id: 0,scene_type: 0,index: 0
 
@@ -17,7 +14,7 @@ defrecord Effect,type: 0,params: "",targets: nil
 defrecord PlayerOnline,id: 0,player_pid: nil
 
 defrecord RoomInfo,id: 0,status: nil,name: "",type: 1,owner_seat: 0,members_dict: nil do
-  def to_binary(record) do
+  def binary(record) do
     room_status_id = IDUtil.room_status_id_from record.status
     members_data_binary = Enum.map_join record.members_dict,fn({seat,room_player_info}) ->
       is_owner = case record.owner_seat do
@@ -35,7 +32,7 @@ defrecord RoomInfo,id: 0,status: nil,name: "",type: 1,owner_seat: 0,members_dict
     record.type::16,
     Dict.size(record.members_dict)::16,
     members_data_binary::binary>>
-  end  
+  end
 end
 
 defrecord RoomPlayerInfo,id: 0,player_pid: nil,socket: nil,name: "",avatar: 0,ready_state: :unready

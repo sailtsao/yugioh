@@ -6,9 +6,13 @@ defmodule YugiohApp do
   def start(_type, [acceptor_count: acceptor_count,port: port]) do    
     
     # set lager parameters
-    if  Mix.env == :dev or Mix.env == :test do
-      Lager.set_loglevel(:lager_file_backend,'log/console.log',:debug)
-      Lager.set_loglevel(:lager_console_backend,:debug)
+    case  Mix.env do
+      :dev->
+        Lager.set_loglevel(:lager_file_backend,'log/console.log',:debug)
+        Lager.set_loglevel(:lager_console_backend,:debug)
+      :test->
+        Lager.set_loglevel(:lager_file_backend,'log/console.log',:debug)
+        Lager.set_loglevel(:lager_console_backend,:info)
     end
 
     YugiohAppSup.start_link [acceptor_count,port]

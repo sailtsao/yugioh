@@ -1,4 +1,4 @@
-defmodule Yugioh.Data.Cards do
+defmodule Data.Cards do
 
   def get(1) do
   Card.new(
@@ -117,10 +117,10 @@ defmodule Yugioh.Data.Cards do
       Skill.new(type: :special_summon_skill,
       check_phase: [:main_phase_1,:main_phase_2],
       skill_effects: [
-          SkillEffect.new(id: 2,
-          params: "",
-          priority: 2
-          ),
+          # SkillEffect.new(id: 2,
+          # params: "",
+          # priority: 2
+          # ),
           SkillEffect.new(id: 1,
           params: "1;1;7;5;1;1;3",
           priority: 1
@@ -216,7 +216,7 @@ defmodule Yugioh.Data.Cards do
   def get(11) do
   Card.new(
   id: 11,
-  card_type: :magic_card,
+  card_type: :spell_card,
   race_type: :none,
   atrribute: :none,
   group: 0,
@@ -258,6 +258,23 @@ defmodule Yugioh.Data.Cards do
   defense: 0,
   level: 0,
   skills: [
+    Skill.new(type: :normal_skill,
+      check_phase: [:fire_effect_declare],
+      skill_effects: [
+        SkillEffect.new(id: 4,
+          params: "",
+          priority: 1
+          ),
+        SkillEffect.new(id: 3,
+          params: "",
+          priority: 2
+          ),
+        ],
+      and_conditions: [
+        ],
+      or_conditions: [
+        ]
+    )
   ]
   )
   end

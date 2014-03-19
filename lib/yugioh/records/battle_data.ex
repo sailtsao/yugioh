@@ -1,5 +1,6 @@
-defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,
-  player1_battle_info: nil,player2_battle_info: nil,normal_summoned: false,choose_callback: nil,effect_callback: nil do
+defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,
+  player1_battle_info: nil,player2_battle_info: nil,normal_summoned: false,choose_callback: nil,answer_callback: nil,
+  chain_queue: [] do
   @moduledoc """
   battle data record
   """
@@ -15,7 +16,7 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
   :b
   """
   def operator_battle_info BattleData[operator_id: operator_id,player1_id: operator_id,player1_battle_info: player1_battle_info] do
-    player1_battle_info      
+    player1_battle_info
   end
 
   def operator_battle_info BattleData[operator_id: operator_id,player2_id: operator_id,player2_battle_info: player2_battle_info] do
@@ -68,7 +69,7 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
   ...> battle_data.opponent_player_atom
   :player1_battle_info
   """
-  def opponent_player_atom BattleData[operator_id: operator_id,player1_id: operator_id] do    
+  def opponent_player_atom BattleData[operator_id: operator_id,player1_id: operator_id] do
     :player2_battle_info
   end
 
@@ -87,7 +88,7 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
   :a
   """
   def opponent_player_battle_info BattleData[operator_id: operator_id,player1_id: operator_id,player2_battle_info: player2_battle_info] do
-    player2_battle_info      
+    player2_battle_info
   end
 
   def opponent_player_battle_info BattleData[operator_id: operator_id,player2_id: operator_id,player1_battle_info: player1_battle_info] do
@@ -124,10 +125,43 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
   """
   def get_player_atom player_id,BattleData[player1_id: player_id] do
     :player1_battle_info
-  end  
+  end
 
   def get_player_atom player_id,BattleData[player2_id: player_id] do
     :player2_battle_info
+  end
+
+  @doc """
+  get player opponent player id
+  """
+  def get_opponent_player_id player_id,BattleData[player1_id: player_id,player2_id: player2_id] do
+    player2_id
+  end
+
+  def get_opponent_player_id player_id,BattleData[player1_id: player1_id,player2_id: player_id] do
+    player1_id
+  end
+
+  @doc """
+  get player oppoen
+  """
+  def get_opponent_player_battle_info player_id,BattleData[player1_id: player_id,player2_battle_info: player2_battle_info] do
+    player2_battle_info
+  end
+
+  def get_opponent_player_battle_info player_id,BattleData[player2_id: player_id,player1_battle_info: player1_battle_info] do
+    player1_battle_info
+  end
+
+  @doc """
+  get player atom
+  """
+  def get_opponent_player_atom player_id,BattleData[player1_id: player_id] do
+    :player2_battle_info
+  end
+
+  def get_opponent_player_atom player_id,BattleData[player2_id: player_id] do
+    :player1_battle_info
   end
 
   @doc """
@@ -161,12 +195,12 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
   ...> battle_data.new_turn_operator_id
   6
   """
-  def new_turn_operator_id(BattleData[operator_id: operator_id,turn_count: 0]) do
-    operator_id
+  def new_turn_operator_id(BattleData[turn_player_id: turn_player_id,turn_count: 0]) do
+    turn_player_id
   end
 
   def new_turn_operator_id(battle_data) do
-    battle_data.opponent_player_id
+    battle_data.get_opponent_player_id battle_data.turn_player_id
   end
 
   @doc """
@@ -176,7 +210,7 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
     send player1_battle_info.player_pid,{:send,message_data}
     send player2_battle_info.player_pid,{:send,message_data}
   end
-  
+
   @doc """
   send message to all with mask
   """
@@ -185,7 +219,7 @@ defrecord BattleData,turn_count: 1,operator_id: 0,phase: :dp,player1_id: 0,playe
     send player1_battle_info.player_pid,{:send,message_data}
     send player2_battle_info.player_pid,{:send,message_data_masked}
   end
-  
+
   def send_message_to_all_with_mask player_id,message_data,message_data_masked,
   BattleData[player2_id: player_id,player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info] do
     send player1_battle_info.player_pid,{:send,message_data_masked}
