@@ -37,9 +37,6 @@ end
 
 defrecord RoomPlayerInfo,id: 0,player_pid: nil,socket: nil,name: "",avatar: 0,ready_state: :unready
 
-
-defrecord Skill,type: 0,check_phase: 0,skill_effects: [],and_conditions: [],or_conditions: []
-
 defrecord Condition,id: 0,params: ""
 
 defrecord SkillEffect,id: 0,params: "",priority: 0

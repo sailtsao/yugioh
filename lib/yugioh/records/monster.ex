@@ -14,7 +14,7 @@ attacked: false,effect_fired: false,skills: [] do
       []->
         false
       skills->
-        Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied(player_id,:monster_zone,index,&1,battle_data,[])))
+        Enum.any?(skills,&(&1.is_conditions_satisfied?(player_id,:monster_zone,index,battle_data)))
     end
   end
 
@@ -39,6 +39,17 @@ attacked: false,effect_fired: false,skills: [] do
       [:fire_effect_operation]
     else
       []
+    end
+  end
+
+  def change_presentation monster do
+    case monster.presentation do
+      :defense_down->
+        monster.update(presentation: :attack,presentation_changed: true)
+      :defense_up->
+        monster.update(presentation: :attack,presentation_changed: true)
+      :attack->
+        monster.update(presentation: :defense_up,presentation_changed: true)
     end
   end
 

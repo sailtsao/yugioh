@@ -6,7 +6,7 @@ defrecord SpellTrap,id: 0,card_type: nil,state: nil,count: 0,skills: [] do
         []->
           false
         skills->
-          Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied(player_id,:spell_trap_zone,index,&1,battle_data,[])))
+          Enum.any?(skills,&(&1.is_conditions_satisfied?(player_id,:spell_trap_zone,index,battle_data)))
       end
     else
       false

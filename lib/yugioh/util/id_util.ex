@@ -75,6 +75,141 @@ defmodule IDUtil do
         :none
       1 ->
         :dark_attribute
+      2 ->
+        :light_attribute
+      3 ->
+        :earth_attribute
+      4 ->
+        :water_attribute
+      5 ->
+        :fire_attribute
+      6 ->
+        :wind_attribute
+      7 ->
+        :divine_attribute
+    end
+  end
+
+  def attribute_id_from attribute do
+    case attribute do
+      :none ->
+        0
+      :dark_attribute ->
+        1
+      :light_attribute ->
+        2
+      :earth_attribute ->
+        3
+      :water_attribute ->
+        4
+      :fire_attribute ->
+        5
+      :wind_attribute ->
+        6
+      :divine_attribute ->
+        7
+    end
+  end
+
+  def race_id_from race do
+    case race do
+      :none->
+        0
+      :spellcaster_race->
+        1
+      :dragon_race->
+        2
+      :zombie_race->
+        3
+      :warrior_race->
+        4
+      :beast_warrior_race->
+        5
+      :beast_race->
+        6
+      :winged_beast_race->
+        7
+      :fiend_race->
+        8
+      :fairy_race->
+        9
+      :insect_race->
+        10
+      :dinosaur_race->
+        11
+      :reptile_race->
+        12
+      :fish_race->
+        13
+      :sea_serpent_race->
+        14
+      :aqua_race->
+        15
+      :pyro_race->
+        16
+      :thunder_race->
+        17
+      :rock_race->
+        18
+      :plant_race->
+        19
+      :machine_race->
+        20
+      :psychic_race->
+        21
+      :divine_beast_race->
+        22
+    end
+  end
+
+  def race_from race_id do
+    case race_id do
+      0->
+        :none
+      1->
+        :spellcaster
+      2->
+        :dragon
+      3->
+        :zombie
+      4->
+        :warrior
+      5->
+        :beast_warrior
+      6->
+        :beast
+      7->
+        :winged_beast
+      8->
+        :fiend
+      9->
+        :fairy
+      10->
+        :insect
+      11->
+        :dinosaur
+      12->
+        :reptile
+      13->
+        :fish
+      14->
+        :sea_serpent
+      15->
+        :aqua
+      16->
+        :pyro
+      17->
+        :thunder
+      18->
+        :rock
+      19->
+        :plant
+      20->
+        :machine
+      21->
+        :psychic
+      22->
+        :divine_beast
     end
   end
 
@@ -311,17 +446,6 @@ defmodule IDUtil do
         2
       :handcard_tribute_choose ->
         3
-    end
-  end
-
-  def attribute_id_from attribute do
-    case attribute do
-      :none ->
-        0
-      :dark_attribute ->
-        1
-      # :light ->
-      #   2
     end
   end
 

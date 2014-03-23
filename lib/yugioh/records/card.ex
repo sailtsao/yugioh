@@ -40,7 +40,7 @@ defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense:
       nil->
         false
       skill->
-        ConditionCore.is_skill_conditions_satisfied player_id,:handcard_zone,index,skill,battle_data,[]
+        skill.is_conditions_satisfied? player_id,:handcard_zone,index,battle_data
     end
   end
 
@@ -52,11 +52,11 @@ defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense:
       []->
         false
       skills->
-        Enum.any?(skills,&(ConditionCore.is_skill_conditions_satisfied(player_id,:handcard_zone,index,&1,battle_data,[])))
+        Enum.any?(skills,&(&1.is_conditions_satisfied?(player_id,:handcard_zone,index,battle_data)))
     end
   end
 
-  def can_fire_effect? player_id,index,battle_data,card_data do
+  def can_fire_effect? _,_,_,_ do
     false
   end
 
@@ -93,7 +93,7 @@ defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense:
   @doc """
   get normal summon operations
   """
-  def get_normal_summon_operations(player_id,BattleData[normal_summoned: true],_) do
+  def get_normal_summon_operations(_player_id,BattleData[normal_summoned: true],_) do
     []
   end
 
@@ -110,7 +110,7 @@ defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense:
   def get_normal_summon_operations(player_id,battle_data,card_data = Card[level: level])
   when level > 4 do
     player_battle_info = battle_data.get_player_battle_info player_id
-    summoned_count = player_battle_info.monster_summoned_amount
+    summoned_count = player_battle_info.monster_zone_size
     case card_data.can_be_tribute_normal_summoned? summoned_count do
       true->
         [:summon_operation,:place_operation]

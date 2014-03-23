@@ -1,17 +1,11 @@
 defmodule ConditionCore do
   require Lager
 
-  def is_skill_conditions_satisfied(player_id,scene_type,index,skill,battle_data,params_dict) do
-    and_result = List.foldl skill.and_conditions,true,&(&2 && ConditionCore.is_condition_satisfied(player_id,scene_type,index,&1.id,&1.params,battle_data,params_dict))
-    or_result = List.foldl skill.or_conditions,true,&(&2 || ConditionCore.is_condition_satisfied(player_id,scene_type,index,&1.id,&1.params,battle_data,params_dict))
-    and_result && or_result
-  end
-
 # {自己1/对方2/双方0}{手卡7,怪兽1,魔法陷阱区域2,地形5,额外6}{大于5星/不限0}{暗属性1/不限0}{怪兽1/魔法2/陷阱卡3/不限0}数量{大于1/小于2/等于0}{1}
   # 1;1;7;5;1;1;3
   # "1;7;5;1;1;1;0"
   # 1;0;1,2;5;1;1;3 也可以这样表示双方战斗区域
-  def is_condition_satisfied(player_id,scene_type,index,1,params_str,battle_data,params_dict) do
+  def is_condition_satisfied(player_id,scene_type,index,Condition[id: 1,params: params_str],battle_data) do
     [scene_belong_str,scene_type_ids_str,level_limit_str,attribute_id_str,card_type_id_str,compare_id_str,limit_count_str] =
       String.split(params_str,";",trim: true)
 
@@ -41,9 +35,9 @@ defmodule ConditionCore do
         end
       :both->
         List.foldl source_scene_types,0,fn(scene_type,count)->
-          operator_id_index_list = Util.get_id_index_list_from_scene(player_battle_info,scene_type,card_type,attribute,level_limit,info)
-          opponent_id_index_list = Util.get_id_index_list_from_scene(opponent_battle_info,scene_type,card_type,attribute,level_limit,info)
-          count + length(operator_id_index_list++opponent_id_index_list)
+          player_count = length Util.get_id_index_list_from_scene(player_battle_info,scene_type,card_type,attribute,level_limit,info)
+          opponent_count = length Util.get_id_index_list_from_scene(opponent_battle_info,scene_type,card_type,attribute,level_limit,info)
+          count + player_count + opponent_count
         end
     end
     case compare do

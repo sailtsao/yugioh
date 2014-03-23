@@ -13,7 +13,7 @@ defmodule FireEffectCore do
     # TODO: multi skills situation unhandled
     [skill] = card_data.get_normal_skills
 
-    if ConditionCore.is_skill_conditions_satisfied(player_id,:handcard_zone,index,skill,battle_data,[]) != true do
+    if skill.is_conditions_satisfied?(player_id,:handcard_zone,index,battle_data) != true do
       result = :card_cant_fire_effect
     end
 
@@ -25,12 +25,9 @@ defmodule FireEffectCore do
 
       spell_trap = Dict.get player_battle_info.spell_trap_zone,pos
 
-      # choose callback
-      choose_callback = fn(choose_result_list,battle_data)->
-        Lager.info "choose_result_list [~p]",[choose_result_list]
-        EffectCore.fire_effect_declare player_id,:spell_trap_zone,pos,skill,spell_trap.id,choose_result_list,battle_data
+      {result,battle_data} = ChooseCore.choose player_id,:spell_trap_zone,pos,skill,battle_data,fn(choose_result_list,battle_data)->
+        fire_effect_declare player_id,:spell_trap_zone,pos,skill,spell_trap.id,choose_result_list,battle_data
       end
-      {result,battle_data} = ChooseCore.choose player_id,:spell_trap_zone,pos,skill,choose_callback,battle_data
     end
     {result,battle_data}
   end
@@ -42,7 +39,7 @@ defmodule FireEffectCore do
 
     [skill] = spell_trap.get_normal_skills
 
-    if ConditionCore.is_skill_conditions_satisfied(player_id,:spell_trap_zone,index,skill,battle_data,[]) != true do
+    if skill.is_conditions_satisfied?(player_id,:spell_trap_zone,index,battle_data) != true do
       result = :card_cant_fire_effect
     end
 
@@ -50,19 +47,16 @@ defmodule FireEffectCore do
       card_presentation_change_effect = BattleCore.create_card_presentation_change_effect(spell_trap.id,:attack,player_id,:spell_trap_zone,index)
       message = Proto.PT12.write(:effects,[card_presentation_change_effect])
       battle_data.send_message_to_all message
-      player_battle_info = battle_data.get_player_battle_info player_id
-      spell_trap = Dict.get player_battle_info.spell_trap_zone,index
-      choose_callback = fn(choose_result_list,battle_data)->
-        EffectCore.fire_effect_declare player_id,:spell_trap_zone,index,skill,spell_trap.id,choose_result_list,battle_data
+      {result,battle_data} = ChooseCore.choose player_id,:spell_trap_zone,index,skill,battle_data,fn(choose_result_list,battle_data)->
+        fire_effect_declare player_id,:spell_trap_zone,index,skill,spell_trap.id,choose_result_list,battle_data
       end
-      {result,battle_data} = ChooseCore.choose player_id,:spell_trap_zone,index,skill,choose_callback,battle_data
     end
     {result,battle_data}
   end
 
   def fire_effect(player_id,:monster_zone,index,battle_data) do
     result = :ok
-    player_atom = battle_data.get_player_atom player_id
+    # player_atom = battle_data.get_player_atom player_id
     player_battle_info = battle_data.get_player_battle_info player_id
     monster = Dict.get(player_battle_info.monster_zone,index)
     [skill] = monster.get_normal_skills
@@ -72,24 +66,43 @@ defmodule FireEffectCore do
     end
 
     if result == :ok do
-      # execute_skill_func = fn(battle_data)->
-      #   {result,battle_data} = EffectCore.execute_skill_effects(skill,battle_data,[])
-      #   if result == :ok do
-      #     player_battle_info = battle_data.get_player_battle_info player_id
-      #     monster = Dict.get(player_battle_info.monster_zone,index)
-      #     monster = monster.effect_fired(true)
-      #     monster_zone = Dict.put(player_battle_info.monster_zone,index,monster)
-      #     player_battle_info = player_battle_info.update(monster_zone: monster_zone)
-      #     battle_data = battle_data.update([{player_atom,player_battle_info}])
-      #   end
-      #   {result,battle_data}
-      # end
-      choose_callback = fn(choose_result_list,battle_data)->
-        EffectCore.fire_effect_declare player_id,:monster_zone,index,skill,monster.id,choose_result_list,battle_data
+      {result,battle_data} = ChooseCore.choose player_id,:monster_zone,index,skill,battle_data,fn(choose_result_list,battle_data)->
+        fire_effect_declare player_id,:monster_zone,index,skill,monster.id,choose_result_list,battle_data
       end
-      {result,battle_data} = ChooseCore.choose player_id,:monster_zone,index,skill,choose_callback,battle_data
-      # {result,battle_data} = EffectCore.fire_effect_declare battle_data,:monster_zone,index,player_id,monster.id,execute_skill_func
     end
     {result,battle_data}
   end
+
+  def fire_effect_declare player_id,scene_type,index,skill,card_id,choose_result_list,battle_data do
+    battle_data = battle_data.chain_queue([{player_id,scene_type,index,choose_result_list,skill}|battle_data.chain_queue])
+    opponent_player_id = battle_data.get_opponent_player_id player_id
+    opponent_battle_info = battle_data.get_player_battle_info opponent_player_id
+    if ChainCore.skill_chain_available?(player_id,card_id,battle_data) do
+      answer_callback = fn(answer,battle_data)->
+        battle_data = battle_data.answer_callback nil
+        case answer do
+          :no->
+            ChainCore.execute_chain_queue battle_data
+          :yes->
+            # chained
+            player_atom = battle_data.get_player_atom player_id
+            player_battle_info = battle_data.get_player_battle_info player_id
+            spell_trap = Dict.get(player_battle_info.spell_trap_zone,index).state :chained
+            spell_trap_zone = Dict.put player_battle_info.spell_trap_zone,index,spell_trap
+            player_battle_info = player_battle_info.spell_trap_zone spell_trap_zone
+            battle_data = battle_data.update([{player_atom,player_battle_info}])
+            battle_data = battle_data.operator_id opponent_player_id
+            {:ok,battle_data}
+        end
+      end
+      message = Proto.PT12.write(:chain_ask,[card_id])
+      opponent_battle_info.send_message message
+      battle_data = battle_data.answer_callback answer_callback
+      {:ok,battle_data}
+    else
+      # no chain available
+      ChainCore.execute_chain_queue battle_data
+    end
+  end
+
 end

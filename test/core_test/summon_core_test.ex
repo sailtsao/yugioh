@@ -71,7 +71,7 @@ defmodule SummonCoreTest do
     {result,battle_data} = battle_data.choose_callback.([{6,:monster_zone,[2]}],battle_data)
     assert result == :ok
     assert battle_data.choose_callback == nil
-    assert battle_data.player1_battle_info.monster_summoned_amount == 1
+    assert battle_data.player1_battle_info.monster_zone_size == 1
     assert battle_data.player1_battle_info.monster_zone[2] != nil
     assert battle_data.player1_battle_info.monster_zone[2].id == 1
     assert battle_data.player1_battle_info.monster_zone[2].presentation == :attack

@@ -133,4 +133,7 @@ defmodule Proto.PT12 do
     ProtoUtil.pack(12012,<<card_id::32>>)
   end
 
+  def write(:pause) do
+    ProtoUtil.pack(12013,<<>>)
+  end
 end

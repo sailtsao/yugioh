@@ -8,4 +8,21 @@ defmodule ChainCore do
     count > 0
   end
 
+  def execute_chain_queue battle_data = BattleData[chain_queue: []] do
+    battle_data = battle_data.operator_id battle_data.turn_player_id
+    {:ok,battle_data}
+  end
+
+  def execute_chain_queue battle_data = BattleData[chain_queue: chain_queue] do
+    chain = hd chain_queue
+    {player_id,scene_type,index,choose_result_list,skill} = chain
+    battle_data = battle_data.chain_queue(tl(chain_queue))
+    {:ok,battle_data} = EffectCore.execute_skill_effects player_id,skill,choose_result_list,battle_data,fn(battle_data)->
+      if scene_type == :spell_trap_zone do
+        battle_data = battle_data.move_cards_to_graveryard player_id,:spell_trap_zone,[index]
+      end
+      execute_chain_queue battle_data
+    end
+  end
+
 end

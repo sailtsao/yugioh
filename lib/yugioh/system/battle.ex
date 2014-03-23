@@ -1,7 +1,6 @@
 defmodule System.Battle do
   require Lager
   use ExActor.GenServer
-  alias Data.Cards
 
   # init
   definit {player1_pid,player2_pid} do
@@ -9,6 +8,7 @@ defmodule System.Battle do
     initial_state {}
   end
 
+  # get cards of scene
   defcall get_cards_of_scene_type(player_id,[target_player_id,scene_type]),state: battle_data do
     {result,battle_data} = GetCardsCore.get_cards_of_scene(player_id,target_player_id,scene_type,battle_data)
     set_and_reply battle_data,result
@@ -26,9 +26,9 @@ defmodule System.Battle do
     set_and_reply battle_data,result
   end
 
-# battle_load_finish
-# 0->1->first dp
-# phase is atom,0 and 1 is used to count the ready message
+  # battle_load_finish
+  # 0->1->first dp
+  # phase is atom,0 and 1 is used to count the ready message
   defcall battle_load_finish(_,[]),state: battle_data=BattleData[phase: :wait_load_finish_1] do
     set_and_reply battle_data.phase(:wait_load_finish_2),:ok
   end
@@ -42,12 +42,13 @@ defmodule System.Battle do
     reply :invalid_battle_load_finish
   end
 
+  # summon
   defcall summon(player_id,[handcards_index,presentation,summon_type]),state: battle_data do
     {result,battle_data} = SummonCore.summon(player_id,handcards_index,presentation,summon_type,battle_data)
     set_and_reply battle_data,result
   end
 
-  # callback message
+  # chain ask
   defcall chain_answer(_,[answer]),state: battle_data do
     result = :ok
     if battle_data.answer_callback == nil do
@@ -59,6 +60,7 @@ defmodule System.Battle do
     set_and_reply battle_data,result
   end
 
+  # choose
   defcall choose_card(_,[choose_scene_list]),state: battle_data do
     result = :ok
     if battle_data.choose_callback == nil do
@@ -70,16 +72,13 @@ defmodule System.Battle do
     set_and_reply battle_data,result
   end
 
-  defcall choose_card(_,[[]]) do
-    reply :empty_choose_card
-  end
-
 # flip card in mp1 mp2 phase
-  defcall flip_card(_,[card_index]),state: battle_data do
-    {result,battle_data} = FlipCardCore.flip_card :order,card_index,battle_data
+  defcall flip_card(player_id,[card_index]),state: battle_data do
+    {result,battle_data} = FlipCardCore.flip_card :order,player_id,card_index,battle_data
     set_and_reply battle_data,result
   end
 
+# attack
   defcall attack(player_id,[source_card_index]),state: battle_data do
     {result,battle_data} = AttackCore.attack player_id,source_card_index,battle_data
     set_and_reply battle_data,result

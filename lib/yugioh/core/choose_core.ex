@@ -1,31 +1,30 @@
 defmodule ChooseCore do
-  def choose player_id,scene_type,index,skill,callback,battle_data do
-    execute_skill_choose skill,battle_data,[{:info,{player_id,scene_type,index}},{:callback,callback}]
+  def tribute_choose player_id,tribute_number,battle_data,callback do
+    player_battle_info = battle_data.get_player_battle_info player_id
+    id_index_list = player_battle_info.get_id_index_list_of_scene(:monster_zone)
+    message = Proto.PT12.write(:choose_card,[:tribute_choose,tribute_number,[{player_id,:monster_zone,id_index_list}]])
+    battle_data.send_message player_id,message
+    choose_callback = fn(choose_scene_list,battle_data)->
+      battle_data = battle_data.choose_callback nil
+      callback.(choose_scene_list,battle_data)
+    end
+    battle_data = battle_data.choose_callback choose_callback
+    {:ok,battle_data}
   end
 
-  def execute_skill_choose(skill,battle_data,params_dict) do
+  def choose player_id,scene_type,index,skill,battle_data,callback do
+    # get effects of skill & sort the effects by priority
     skill_effects = Enum.sort skill.skill_effects,&(&1.priority<&2.priority)
-    case skill_effects do
-      []->
-        params_dict[:callback].([],battle_data)
-      _->
-        [skill_effect|rest_skill_effects] = skill_effects
-        execute_choose(skill_effect.id,skill_effect.params,battle_data,rest_skill_effects,params_dict,[])
-    end
+    execute_choose player_id,scene_type,index,skill_effects,battle_data,callback,[]
   end
 
-  def choose_finish rest_skill_effects,battle_data,params_dict,choose_result_list do
-    case rest_skill_effects do
-      []->
-        params_dict[:callback].(choose_result_list,battle_data)
-      _->
-        [skill_effect|rest_skill_effects] = rest_skill_effects
-        execute_choose(skill_effect.id,skill_effect.params,battle_data,rest_skill_effects,params_dict,choose_result_list)
-    end
+  def execute_choose(_,_,_,[],battle_data,callback,choose_result_list) do
+    callback.(choose_result_list,battle_data)
   end
 
+  def execute_choose(player_id,scene_type,index,[SkillEffect[id: 1,params: params_str]|skill_effects],
+    battle_data,callback,choose_result_list) do
 
-  def execute_choose(1,params_str,battle_data,rest_skill_effects,params_dict,choose_result_list) do
     [card_count_str,scene_belong_str,scene_type_ids_str,level_limit_str,attribute_id_str,card_type_id_str,_target_scene_type_id_str] =
       String.split(params_str,";",trim: true)
     card_count = binary_to_integer card_count_str
@@ -38,19 +37,18 @@ defmodule ChooseCore do
     card_type = binary_to_integer(card_type_id_str) |> IDUtil.card_type_from
     # target_scene_type = binary_to_integer(target_scene_type_id_str) |> IDUtil.scene_type_from
 
-    operator_id = battle_data.operator_id
-    operator_battle_info = battle_data.operator_battle_info
+    player_battle_info = battle_data.get_player_battle_info player_id
 
-    opponent_id = battle_data.opponent_player_id
-    opponent_battle_info = battle_data.opponent_player_battle_info
+    opponent_id = battle_data.get_opponent_player_id player_id
+    opponent_battle_info = battle_data.get_opponent_player_battle_info player_id
 
-    info = params_dict[:info]
+    info = {player_id,scene_type,index}
     choose_scene_list = []
     case scene_belong do
       :self->
         choose_scene_list = Enum.map source_scene_types,fn(scene_type)->
-          id_index_list = Util.get_id_index_list_from_scene(operator_battle_info,scene_type,card_type,attribute,level_limit,info)
-          {operator_id,scene_type,id_index_list}
+          id_index_list = Util.get_id_index_list_from_scene(player_battle_info,scene_type,card_type,attribute,level_limit,info)
+          {player_id,scene_type,id_index_list}
         end
       :opponent->
         choose_scene_list = Enum.map source_scene_types,fn(scene_type)->
@@ -59,10 +57,10 @@ defmodule ChooseCore do
         end
       :both->
         choose_scene_list = List.foldl source_scene_types,choose_scene_list,fn(scene_type,choose_scene_list)->
-          operator_id_index_list = Util.get_id_index_list_from_scene(operator_battle_info,scene_type,card_type,attribute,level_limit,info)
+          player_id_index_list = Util.get_id_index_list_from_scene(player_battle_info,scene_type,card_type,attribute,level_limit,info)
           opponent_id_index_list = Util.get_id_index_list_from_scene(opponent_battle_info,scene_type,card_type,attribute,level_limit,info)
-          if Enum.empty?(operator_id_index_list) == false do
-            choose_scene_list = choose_scene_list++[{operator_id,scene_type,operator_id_index_list}]
+          if Enum.empty?(player_id_index_list) == false do
+            choose_scene_list = choose_scene_list++[{player_id,scene_type,player_id_index_list}]
           end
           if Enum.empty?(opponent_id_index_list) == false do
             choose_scene_list++[{opponent_id,scene_type,opponent_id_index_list}]
@@ -70,23 +68,23 @@ defmodule ChooseCore do
         end
     end
     message_data = Proto.PT12.write(:choose_card,[:handcard_tribute_choose,card_count,choose_scene_list])
-    operator_battle_info.send_message message_data
+    player_battle_info.send_message message_data
     choose_callback = fn(choose_scene_list,battle_data)->
       battle_data = battle_data.choose_callback nil
       choose_result_list = choose_result_list ++ [choose_scene_list]
-      choose_finish rest_skill_effects,battle_data,params_dict,choose_result_list
+      execute_choose player_id,scene_type,index,skill_effects,battle_data,callback,choose_result_list
     end
     battle_data = battle_data.choose_callback choose_callback
     {:ok,battle_data}
   end
 
-  def execute_choose(2,params_str,battle_data,rest_skill_effects,params_dict,choose_result_list) do
-    choose_finish rest_skill_effects,battle_data,params_dict,choose_result_list
+  def execute_choose(player_id,scene_type,index,[SkillEffect[id: 2]|skill_effects],battle_data,callback,choose_result_list) do
+    execute_choose player_id,scene_type,index,skill_effects,battle_data,callback,choose_result_list
   end
-  def execute_choose(3,params_str,battle_data,rest_skill_effects,params_dict,choose_result_list) do
-    choose_finish rest_skill_effects,battle_data,params_dict,choose_result_list
+  def execute_choose(player_id,scene_type,index,[SkillEffect[id: 3]|skill_effects],battle_data,callback,choose_result_list) do
+    execute_choose player_id,scene_type,index,skill_effects,battle_data,callback,choose_result_list
   end
-  def execute_choose(4,params_str,battle_data,rest_skill_effects,params_dict,choose_result_list) do
-    choose_finish rest_skill_effects,battle_data,params_dict,choose_result_list
+  def execute_choose(player_id,scene_type,index,[SkillEffect[id: 4]|skill_effects],battle_data,callback,choose_result_list) do
+    execute_choose player_id,scene_type,index,skill_effects,battle_data,callback,choose_result_list
   end
 end

@@ -125,7 +125,7 @@ defmodule System.Login do
     # fetch role data from database
     role = DBUtil.get_role_data(role_id)
 
-    cards_list = :erlang.binary_to_term(role.cards)
+    # cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
     cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40

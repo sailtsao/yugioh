@@ -7,7 +7,7 @@ defmodule AttackCore do
 
   def attack player_id,source_card_index,battle_data = BattleData[phase: :bp] do
     opponent_player_battle_info = battle_data.get_opponent_player_battle_info player_id
-    opponent_monster_amount = opponent_player_battle_info.monster_summoned_amount
+    opponent_monster_amount = opponent_player_battle_info.monster_zone_size
     if opponent_monster_amount == 0 do
       attack_player player_id,source_card_index,battle_data
     else
@@ -19,7 +19,7 @@ defmodule AttackCore do
     {:invalid_attack,battle_data}
   end
 
-  def attack_declare player_id,battle_data,attack_callback do
+  def attack_declare _player_id,battle_data,attack_callback do
     # check attack declare effect
     attack_callback.(battle_data)
   end
@@ -42,7 +42,7 @@ defmodule AttackCore do
     player_battle_info = player_battle_info.monster_zone(monster_zone)
     opponent_player_battle_info = opponent_player_battle_info.hp(opponent_player_battle_info.hp - hp_damage)
 
-    battle_data = battle_data.update([{battle_data.opponent_player_atom,opponent_player_battle_info},{player_atom,player_battle_info}])
+    battle_data = battle_data.update([{opponent_player_atom,opponent_player_battle_info},{player_atom,player_battle_info}])
 
     if opponent_player_battle_info.hp <= 0 do
       send self,:battle_end
@@ -57,7 +57,7 @@ defmodule AttackCore do
 
   def attack_card player_id,source_card_index,battle_data do
     opponent_player_id = battle_data.get_opponent_player_id player_id
-    player_battle_info = battle_data.operator_battle_info
+    player_battle_info = battle_data.get_player_battle_info player_id
     opponent_player_battle_info = battle_data.get_opponent_player_battle_info player_id
 
     id_index_list = Enum.map opponent_player_battle_info.monster_zone,fn({index,monster})->
