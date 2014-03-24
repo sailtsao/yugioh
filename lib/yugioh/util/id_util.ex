@@ -446,6 +446,8 @@ defmodule IDUtil do
         2
       :handcard_tribute_choose ->
         3
+      :drop_handcard_choose ->
+        4
     end
   end
 

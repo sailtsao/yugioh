@@ -1,4 +1,18 @@
 defmodule ChooseCore do
+  def drop_handcard_choose player_id,battle_data,callback do
+    player_battle_info = battle_data.get_player_battle_info player_id
+    id_index_list = player_battle_info.get_id_index_list_of_scene(:handcard_zone)
+    drop_number = length(id_index_list)-6
+    message = Proto.PT12.write(:choose_card,[:drop_handcard_choose,drop_number,[{player_id,:handcard_zone,id_index_list}]])
+    battle_data.send_message player_id,message
+    choose_callback = fn(choose_scene_list,battle_data)->
+      battle_data = battle_data.choose_callback nil
+      callback.(choose_scene_list,battle_data)
+    end
+    battle_data = battle_data.choose_callback choose_callback
+    {:ok,battle_data}
+  end
+
   def tribute_choose player_id,tribute_number,battle_data,callback do
     player_battle_info = battle_data.get_player_battle_info player_id
     id_index_list = player_battle_info.get_id_index_list_of_scene(:monster_zone)

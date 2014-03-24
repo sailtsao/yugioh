@@ -72,7 +72,7 @@ defmodule SummonCore do
   end
 
   # normal summon monster level less than 5
-  def summon_card(player_id,card_data = Card[card_type: :monster_card,level: level],handcards_index,presentation,battle_data)
+  def summon_card(player_id,Card[card_type: :monster_card,level: level],handcards_index,presentation,battle_data)
   when level<5 do
 
     result = :ok
@@ -89,7 +89,7 @@ defmodule SummonCore do
   end
 
   # place spell trap
-  def summon_card(player_id,card_data = Card[card_type: card_type],handcards_index,_,battle_data)
+  def summon_card(player_id,Card[card_type: card_type],handcards_index,_,battle_data)
   when card_type in [:spell_card,:trap_card] do
 
     result = :ok
@@ -100,7 +100,7 @@ defmodule SummonCore do
     end
 
     if result == :ok do
-      battle_data = battle_data.place_handcard_spell_trap player_id,handcards_index,battle_data
+      battle_data = battle_data.place_handcard_spell_trap player_id,handcards_index
     end
     {result,battle_data}
   end
@@ -109,7 +109,6 @@ defmodule SummonCore do
   def tribute_summon(player_id,[{_,:monster_zone,choose_index_list}],handcards_index,presentation,battle_data) do
     result = :ok
 
-    player_atom = battle_data.get_player_atom player_id
     player_battle_info = battle_data.get_player_battle_info player_id
     handcards = player_battle_info.handcards
     summon_card_id = Enum.at(handcards,handcards_index)

@@ -85,8 +85,8 @@ defmodule System.Battle do
   end
 
 # change phase
-  defcall change_phase_to(_,[phase]),state: battle_data do
-    {result,battle_data} = ChangePhaseCore.change_phase phase,battle_data
+  defcall change_phase_to(player_id,[phase]),state: battle_data do
+    {result,battle_data} = ChangePhaseCore.change_phase player_id,phase,battle_data
     set_and_reply battle_data,result
   end
 

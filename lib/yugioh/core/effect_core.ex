@@ -57,38 +57,50 @@ defmodule EffectCore do
     choose_scene_list = hd choose_result_list
     choose_result_list = tl choose_result_list
     # TODO: refactor
-    {battle_data,callback} = List.foldl choose_scene_list,{battle_data,callback},
-    fn({player_id,source_scene_type,choose_index_list},{battle_data,callback})->
+    battle_data = List.foldl choose_scene_list,battle_data,fn({player_id,source_scene_type,choose_index_list},battle_data)->
       player_atom = battle_data.get_player_atom player_id
       player_battle_info = battle_data.get_player_battle_info player_id
+      source_cards = player_battle_info.get_cards_of_scene source_scene_type
+      target_cards = player_battle_info.get_cards_of_scene target_scene_type
 
       case source_scene_type do
         x when x in [:handcard_zone,:graveyard_zone,:deck_zone,:extra_deck_zone,:banished_zone]->
-          source_cards = player_battle_info.get_cards_of_scene source_scene_type
-          target_cards = player_battle_info.get_cards_of_scene target_scene_type
-          target_cards = List.foldl choose_index_list,target_cards,&([Enum.at(source_cards,&1)|&2])
-          source_cards = List.foldl choose_index_list,source_cards,fn(index,source_cards)->
-            List.replace_at source_cards,index,0
-          end
+          choose_index_list = Enum.filter choose_index_list,&(Enum.at(source_cards,&1)!=0)
         x when x in [:spell_trap_zone,:monster_zone]->
-          source_cards = player_battle_info.get_cards_of_scene source_scene_type
-          target_cards = player_battle_info.get_cards_of_scene target_scene_type
-          target_cards = List.foldl choose_index_list,target_cards,&([Dict.get(source_cards,&1).id|&2])
-          source_cards = Dict.drop source_cards,choose_index_list
+          choose_index_list = Enum.filter choose_index_list,&(Dict.get(source_cards,&1)!=nil)
       end
 
-      source_scene_atom = IDUtil.get_scene_atom source_scene_type
-      target_scene_atom = IDUtil.get_scene_atom target_scene_type
-      player_battle_info = player_battle_info.update([{target_scene_atom,target_cards},{source_scene_atom,source_cards}])
-      battle_data = battle_data.update([{player_atom,player_battle_info}])
-      case target_scene_type do
-        x when x in [:graveyard_zone]->
-          targets = BattleCore.create_effect_targets player_id,source_scene_type,choose_index_list
-          move_to_graveyard_effect = BattleCore.create_move_to_graveyard_effect targets,battle_data
-          message_data = Proto.PT12.write(:effects,[move_to_graveyard_effect])
-          battle_data.send_message_to_all message_data
+      if length(choose_index_list) > 0 do
+        case source_scene_type do
+          x when x in [:handcard_zone,:graveyard_zone,:deck_zone,:extra_deck_zone,:banished_zone]->
+            target_cards = List.foldl choose_index_list,target_cards,&([Enum.at(source_cards,&1)|&2])
+            source_cards = List.foldl choose_index_list,source_cards,fn(index,source_cards)->
+              List.replace_at source_cards,index,0
+            end
+          x when x in [:spell_trap_zone,:monster_zone]->
+            target_cards = List.foldl choose_index_list,target_cards,fn(index,target_cards)->
+              if Dict.get(source_cards,index)==nil do
+                target_cards
+              else
+                [Dict.get(source_cards,index).id|target_cards]
+              end
+            end
+            source_cards = Dict.drop source_cards,choose_index_list
+        end
+
+        source_scene_atom = IDUtil.get_scene_atom source_scene_type
+        target_scene_atom = IDUtil.get_scene_atom target_scene_type
+        player_battle_info = player_battle_info.update([{target_scene_atom,target_cards},{source_scene_atom,source_cards}])
+        battle_data = battle_data.update([{player_atom,player_battle_info}])
+        case target_scene_type do
+          x when x in [:graveyard_zone]->
+            targets = BattleCore.create_effect_targets player_id,source_scene_type,choose_index_list
+            move_to_graveyard_effect = BattleCore.create_move_to_graveyard_effect targets,battle_data
+            message_data = Proto.PT12.write(:effects,[move_to_graveyard_effect])
+            battle_data.send_message_to_all message_data
+        end
       end
-      {battle_data,callback}
+      battle_data
     end
     execute_effect player_id,skill_effects,choose_result_list,battle_data,callback
   end

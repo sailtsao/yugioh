@@ -76,12 +76,14 @@ defmodule FireEffectCore do
   def fire_effect_declare player_id,scene_type,index,skill,card_id,choose_result_list,battle_data do
     battle_data = battle_data.chain_queue([{player_id,scene_type,index,choose_result_list,skill}|battle_data.chain_queue])
     opponent_player_id = battle_data.get_opponent_player_id player_id
-    opponent_battle_info = battle_data.get_player_battle_info opponent_player_id
+    # opponent_battle_info = battle_data.get_player_battle_info opponent_player_id
     if ChainCore.skill_chain_available?(player_id,card_id,battle_data) do
       answer_callback = fn(answer,battle_data)->
         battle_data = battle_data.answer_callback nil
         case answer do
           :no->
+            pause_message = Proto.PT12.write(:pause,[])
+            battle_data.send_message player_id,pause_message
             ChainCore.execute_chain_queue battle_data
           :yes->
             # chained
@@ -96,11 +98,27 @@ defmodule FireEffectCore do
         end
       end
       message = Proto.PT12.write(:chain_ask,[card_id])
-      opponent_battle_info.send_message message
+      battle_data.send_message opponent_player_id,message
+
       battle_data = battle_data.answer_callback answer_callback
+
+      # pause
+      pause_message = Proto.PT12.write(:pause,[])
+      battle_data.send_message player_id,pause_message
+
+      # send pause to oppoenent becuase he is pause state when chain_queue > 1
+      if(length(battle_data.chain_queue) > 1) do
+        pause_message = Proto.PT12.write(:pause,[])
+        battle_data.send_message opponent_player_id,pause_message
+      end
       {:ok,battle_data}
     else
       # no chain available
+      # send
+      if(length(battle_data.chain_queue) > 1) do
+        pause_message = Proto.PT12.write(:pause,[])
+        battle_data.send_message player_id,pause_message
+      end
       ChainCore.execute_chain_queue battle_data
     end
   end

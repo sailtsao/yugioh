@@ -147,6 +147,22 @@ defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,phase: :dp,p
     send player2_battle_info.player_pid,{:send,message_data}
   end
 
+  def move_cards_to_graveryard player_id,:handcard_zone,index_list,battle_data do
+    player_atom = battle_data.get_player_atom player_id
+    player_battle_info = battle_data.get_player_battle_info player_id
+    handcards = player_battle_info.handcards
+    graveyardcards = player_battle_info.graveyardcards
+    graveyardcards = List.foldl index_list,graveyardcards,&([Enum.at(handcards,&1)|&2])
+    handcards = Enum.filter_map Enum.with_index(handcards),fn({_,index})-> !Enum.member?(index_list,index) end,fn({id,_})-> id end
+    player_battle_info = player_battle_info.update(handcards: handcards,graveyardcards: graveyardcards)
+    battle_data = battle_data.update [{player_atom,player_battle_info}]
+    targets = BattleCore.create_effect_targets player_id,:handcard_zone,index_list
+    move_to_graveyard_effect = BattleCore.create_move_to_graveyard_effect targets,battle_data
+    message_data = Proto.PT12.write(:effects,[move_to_graveyard_effect])
+    battle_data.send_message_to_all message_data
+    battle_data
+  end
+
   def move_cards_to_graveryard player_id,:monster_zone,index_list,battle_data do
     player_atom = battle_data.get_player_atom player_id
     player_battle_info = battle_data.get_player_battle_info player_id
@@ -227,6 +243,7 @@ defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,phase: :dp,p
     summon_effect_masked = BattleCore.create_summon_effect handcards_index,0,:place,targets
     message_data_masked = Proto.PT12.write :effects,[summon_effect_masked]
     battle_data.send_message_to_all_with_mask player_id,message_data,message_data_masked
+    battle_data
   end
 
 end
