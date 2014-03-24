@@ -1,8 +1,20 @@
 defmodule ChainCore do
   require Lager
 
-  def skill_chain_available? player_id,_card_id,battle_data do
-    # player_battle_info = battle_data.get_player_battle_info player_id
+  def skill_chain_available? player_id,:spell_trap_zone,index,check_phase,battle_data do
+    player_battle_info = battle_data.get_player_battle_info player_id
+    fire_spell_trap = Dict.get player_battle_info.spell_trap_zone,index
+    opponent_player_battle_info = battle_data.get_opponent_player_battle_info player_id
+    count = Enum.count opponent_player_battle_info.spell_trap_zone,fn({_index,spell_trap})->
+      Enum.any?(spell_trap.get_normal_skills,&(Enum.empty?(&1.check_phase) or (check_phase in &1.check_phase)))
+      and (spell_trap.state != :chained)
+      and (spell_trap.speed>=fire_spell_trap.speed)
+    end
+    count > 0
+  end
+
+  def skill_chain_available? player_id,scene_type,index,check_phase,battle_data do
+    player_battle_info = battle_data.get_player_battle_info player_id
     opponent_player_battle_info = battle_data.get_opponent_player_battle_info player_id
     count = Enum.count opponent_player_battle_info.spell_trap_zone,fn({_index,spell_trap})->
       spell_trap.state != :chained

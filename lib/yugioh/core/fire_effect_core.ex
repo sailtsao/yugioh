@@ -77,7 +77,7 @@ defmodule FireEffectCore do
     battle_data = battle_data.chain_queue([{player_id,scene_type,index,choose_result_list,skill}|battle_data.chain_queue])
     opponent_player_id = battle_data.get_opponent_player_id player_id
     # opponent_battle_info = battle_data.get_player_battle_info opponent_player_id
-    if ChainCore.skill_chain_available?(player_id,card_id,battle_data) do
+    if ChainCore.skill_chain_available?(player_id,scene_type,index,:opponent_fire_effect_phase,battle_data) do
       answer_callback = fn(answer,battle_data)->
         battle_data = battle_data.answer_callback nil
         case answer do
@@ -102,7 +102,7 @@ defmodule FireEffectCore do
 
       battle_data = battle_data.answer_callback answer_callback
 
-      # pause
+      # pause self becuase opoonent is operating
       pause_message = Proto.PT12.write(:pause,[])
       battle_data.send_message player_id,pause_message
 
@@ -117,7 +117,7 @@ defmodule FireEffectCore do
       # send
       if(length(battle_data.chain_queue) > 1) do
         pause_message = Proto.PT12.write(:pause,[])
-        battle_data.send_message player_id,pause_message
+        battle_data.send_message opponent_player_id,pause_message
       end
       ChainCore.execute_chain_queue battle_data
     end

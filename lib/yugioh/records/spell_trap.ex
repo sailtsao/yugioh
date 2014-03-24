@@ -1,4 +1,4 @@
-defrecord SpellTrap,id: 0,card_type: nil,state: nil,count: 0,skills: [] do
+defrecord SpellTrap,id: 0,card_type: nil,category: :none,state: nil,count: 0,skills: [] do
 
   def can_fire_effect? player_id,index,battle_data,spell_trap = SpellTrap[count: count] do
     if count > 0 do
@@ -24,4 +24,16 @@ defrecord SpellTrap,id: 0,card_type: nil,state: nil,count: 0,skills: [] do
       []
     end
   end
+
+  def speed spell_trap do
+    case spell_trap.category do
+      x when x in [:normal_spell,:equip_spell,:field_spell,:ritual_spell,:continuous_spell]->
+        1
+      x when x in [:quickplay_spell,:normal_trap,:continuous_trap]->
+        2
+      :counter_trap->
+        3
+    end
+  end
+
 end

@@ -128,8 +128,8 @@ defmodule System.Login do
     # cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
-    # cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40
-    cards_list = Enum.take Stream.cycle([11,12]),40
+    cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40
+    # cards_list = Enum.take Stream.cycle([11,12]),40
     # !!!!!!!!!! just for test !!!!!!!!!!!
 
     message_data = Proto.PT10.write(:enter_game,[role,cards_list])

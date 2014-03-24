@@ -1,5 +1,5 @@
-defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,presentation: nil,effect_monster: false,presentation_changed: false,
-attacked: false,effect_fired: false,skills: [] do
+defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,attribute: :none,race: :none,monster_mode: :none,group: :none,category: :none,
+presentation: nil,effect_monster: false,presentation_changed: false,attacked: false,effect_fired: false,skills: [] do
 
   def turn_reset(record) do
     record.update(effect_monster: false,presentation_changed: false,attacked: false,effect_fired: false)

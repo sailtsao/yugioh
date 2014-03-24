@@ -4,8 +4,9 @@ defmodule Data.Cards do
   Card.new(
   id: 1,
   card_type: :monster_card,
-  race_type: :demon_race,
-  atrribute: :dark_attribute,
+  race_type: :zombie_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 2400,
@@ -21,8 +22,9 @@ defmodule Data.Cards do
   Card.new(
   id: 2,
   card_type: :monster_card,
-  race_type: :demon_race,
-  atrribute: :dark_attribute,
+  race_type: :zombie_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 1,
   attack: 1000,
@@ -39,7 +41,8 @@ defmodule Data.Cards do
   id: 3,
   card_type: :monster_card,
   race_type: :warrior_race,
-  atrribute: :dark_attribute,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 600,
@@ -56,7 +59,8 @@ defmodule Data.Cards do
   id: 4,
   card_type: :monster_card,
   race_type: :warrior_race,
-  atrribute: :dark_attribute,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 1400,
@@ -72,8 +76,9 @@ defmodule Data.Cards do
   Card.new(
   id: 5,
   card_type: :monster_card,
-  race_type: :demon_race,
-  atrribute: :dark_attribute,
+  race_type: :zombie_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 1,
   attack: 200,
@@ -89,8 +94,9 @@ defmodule Data.Cards do
   Card.new(
   id: 6,
   card_type: :monster_card,
-  race_type: :plant_race,
-  atrribute: :dark_attribute,
+  race_type: :beast_warrior_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 1400,
@@ -107,7 +113,8 @@ defmodule Data.Cards do
   id: 7,
   card_type: :monster_card,
   race_type: :warrior_race,
-  atrribute: :dark_attribute,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 1700,
@@ -115,12 +122,8 @@ defmodule Data.Cards do
   level: 4,
   skills: [
       Skill.new(type: :special_summon_skill,
-      check_phase: [:main_phase_1,:main_phase_2],
+      check_phase: [],
       skill_effects: [
-          # SkillEffect.new(id: 2,
-          # params: "",
-          # priority: 2
-          # ),
           SkillEffect.new(id: 1,
           params: "1;1;7;5;1;1;3",
           priority: 1
@@ -135,7 +138,7 @@ defmodule Data.Cards do
       ]
       ),
       Skill.new(type: :normal_skill,
-      check_phase: [:main_phase_1,:main_phase_2],
+      check_phase: [],
       skill_effects: [
           SkillEffect.new(id: 1,
           params: "1;1;7;0;1;1;3",
@@ -166,8 +169,9 @@ defmodule Data.Cards do
   Card.new(
   id: 8,
   card_type: :monster_card,
-  race_type: :demon_race,
-  atrribute: :dark_attribute,
+  race_type: :zombie_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 2400,
@@ -183,8 +187,9 @@ defmodule Data.Cards do
   Card.new(
   id: 9,
   card_type: :monster_card,
-  race_type: :machine_race,
-  atrribute: :dark_attribute,
+  race_type: :dragon_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 2400,
@@ -200,8 +205,9 @@ defmodule Data.Cards do
   Card.new(
   id: 10,
   card_type: :monster_card,
-  race_type: :bird_race,
-  atrribute: :dark_attribute,
+  race_type: :spellcaster_race,
+  attribute: :dark_attribute,
+  category: :none,
   group: 0,
   max_count_limit: 3,
   attack: 2400,
@@ -218,7 +224,8 @@ defmodule Data.Cards do
   id: 11,
   card_type: :spell_card,
   race_type: :none,
-  atrribute: :none,
+  attribute: :none,
+  category: :quickplay_spell,
   group: 0,
   max_count_limit: 1,
   attack: 0,
@@ -251,30 +258,121 @@ defmodule Data.Cards do
   id: 12,
   card_type: :trap_card,
   race_type: :none,
-  atrribute: :none,
+  attribute: :none,
+  category: :counter_trap,
   group: 0,
   max_count_limit: 1,
   attack: 0,
   defense: 0,
   level: 0,
   skills: [
-    Skill.new(type: :normal_skill,
-      check_phase: [:fire_effect_declare],
+      Skill.new(type: :normal_skill,
+      check_phase: [:opponent_fire_effect_phase],
       skill_effects: [
-        SkillEffect.new(id: 4,
+          SkillEffect.new(id: 3,
+          params: "",
+          priority: 99
+          ),
+          SkillEffect.new(id: 4,
           params: "",
           priority: 1
-          ),
-        SkillEffect.new(id: 3,
-          params: "",
-          priority: 2
-          ),
-        ],
+          )
+      ],
       and_conditions: [
-        ],
+      ],
       or_conditions: [
-        ]
-    )
+      ]
+      )
+  ]
+  )
+  end
+
+
+  def get(13) do
+  Card.new(
+  id: 13,
+  card_type: :monster_card,
+  race_type: :dragon_race,
+  attribute: :light_attribute,
+  category: :none,
+  group: 0,
+  max_count_limit: 3,
+  attack: 3000,
+  defense: 2600,
+  level: 8,
+  skills: [
+  ]
+  )
+  end
+
+
+  def get(14) do
+  Card.new(
+  id: 14,
+  card_type: :monster_card,
+  race_type: :spellcaster_race,
+  attribute: :dark_attribute,
+  category: :none,
+  group: 0,
+  max_count_limit: 2,
+  attack: 2300,
+  defense: 2000,
+  level: 6,
+  skills: [
+  ]
+  )
+  end
+
+
+  def get(15) do
+  Card.new(
+  id: 15,
+  card_type: :monster_card,
+  race_type: :warrior_race,
+  attribute: :light_attribute,
+  category: :none,
+  group: 0,
+  max_count_limit: 1,
+  attack: 3000,
+  defense: 2500,
+  level: 8,
+  skills: [
+  ]
+  )
+  end
+
+
+  def get(16) do
+  Card.new(
+  id: 16,
+  card_type: :monster_card,
+  race_type: :fiend_race,
+  attribute: :dark_attribute,
+  category: :none,
+  group: 0,
+  max_count_limit: 1,
+  attack: 2700,
+  defense: 2500,
+  level: 8,
+  skills: [
+  ]
+  )
+  end
+
+
+  def get(17) do
+  Card.new(
+  id: 17,
+  card_type: :monster_card,
+  race_type: :spellcaster_race,
+  attribute: :light_attribute,
+  category: :none,
+  group: 0,
+  max_count_limit: 3,
+  attack: 1000,
+  defense: 1000,
+  level: 3,
+  skills: [
   ]
   )
   end

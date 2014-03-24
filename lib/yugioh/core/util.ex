@@ -7,7 +7,7 @@ defmodule Util do
       if attribute == :none do
         card_data.level > level_limit
       else
-        (card_data.level > level_limit)&&(card_data.atrribute == attribute)
+        (card_data.level > level_limit)&&(card_data.attribute == attribute)
       end
     end
   end
@@ -18,7 +18,7 @@ defmodule Util do
       if attribute == :none do
         (card_data.level > level_limit)&&(index != exclude_index)
       else
-        (card_data.level > level_limit)&&(card_data.atrribute == attribute)&&(index != exclude_index)
+        (card_data.level > level_limit)&&(card_data.attribute == attribute)&&(index != exclude_index)
       end
     end
   end
@@ -42,7 +42,7 @@ defmodule Util do
   #         if attribute == :none do
   #           card_data.level > level_limit
   #         else
-  #           (card_data.level > level_limit)&&(card_data.atrribute == attribute)
+  #           (card_data.level > level_limit)&&(card_data.attribute == attribute)
   #         end
   #       end
   #     else
@@ -50,7 +50,7 @@ defmodule Util do
   #         if attribute == :none do
   #           card_data.level > level_limit
   #         else
-  #           (card_data.level > level_limit)&&(card_data.atrribute == attribute)
+  #           (card_data.level > level_limit)&&(card_data.attribute == attribute)
   #         end
   #       else
   #         false

@@ -1,16 +1,17 @@
-defrecord Card,id: 0,card_type: nil,atrribute: nil,group: nil,attack: 0,defense: 0,level: 0,skills: [] do
+defrecord Card,id: 0,card_type: :none,attribute: :none,race: :none,monster_mode: :none,category: :none,group: :none,attack: 0,defense: 0,level: 0,skills: [] do
   @doc """
   become monster card
   """
   def become_monster card_data do
-    Monster[id: card_data.id,attack: card_data.attack,defense: card_data.defense,level: card_data.level,skills: card_data.skills]
+    Monster[id: card_data.id,attack: card_data.attack,race: card_data.race,monster_mode: card_data.monster_mode,group: card_data.group,
+    category: card_data.category,attribute: card_data.attribute,defense: card_data.defense,level: card_data.level,skills: card_data.skills]
   end
 
   @doc """
   become spell trap card
   """
   def become_spell_trap card_data do
-    SpellTrap[id: card_data.id,card_type: card_data.card_type,skills: card_data.skills]
+    SpellTrap[id: card_data.id,card_type: card_data.card_type,category: card_data.category,skills: card_data.skills]
   end
 
   @doc """
