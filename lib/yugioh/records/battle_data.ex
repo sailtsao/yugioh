@@ -1,4 +1,5 @@
-defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,phase: :dp,player1_id: 0,player2_id: 0,
+require Lager
+defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,check_phase: :none,phase: :dp,player1_id: 0,player2_id: 0,
   player1_battle_info: nil,player2_battle_info: nil,normal_summoned: false,choose_callback: nil,answer_callback: nil,
   chain_queue: [] do
   @moduledoc """
@@ -243,6 +244,40 @@ defrecord BattleData,turn_count: 1,turn_player_id: 0,operator_id: 0,phase: :dp,p
     summon_effect_masked = BattleCore.create_summon_effect handcards_index,0,:place,targets
     message_data_masked = Proto.PT12.write :effects,[summon_effect_masked]
     battle_data.send_message_to_all_with_mask player_id,message_data,message_data_masked
+    battle_data
+  end
+
+  def new_turn battle_data do
+    last_turn_player_id = battle_data.turn_player_id
+    new_turn_player_id = battle_data.new_turn_operator_id
+    last_player_atom = battle_data.get_player_atom last_turn_player_id
+    player_atom = battle_data.get_player_atom new_turn_player_id
+    player_battle_info = battle_data.get_player_battle_info new_turn_player_id
+    last_player_battle_info = battle_data.get_player_battle_info last_turn_player_id
+    [draw_card_id|deckcards] = player_battle_info.deckcards
+
+    handcards = player_battle_info.handcards++[draw_card_id]
+
+    Lager.debug "draw ~p deck ~p,hand ~p",[draw_card_id,deckcards,handcards]
+    # !!!!!!!!!test for special summon
+    # handcards = [8,7,7,7,7,7]
+
+    # !!!!!!!!!test for fire effect
+    # handcards = [11,11,11,11,11]
+
+    monster_zone = Enum.map(player_battle_info.monster_zone,fn({index,monster})-> {index,monster.turn_reset} end)
+    spell_trap_zone = Enum.map(player_battle_info.spell_trap_zone,fn({index,spell_trap})-> {index,spell_trap.count(spell_trap.count+1)} end)
+    last_spell_trap_zone = Enum.map(last_player_battle_info.spell_trap_zone,fn({index,spell_trap})-> {index,spell_trap.count(spell_trap.count+1)} end)
+    player_battle_info = player_battle_info.update(deckcards: deckcards,handcards: handcards,monster_zone: monster_zone,spell_trap_zone: spell_trap_zone)
+
+    last_player_battle_info = last_player_battle_info.update(spell_trap_zone: last_spell_trap_zone)
+    battle_data = battle_data.update([{player_atom,player_battle_info},{last_player_atom,last_player_battle_info},{:turn_count,battle_data.turn_count+1},
+      {:phase,:dp},{:normal_summoned,false},{:turn_player_id, new_turn_player_id},{:operator_id,new_turn_player_id}])
+
+    message = Proto.PT12.write(:new_turn_draw,[battle_data.turn_count,battle_data.phase,new_turn_player_id,draw_card_id])
+    message_masked = Proto.PT12.write(:new_turn_draw,[battle_data.turn_count,battle_data.phase,new_turn_player_id,0])
+    battle_data.send_message_to_all_with_mask new_turn_player_id,message,message_masked
+
     battle_data
   end
 

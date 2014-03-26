@@ -58,4 +58,17 @@ defmodule ChangePhaseCoreTest do
         assert message == <<0, 5, 46, 224, 6>>
     end
   end
+
+  test "new turn" do
+    player_battle_info = BattlePlayerInfo[id: 6,player_pid: self,handcards: [1,2,3,4,5,6],deckcards: [1,2,3,4,5]]
+    player_battle_info2 = BattlePlayerInfo[id: 8,player_pid: self,handcards: [1,2,3,4,5,6],deckcards: [1,2,3,4,5]]
+    battle_data = BattleData[turn_count: 1,turn_player_id: 6,operator_id: 6,phase: :mp1,player1_id: 6,player2_id: 8,
+    player1_battle_info: player_battle_info,player2_battle_info: player_battle_info2]
+    battle_data = battle_data.new_turn
+    assert battle_data.phase == :dp
+    assert battle_data.turn_player_id == 8
+    assert battle_data.operator_id == 8
+    assert battle_data.player2_battle_info.handcards == [1,2,3,4,5,6,1]
+    assert battle_data.player2_battle_info.deckcards == [2,3,4,5]
+  end
 end

@@ -1,8 +1,8 @@
 defrecord Monster,id: 0,attack: 0,defense: 0,level: 0,attribute: :none,race: :none,monster_mode: :none,group: :none,category: :none,
-presentation: nil,effect_monster: false,presentation_changed: false,attacked: false,effect_fired: false,skills: [] do
+presentation: nil,presentation_changed: false,attacked: false,effect_count: 0,skills: [],state: nil do
 
   def turn_reset(record) do
-    record.update(effect_monster: false,presentation_changed: false,attacked: false,effect_fired: false)
+    record.update(presentation_changed: false,attacked: false,effect_count: 0)
   end
 
   def get_normal_skills monster do
@@ -14,7 +14,8 @@ presentation: nil,effect_monster: false,presentation_changed: false,attacked: fa
       []->
         false
       skills->
-        Enum.any?(skills,&(&1.is_conditions_satisfied?(player_id,:monster_zone,index,battle_data)))
+        Enum.any?(skills,&(&1.can_fire_effect?(player_id,:monster_zone,index,battle_data)))
+        and monster.effect_count == 0
     end
   end
 

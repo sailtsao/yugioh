@@ -23,6 +23,7 @@ defmodule System.Battle do
   # fire effect
   defcall fire_effect(player_id,[scene_type,index]),state: battle_data do
     {result,battle_data} = FireEffectCore.fire_effect(player_id,scene_type,index,battle_data)
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
@@ -45,6 +46,7 @@ defmodule System.Battle do
   # summon
   defcall summon(player_id,[handcards_index,presentation,summon_type]),state: battle_data do
     {result,battle_data} = SummonCore.summon(player_id,handcards_index,presentation,summon_type,battle_data)
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
@@ -57,6 +59,7 @@ defmodule System.Battle do
     if result == :ok do
       {result,battle_data} = battle_data.answer_callback.(answer,battle_data)
     end
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
@@ -69,24 +72,28 @@ defmodule System.Battle do
     if result == :ok do
       {result,battle_data} = battle_data.choose_callback.(choose_scene_list,battle_data)
     end
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
 # flip card in mp1 mp2 phase
   defcall flip_card(player_id,[card_index]),state: battle_data do
-    {result,battle_data} = FlipCardCore.flip_card :order,player_id,card_index,battle_data
+    {result,battle_data} = FlipCardCore.flip_card player_id,card_index,battle_data
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
 # attack
   defcall attack(player_id,[source_card_index]),state: battle_data do
     {result,battle_data} = AttackCore.attack player_id,source_card_index,battle_data
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
 # change phase
   defcall change_phase_to(player_id,[phase]),state: battle_data do
     {result,battle_data} = ChangePhaseCore.change_phase player_id,phase,battle_data
+    Lager.debug "~p",[battle_data]
     set_and_reply battle_data,result
   end
 
@@ -148,35 +155,8 @@ defmodule System.Battle do
 # info
 # new turn
   definfo :new_turn_draw_phase,state: battle_data do
-    last_turn_player_id = battle_data.turn_player_id
-    new_turn_player_id = battle_data.new_turn_operator_id
-    last_player_atom = battle_data.get_player_atom last_turn_player_id
-    player_atom = battle_data.get_player_atom new_turn_player_id
-    player_battle_info = battle_data.get_player_battle_info new_turn_player_id
-    last_player_battle_info = battle_data.get_player_battle_info last_turn_player_id
-    [draw_card_id|deckcards] = player_battle_info.deckcards
-
-    handcards = player_battle_info.handcards++[draw_card_id]
-
-    # !!!!!!!!!test for special summon
-    # handcards = [8,7,7,7,7,7]
-
-    # !!!!!!!!!test for fire effect
-    # handcards = [11,11,11,11,11]
-
-    monster_zone = Enum.map(player_battle_info.monster_zone,fn({index,monster})-> {index,monster.turn_reset} end)
-    spell_trap_zone = Enum.map(player_battle_info.spell_trap_zone,fn({index,spell_trap})-> {index,spell_trap.count(spell_trap.count+1)} end)
-    last_spell_trap_zone = Enum.map(last_player_battle_info.spell_trap_zone,fn({index,spell_trap})-> {index,spell_trap.count(spell_trap.count+1)} end)
-    player_battle_info = player_battle_info.update(deck: deckcards,handcards: handcards,monster_zone: monster_zone,spell_trap_zone: spell_trap_zone)
-
-    last_player_battle_info = last_player_battle_info.update(spell_trap_zone: last_spell_trap_zone)
-    battle_data = battle_data.update([{player_atom,player_battle_info},{last_player_atom,last_player_battle_info},{:turn_count,battle_data.turn_count+1},
-      {:phase,:dp},{:normal_summoned,false},{:turn_player_id, new_turn_player_id},{:operator_id,new_turn_player_id}])
-
-    message = Proto.PT12.write(:new_turn_draw,[battle_data.turn_count,battle_data.phase,new_turn_player_id,draw_card_id])
-    message_masked = Proto.PT12.write(:new_turn_draw,[battle_data.turn_count,battle_data.phase,new_turn_player_id,0])
-    battle_data.send_message_to_all_with_mask new_turn_player_id,message,message_masked
-
+    battle_data = battle_data.new_turn
+    Lager.debug "~p",[battle_data]
     send self, :standby_phase
     new_state battle_data
   end

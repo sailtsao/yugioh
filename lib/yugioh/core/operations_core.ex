@@ -50,7 +50,8 @@ defmodule OperationsCore do
     {:ok,battle_data}
   end
 
-  def get_operations(player_id,:spell_trap_zone,index,battle_data = BattleData[operator_id: player_id]) do
+  def get_operations(player_id,:spell_trap_zone,index,battle_data = BattleData[phase: phase,operator_id: player_id])
+  when phase in [:mp1,:mp2] do
     player_battle_info = battle_data.get_player_battle_info player_id
     spell_trap = player_battle_info.spell_trap_zone[index]
     operations = spell_trap.get_fire_effect_operations player_id,index,battle_data

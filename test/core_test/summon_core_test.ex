@@ -15,14 +15,19 @@ defmodule SummonCoreTest do
   end
 
   test "special summon test" do
-    player1_battle_info = BattlePlayerInfo[id: 6,hp: 3000,player_pid: self,handcards: [7,10],deckcards: [10]]
+    player1_battle_info = BattlePlayerInfo[id: 6,hp: 3000,player_pid: self,handcards: [10,7],deckcards: [10]]
     player2_battle_info = BattlePlayerInfo[id: 8,hp: 3000,player_pid: self]
     battle_data = BattleData[turn_count: 1,operator_id: 6,phase: :mp1,player1_id: 6,player2_id: 8,
     player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
-    {result,battle_data} = SummonCore.summon(6,0,:attack,:special_summon,battle_data)
+    {result,battle_data} = SummonCore.summon(6,1,:attack,:special_summon,battle_data)
     assert result == :ok
+    # choose card message
+    receive do
+        {:send,message}->
+            assert message == <<0, 20, 46, 232, 3, 1, 0, 1, 6::32, 7::8, 0, 1, 0, 0, 0, 10, 0>>
+    end
     assert battle_data.choose_callback != nil
-    {result,battle_data} = battle_data.choose_callback.([{6,:handcard_zone,[1]}],battle_data)
+    {result,battle_data} = battle_data.choose_callback.([{6,:handcard_zone,[0]}],battle_data)
     assert result == :ok
     # IO.inspect battle_data
     assert battle_data.choose_callback == nil
@@ -33,19 +38,15 @@ defmodule SummonCoreTest do
     assert battle_data.player1_battle_info.handcards == []
     assert battle_data.player1_battle_info.graveyardcards == [10]
     assert battle_data.normal_summoned == false
-    # choose card message
-    receive do
-        {:send,message}->
-            assert message == <<0, 20, 46, 232, 3, 1, 0, 1, 6::32, 7::8, 0, 1, 0, 0, 0, 10, 1>>
-    end
+
     # move to grave yard message
     receive do
         {:send,message}->
-            assert message == <<0, 28, 46, 233, 0, 1, 0, 0, 0, 1, 0, 8, 54, 59, 49, 48, 59, 56, 59, 48, 0, 1, 0, 0, 0, 6, 7, 1>>
+            assert message == <<0, 28, 46, 233, 0, 1, 0, 0, 0, 1, 0, 8, 54, 59, 49, 48, 59, 56, 59, 48, 0, 1, 0, 0, 0, 6, 7, 0>>
     end
     receive do
         {:send,message}->
-            assert message == <<0, 28, 46, 233, 0, 1, 0, 0, 0, 1, 0, 8, 54, 59, 49, 48, 59, 56, 59, 48, 0, 1, 0, 0, 0, 6, 7, 1>>
+            assert message == <<0, 28, 46, 233, 0, 1, 0, 0, 0, 1, 0, 8, 54, 59, 49, 48, 59, 56, 59, 48, 0, 1, 0, 0, 0, 6, 7, 0>>
     end
     # summon message
     receive do

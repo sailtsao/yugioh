@@ -20,8 +20,10 @@ defmodule SummonCore do
     if result == :ok do
       {result,battle_data} = ChooseCore.choose player_id,:handcard_zone,handcards_index,
       skill,battle_data,fn(choose_result_list,battle_data)->
-        EffectCore.execute_skill_effects player_id,skill,choose_result_list,battle_data,fn(battle_data)->
-          battle_data = battle_data.summon_handcard_monster player_id,handcards_index,presentation,:special_summon
+        EffectCore.execute_skill_effects player_id,:handcard_zone,handcards_index,skill,choose_result_list,battle_data,fn(_,index,battle_data)->
+          # Lager.info "~p",[battle_data]
+          # Lager.info "~p",[index]
+          battle_data = battle_data.summon_handcard_monster player_id,index,presentation,:special_summon
           {:ok,battle_data}
         end
       end

@@ -271,6 +271,51 @@ defmodule OperationsCoreTest do
     end
   end
 
+  test "get trap card operations test" do
+    spell_trap = Data.Cards.get(12).become_spell_trap
+    spell_trap = spell_trap.count(1)
+    player1_battle_info = BattlePlayerInfo[id: 6,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    player2_battle_info = BattlePlayerInfo[id: 8,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    battle_data = BattleData[turn_count: 2,operator_id: 6,phase: :mp1,player1_id: 6,player2_id: 8,
+    player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
+    {result,_battle_data} = OperationsCore.get_operations(6,:spell_trap_zone,2,battle_data)
+    assert result == :ok
+    receive do
+      {:send,message}->
+        assert message == <<0, 6, 46, 231, 0, 0>>
+    end
+  end
+
+  test "get trap card operations test 1" do
+    spell_trap = Data.Cards.get(12).become_spell_trap
+    spell_trap = spell_trap.count(1)
+    player1_battle_info = BattlePlayerInfo[id: 6,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    player2_battle_info = BattlePlayerInfo[id: 8,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    battle_data = BattleData[turn_count: 2,operator_id: 6,phase: :mp1,player1_id: 6,player2_id: 8,check_phase: :none,
+    player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
+    {result,_battle_data} = OperationsCore.get_operations(6,:spell_trap_zone,2,battle_data)
+    assert result == :ok
+    receive do
+      {:send,message}->
+        assert message == <<0, 6, 46, 231, 0, 0>>
+    end
+  end
+
+  test "get trap card operations test 2" do
+    spell_trap = Data.Cards.get(12).become_spell_trap
+    spell_trap = spell_trap.count(1)
+    player1_battle_info = BattlePlayerInfo[id: 6,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    player2_battle_info = BattlePlayerInfo[id: 8,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]
+    battle_data = BattleData[turn_count: 2,operator_id: 6,phase: :mp1,player1_id: 6,player2_id: 8,check_phase: :opponent_fire_effect_phase,
+    player1_battle_info: player1_battle_info,player2_battle_info: player2_battle_info]
+    {result,_battle_data} = OperationsCore.get_operations(6,:spell_trap_zone,2,battle_data)
+    assert result == :ok
+    receive do
+      {:send,message}->
+        assert message == <<0, 7, 46, 231, 0, 1, 3>>
+    end
+  end
+
   test "get spell trap zone operations test empty" do
     spell_trap = Data.Cards.get(11).become_spell_trap
     player_battle_info = BattlePlayerInfo[id: 6,player_pid: self,spell_trap_zone: HashDict.new([{2,spell_trap}]),deckcards: [1,2,3,4,5,6,7,8,9,10],handcards: [1,2,3,4,5,6,7,8,9,10]]

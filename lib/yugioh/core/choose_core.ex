@@ -1,4 +1,5 @@
 defmodule ChooseCore do
+  require Lager
   def drop_handcard_choose player_id,battle_data,callback do
     player_battle_info = battle_data.get_player_battle_info player_id
     id_index_list = player_battle_info.get_id_index_list_of_scene(:handcard_zone)
@@ -33,6 +34,7 @@ defmodule ChooseCore do
   end
 
   def execute_choose(_,_,_,[],battle_data,callback,choose_result_list) do
+    Lager.debug "callback choose result list ~p",[choose_result_list]
     callback.(choose_result_list,battle_data)
   end
 
@@ -77,8 +79,9 @@ defmodule ChooseCore do
             choose_scene_list = choose_scene_list++[{player_id,scene_type,player_id_index_list}]
           end
           if Enum.empty?(opponent_id_index_list) == false do
-            choose_scene_list++[{opponent_id,scene_type,opponent_id_index_list}]
+            choose_scene_list = choose_scene_list++[{opponent_id,scene_type,opponent_id_index_list}]
           end
+          choose_scene_list
         end
     end
     message_data = Proto.PT12.write(:choose_card,[:handcard_tribute_choose,card_count,choose_scene_list])

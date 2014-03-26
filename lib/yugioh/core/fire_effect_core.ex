@@ -39,7 +39,7 @@ defmodule FireEffectCore do
 
     [skill] = spell_trap.get_normal_skills
 
-    if skill.is_conditions_satisfied?(player_id,:spell_trap_zone,index,battle_data) != true do
+    if skill.is_conditions_satisfied?(player_id,:spell_trap_zone,index,battle_data) == false do
       result = :card_cant_fire_effect
     end
 
@@ -61,7 +61,10 @@ defmodule FireEffectCore do
     monster = Dict.get(player_battle_info.monster_zone,index)
     [skill] = monster.get_normal_skills
 
-    if ConditionCore.is_skill_conditions_satisfied(player_id,:monster_zone,index,skill,battle_data,[]) == false do
+    if monster.effect_count > 0 do
+      result = :card_cant_fire_effect_twice
+    end
+    if skill.is_conditions_satisfied?(player_id,:monster_zone,index,battle_data) == false do
       result = :card_cant_fire_effect
     end
 
@@ -89,10 +92,13 @@ defmodule FireEffectCore do
             # chained
             player_atom = battle_data.get_player_atom player_id
             player_battle_info = battle_data.get_player_battle_info player_id
-            spell_trap = Dict.get(player_battle_info.spell_trap_zone,index).state :chained
-            spell_trap_zone = Dict.put player_battle_info.spell_trap_zone,index,spell_trap
-            player_battle_info = player_battle_info.spell_trap_zone spell_trap_zone
+            cards = player_battle_info.get_cards_of_scene scene_type
+            card = Dict.get(cards,index).state :chained
+            cards = Dict.put cards,index,card
+            scene_atom = IDUtil.get_scene_atom scene_type
+            player_battle_info = player_battle_info.update([{scene_atom,cards}])
             battle_data = battle_data.update([{player_atom,player_battle_info}])
+            battle_data = battle_data.check_phase :opponent_fire_effect_phase
             battle_data = battle_data.operator_id opponent_player_id
             {:ok,battle_data}
         end
@@ -100,7 +106,7 @@ defmodule FireEffectCore do
       message = Proto.PT12.write(:chain_ask,[card_id])
       battle_data.send_message opponent_player_id,message
 
-      battle_data = battle_data.answer_callback answer_callback
+      battle_data = battle_data.update(answer_callback: answer_callback)
 
       # pause self becuase opoonent is operating
       pause_message = Proto.PT12.write(:pause,[])
