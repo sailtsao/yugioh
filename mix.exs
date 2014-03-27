@@ -16,7 +16,9 @@ defmodule Yugioh.Mixfile do
     [
       mod: { YugiohApp, [acceptor_count: 10,port: 1234] },
       applications: [
-        :exlager
+        :exlager,
+        :postgrex,
+        :ecto
       ]
     ]
   end
