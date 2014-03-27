@@ -1,12 +1,3 @@
-defrecord PlayerState,id: 0,name: "",avatar: 0,gender: 0,hp: 0,win: 0,lose: 0,socket: nil,room_id: 0,battle_pid: nil,
-  deck: [],
-  extra_deck: [],
-  side_deck: [] do
-  def brief_binary record do
-    <<record.id::32,ProtoUtil.pack_string(record.name)::binary,record.avatar::8>>
-  end
-end
-
 defrecord Target,player_id: 0,scene_type: 0,index: 0
 
 defrecord Effect,type: 0,params: "",targets: nil

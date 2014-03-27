@@ -86,8 +86,13 @@ defmodule System.Login do
           false->
             0
         end
-        cards = Enum.take Stream.cycle([1,2,3,4,5,6,7,8,9,10,11,12]),40
-        r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: Ecto.Binary[value: :erlang.term_to_binary(cards)],hp: 3000,win: 0,lose: 0)
+        # cards = Enum.take Stream.cycle([1,2,3,4,5,6,7,8,9,10,11,12]),40
+        cards = HashDict.new([{1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3}, {6, 3}, {7, 3}, {8, 3}, {9, 3},{10, 3}, {11, 3}, {12, 3},{13, 3},{14, 3}])
+        cards_binary = Ecto.Binary[value: :erlang.term_to_binary(cards)]
+        decks = HashDict.new([{1,Deck[main_deck: cards]}])
+        decks_binary = Ecto.Binary[value: :erlang.term_to_binary(decks)]
+
+        r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: cards_binary,game_deck_id: 1,decks: decks_binary,hp: 3000,win: 0,lose: 0)
         Repo.create(r)
         :gen_tcp.send(socket,Proto.PT10.write(10002,1))
         {:ok,client}
@@ -125,19 +130,22 @@ defmodule System.Login do
     # fetch role data from database
     role = DBUtil.get_role_data(role_id)
 
+    cards = :erlang.binary_to_term(role.cards)
+    decks = :erlang.binary_to_term(role.decks)
     # cards_list = :erlang.binary_to_term(role.cards)
 
     # !!!!!!!!!! just for test !!!!!!!!!!!
-    cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40
+    # cards_list = Enum.take Stream.cycle([1,3,7,7,8,11,12]),40
     # cards_list = Enum.take Stream.cycle([11,12]),40
     # !!!!!!!!!! just for test !!!!!!!!!!!
+    cards_list = []
 
     message_data = Proto.PT10.write(:enter_game,[role,cards_list])
     :gen_tcp.send(socket,message_data)
 
-    player_state=PlayerState.new(id: role.id,name: role.name,gender: role.gender,avatar: role.avatar,
-                          hp: role.hp,win: role.win,lose: role.lose,deck: cards_list)
-    {:ok,player_pid} = Player.start({player_state,socket})
+    player_state=PlayerState.new(id: role.id,name: role.name,gender: role.gender,avatar: role.avatar,hp: role.hp,
+      win: role.win,lose: role.lose,cards: cards,game_deck_id: role.game_deck_id,decks: decks)
+    {:ok,player_pid} = System.Player.start({player_state,socket})
 
     client=client.player_pid player_pid
     Lager.debug "new player enter game,player_state: [~p]",[player_state]
@@ -145,6 +153,6 @@ defmodule System.Login do
   end
 
   def logout player_pid do
-    Player.stop_cast player_pid
+    System.Player.stop_cast player_pid
   end
 end

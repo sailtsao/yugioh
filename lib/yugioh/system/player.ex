@@ -1,11 +1,11 @@
-defmodule Player do
+defmodule System.Player do
   require Lager
   use ExActor.GenServer
 
   definit ({player_state,socket}) do
     init_cast(self,socket)
     initial_state(player_state)
-  end    
+  end
 
   defcall player_state,state: player_state do
     reply player_state
@@ -25,6 +25,8 @@ defmodule Player do
         {result,player_state} = System.Room.handle({func_atom,params},player_state)
       '12'->
         {result,player_state} = System.Battle.handle({func_atom,params},player_state)
+      '13'->
+        {result,player_state} = apply(PlayerCore,func_atom,[player_state,params])
     end
     case result do
       :ok->
@@ -32,7 +34,7 @@ defmodule Player do
       reason->
         {:stop,:normal,{:error,reason},player_state}
     end
-  end  
+  end
 
   defcast init_cast(socket),state: player_state do
     player_state = player_state.socket(socket)
@@ -44,7 +46,7 @@ defmodule Player do
 
   defcast stop_cast,state: player_state do
     {:stop, :normal, player_state}
-  end    
+  end
 
   definfo {:send,data},state: player_state do
     :gen_tcp.send(player_state.socket,data)
@@ -52,10 +54,10 @@ defmodule Player do
     Lager.debug "send data message_id [~p] data [~p] to player [~p]",[message_id,data,self]
     noreply
   end
-  
+
   def terminate(reason,player_state) do
     Lager.debug "player state [~p] died reason [~p]",[player_state,reason]
-    
+
     # update online system
     # Library.Online.remove_online_player(player_state.id)
 
@@ -68,7 +70,7 @@ defmodule Player do
     end
 
     :gen_tcp.close(player_state.socket)
-    
-  end  
-    
+
+  end
+
 end

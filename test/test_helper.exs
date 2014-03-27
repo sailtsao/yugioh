@@ -24,18 +24,18 @@ defmodule TestHelper do
     message_data = ProtoUtil.pack(10005,<<player_id::32>>)
     send_and_receive(message_data,socket)
   end
-  
+
   def enter_game_quick socket,user_name,password do
     normal_login socket,user_name,password
     <<_::16,10004::16,1::16,player_id::32,_rest::binary>> = TestHelper.get_roles socket
     enter_game socket,player_id
   end
-  
+
   def create_room socket do
     message_data = ProtoUtil.pack(11000,<<>>)
     send_and_receive(message_data,socket)
   end
-  
+
   def get_rooms socket do
     message_data = ProtoUtil.pack(11001,<<>>)
     send_and_receive(message_data,socket)
@@ -64,7 +64,7 @@ defmodule TestHelper do
   def battle_start(socket) do
     message_data = ProtoUtil.pack(11007,<<>>)
     send_and_receive(message_data,socket)
-  end    
+  end
 
   def room_ready_quick(player1_username,player1_password,player2_username,player2_password) do
     socket = TestHelper.connect
@@ -72,14 +72,14 @@ defmodule TestHelper do
     socket1 = TestHelper.connect
     TestHelper.enter_game_quick socket1,player2_username,player2_password
 
-    TestHelper.create_room(socket)    
+    TestHelper.create_room(socket)
     TestHelper.enter_room(socket1,1)
     TestHelper.get_message(socket)
     TestHelper.battle_ready(socket1)
     TestHelper.get_message(socket)
     {socket,socket1}
   end
-  
+
 
   def battle_start_quick(player1_username,player1_password,player2_username,player2_password) do
     socket = TestHelper.connect
@@ -87,10 +87,10 @@ defmodule TestHelper do
     socket1 = TestHelper.connect
     TestHelper.enter_game_quick socket1,player2_username,player2_password
 
-    TestHelper.create_room(socket)    
+    TestHelper.create_room(socket)
     TestHelper.enter_room(socket1,1)
     get_message socket
-    TestHelper.battle_ready(socket1)    
+    TestHelper.battle_ready(socket1)
     TestHelper.battle_start(socket)
     :timer.sleep 100
     get_message socket
@@ -102,7 +102,7 @@ defmodule TestHelper do
     {:ok,data} = :gen_tcp.recv(socket,0)
     data
   end
-    
+
   defp send_and_receive message_data,socket do
     :gen_tcp.send(socket,message_data)
     {:ok,data} = :gen_tcp.recv(socket,0)
@@ -113,7 +113,7 @@ defmodule TestHelper do
     message_data = ProtoUtil.pack(12006,<<>>)
     :gen_tcp.send(socket,message_data)
   end
-  
+
   def get_card_operations(socket,scene_type_id,index) do
     message_data = ProtoUtil.pack(12007,<<scene_type_id::8,index::8>>)
     data = send_and_receive message_data,socket
@@ -139,13 +139,13 @@ defmodule TestHelper do
     message_data = ProtoUtil.pack(12011,<<scene_type_id::8,index::8>>)
     :timer.sleep 100
     send_and_receive message_data,socket
-  end  
-  
+  end
+
   def choose_card socket,player_id,scene_type_id,index do
     message_data = ProtoUtil.pack(12008,<<1::16,player_id::32,scene_type_id::8,1::16,index::8>>)
     send_and_receive message_data,socket
   end
-  
+
   def get_cards_of_scene_type socket,player_id,scene_type_id do
     message_data = ProtoUtil.pack(12010,<<player_id::32,scene_type_id::8>>)
     send_and_receive message_data,socket
@@ -154,12 +154,21 @@ defmodule TestHelper do
   def ping socket do
     message_data = ProtoUtil.pack(9999,<<>>)
     send_and_receive message_data,socket
-  end  
+  end
 
   def get_tribute_params bin do
     # <<player_id::32,scene_type_id::8,choose_index_length::16,choose_id::32,choose_index::8>> = choose_scene
     <<player_id::32,scene_type_id::8,_choose_index_length::16,_choose_id::32,choose_index::8,_::binary>> = bin
     {player_id,scene_type_id,choose_index}
   end
-  
+
+  def load_data socket do
+    message_data = ProtoUtil.pack(13000,<<>>)
+    send_and_receive message_data,socket
+  end
+
+  def save_data socket do
+    message_data = ProtoUtil.pack(13001,<<>>)
+    send_and_receive message_data,socket
+  end
 end

@@ -9,6 +9,8 @@ defmodule Model.Role do
     field :win, :integer
     field :lose, :integer
     field :cards, :binary
+    field :game_deck_id, :integer
+    field :decks, :binary
     belongs_to :user,Model.User
   end
 end

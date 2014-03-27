@@ -103,18 +103,18 @@ defmodule System.Battle do
   defcast init_cast(player1_pid,player2_pid) do
 
     # set battle pid to player state
-    player1_state = Player.player_state player1_pid
-    player2_state = Player.player_state player2_pid
+    player1_state = System.Player.player_state player1_pid
+    player2_state = System.Player.player_state player2_pid
 
-    Player.update_player_state(player1_pid,[{:battle_pid,self}])
-    Player.update_player_state(player2_pid,[{:battle_pid,self}])
+    System.Player.update_player_state(player1_pid,[{:battle_pid,self}])
+    System.Player.update_player_state(player2_pid,[{:battle_pid,self}])
 
     # set random seed
     :random.seed(:erlang.now)
 
     # shuffle deckcards
-    player1_deckcards = Enum.shuffle(player1_state.deck)
-    player2_deckcards = Enum.shuffle(player2_state.deck)
+    player1_deckcards = Enum.shuffle(player1_state.game_deckcards)
+    player2_deckcards = Enum.shuffle(player2_state.game_deckcards)
 
     # initialize handcards
     {player1_handcards,player1_deckcards} = Enum.split(player1_deckcards,5)
@@ -126,6 +126,8 @@ defmodule System.Battle do
     player2_battle_info = BattlePlayerInfo[id: player2_state.id,player_pid: player2_pid,hp: player2_state.hp,handcards: player2_handcards,
     deckcards: player2_deckcards,socket: player2_state.socket]
 
+    Lager.debug "battle_start player1 battle_state: ~p",[player1_battle_info]
+    Lager.debug "battle_start player2 battle_state: ~p",[player2_battle_info]
     # wait for player to decide who first
     # order_game
 
