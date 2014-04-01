@@ -167,8 +167,8 @@ defmodule TestHelper do
     send_and_receive message_data,socket
   end
 
-  def save_data socket do
-    message_data = ProtoUtil.pack(13001,<<>>)
+  def save_data socket,data do
+    message_data = ProtoUtil.pack(13001,data)
     send_and_receive message_data,socket
   end
 end

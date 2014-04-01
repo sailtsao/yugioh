@@ -13,19 +13,19 @@ defmodule ProtoUtil do
     <<len::size(16),binary_data::binary>> = bin
     <<str::[size(len),unit(8),binary],rest::binary>> = binary_data
     {str,rest}
-  end  
+  end
 
   @doc """
   pack string to binary
 
   iex> ProtoUtil.pack_string("1234567890")
-  <<10::16,"1234567890">>  
+  <<10::16,"1234567890">>
   """
   def pack_string(str) do
     nl = byte_size(str)
     <<nl::size(16),str::bitstring>>
   end
-  
+
 
   @doc """
   pack list to binary
@@ -35,7 +35,11 @@ defmodule ProtoUtil do
   def pack_list(list,fun) do
     <<length(list)::16,List.foldl(list,<<>>,&(&2<>fun.(&1)))::binary>>
   end
-  
+
+  def pack_dict(dict,fun) do
+    list = Dict.to_list(dict)
+    <<length(list)::16,List.foldl(list,<<>>,&(&2<>fun.(&1)))::binary>>
+  end
 
   @doc """
   pack message binary_data with message_length & message_id in protocol format

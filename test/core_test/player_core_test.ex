@@ -10,7 +10,7 @@ defmodule PlayerCoreTest do
     # Enum.each roles,fn(role)->
     #   cards = HashDict.new([{1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3}, {6, 3}, {7, 3}, {8, 3}, {9, 3},{10, 3}, {11, 3}, {12, 3},{13, 3},{14, 3}])
     #   cards_binary = Ecto.Binary[value: :erlang.term_to_binary(cards)]
-    #   decks = HashDict.new([{1,Deck[main_deck: cards]}])
+    #   decks = HashDict.new([{1,Deck[name: "default",main_deck: cards]}])
     #   decks_binary = Ecto.Binary[value: :erlang.term_to_binary(decks)]
     #   role = role.update([cards: cards_binary,decks: decks_binary,game_deck_id: 1])
     #   Repo.update role

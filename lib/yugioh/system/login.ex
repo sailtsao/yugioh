@@ -89,7 +89,7 @@ defmodule System.Login do
         # cards = Enum.take Stream.cycle([1,2,3,4,5,6,7,8,9,10,11,12]),40
         cards = HashDict.new([{1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3}, {6, 3}, {7, 3}, {8, 3}, {9, 3},{10, 3}, {11, 3}, {12, 3},{13, 3},{14, 3}])
         cards_binary = Ecto.Binary[value: :erlang.term_to_binary(cards)]
-        decks = HashDict.new([{1,Deck[main_deck: cards]}])
+        decks = HashDict.new([{1,Deck[id: 1,name: "Default",main_deck: cards]}])
         decks_binary = Ecto.Binary[value: :erlang.term_to_binary(decks)]
 
         r = user.roles.new(name: name,avatar: avatar,gender: gender,cards: cards_binary,game_deck_id: 1,decks: decks_binary,hp: 3000,win: 0,lose: 0)
